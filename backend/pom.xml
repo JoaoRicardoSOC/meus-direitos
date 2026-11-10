@@ -31,12 +31,19 @@
             <artifactId>jersey-hk2</artifactId>
         </dependency>
 
-        <!-- uncomment this to get JSON support:
-         <dependency>
+        <!-- Conversão automática Java <-> JSON (JSON-B), como no Cap17 -->
+        <dependency>
             <groupId>org.glassfish.jersey.media</groupId>
             <artifactId>jersey-media-json-binding</artifactId>
         </dependency>
-        -->
+
+        <!-- Driver JDBC do Oracle, mesma versão usada no Cap12/Cap17 -->
+        <dependency>
+            <groupId>com.oracle.database.jdbc</groupId>
+            <artifactId>ojdbc8</artifactId>
+            <version>${ojdbc.version}</version>
+        </dependency>
+
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter</artifactId>
@@ -79,6 +86,7 @@
 
     <properties>
         <jersey.version>4.0.3</jersey.version>
+        <ojdbc.version>23.2.0.0</ojdbc.version>
         <junit5.version>5.14.4</junit5.version>
         <maven.compiler.release>17</maven.compiler.release>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
