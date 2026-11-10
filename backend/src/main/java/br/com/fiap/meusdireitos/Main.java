@@ -8,38 +8,37 @@ import java.io.IOException;
 import java.net.URI;
 
 /**
- * Main class.
- *
+ * Ponto de entrada da API Meus Direitos.
+ * <p>
+ * Sobe um servidor HTTP Grizzly com o Jersey (implementação do JAX-RS),
+ * expondo todos os recursos e providers encontrados no pacote base.
  */
 public class Main {
-    // Base URI the Grizzly HTTP server will listen on
-    public static final String BASE_URI = "http://localhost:8080/";
+
+    /** Endereço base da API: todos os recursos ficam abaixo de /api. */
+    public static final String BASE_URI = "http://localhost:8080/api/";
+
+    /** Pacote varrido pelo Jersey em busca de resources (@Path) e providers (@Provider). */
+    private static final String PACOTE_BASE = "br.com.fiap.meusdireitos";
 
     /**
-     * Starts Grizzly HTTP server exposing JAX-RS resources defined in this application.
-     * @return Grizzly HTTP server.
+     * Cria e inicia o servidor Grizzly com a configuração do Jersey.
+     *
+     * @return servidor HTTP em execução
      */
     public static HttpServer startServer() {
-        // create a resource config that scans for JAX-RS resources and providers
-        // in br.com.fiap.meusdireitos package
-        final ResourceConfig rc = new ResourceConfig().packages("br.com.fiap.meusdireitos");
-
-        // create and start a new instance of grizzly http server
-        // exposing the Jersey application at BASE_URI
-        return GrizzlyHttpServerFactory.createHttpServer(URI.create(BASE_URI), rc);
+        final ResourceConfig config = new ResourceConfig().packages(PACOTE_BASE);
+        return GrizzlyHttpServerFactory.createHttpServer(URI.create(BASE_URI), config);
     }
 
-    /**
-     * Main method.
-     * @param args
-     * @throws IOException
-     */
     public static void main(String[] args) throws IOException {
         final HttpServer server = startServer();
-        System.out.println(String.format("Jersey app started with endpoints available at "
-                + "%s%nHit Ctrl-C to stop it...", BASE_URI));
+
+        // Garante que o servidor seja encerrado mesmo com Ctrl+C
+        Runtime.getRuntime().addShutdownHook(new Thread(server::shutdownNow));
+
+        System.out.printf("API Meus Direitos rodando em %s%nPressione Enter para encerrar...%n", BASE_URI);
         System.in.read();
-        server.stop();
+        server.shutdownNow();
     }
 }
-
