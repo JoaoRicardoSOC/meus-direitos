@@ -48,8 +48,24 @@ public class Main {
         // Garante que o servidor seja encerrado mesmo com Ctrl+C
         Runtime.getRuntime().addShutdownHook(new Thread(server::shutdownNow));
 
-        System.out.printf("API Meus Direitos rodando em %s%nPressione Enter para encerrar...%n", AppConfig.serverUri());
-        System.in.read();
+        System.out.printf("API Meus Direitos rodando em %s%nPressione Enter (ou Ctrl+C) para encerrar...%n", AppConfig.serverUri());
+        aguardarEncerramento();
         server.shutdownNow();
+    }
+
+    /**
+     * Bloqueia até o usuário pressionar Enter.
+     * Sem console (ex.: execução em segundo plano), a entrada termina na hora; nesse caso
+     * a API continua rodando até ser interrompida com Ctrl+C (o shutdown hook encerra o servidor).
+     */
+    private static void aguardarEncerramento() throws IOException {
+        if (System.in.read() != -1) {
+            return;
+        }
+        try {
+            Thread.currentThread().join();
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
     }
 }
