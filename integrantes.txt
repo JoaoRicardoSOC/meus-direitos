@@ -1,0 +1,11 @@
+Grupo: <NOME DO GRUPO>
+Projeto: Meus Direitos - Global Solution 2026/2 (CitizenTech)
+
+Integrantes:
+RM <RM> - <Nome completo> (Back-end)
+RM <RM> - <Nome completo> (Back-end)
+RM <RM> - <Nome completo> (Front-end)
+RM <RM> - <Nome completo> (Front-end)
+RM <RM> - <Nome completo> (Banco de dados)
+
+Video pitch: <LINK PUBLICO>
