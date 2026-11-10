@@ -1,0 +1,16 @@
+# Copie este arquivo para "db.properties" (na mesma pasta) e preencha suas credenciais.
+# O db.properties é ignorado pelo git: NUNCA versione sua senha.
+# Cada chave também pode ser definida por variável de ambiente (entre parênteses).
+
+# URL JDBC do Oracle (MD_DB_URL). Padrão: banco da FIAP
+db.url=jdbc:oracle:thin:@oracle.fiap.com.br:1521:ORCL
+
+# Usuário e senha do Oracle (MD_DB_USUARIO / MD_DB_SENHA). Obrigatórios
+db.usuario=seu_usuario
+db.senha=sua_senha
+
+# Endereço da API (MD_SERVER_URI)
+server.uri=http://localhost:8080/api/
+
+# Origens do front-end liberadas no CORS, separadas por vírgula (MD_CORS_ORIGENS)
+cors.origens=http://localhost:5173
