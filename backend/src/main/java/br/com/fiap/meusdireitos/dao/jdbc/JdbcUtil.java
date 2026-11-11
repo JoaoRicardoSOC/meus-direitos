@@ -8,6 +8,7 @@ import java.sql.Timestamp;
 import java.sql.Types;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.StringJoiner;
 
 /**
@@ -92,6 +93,35 @@ public final class JdbcUtil {
     public static Long getLong(ResultSet rs, String coluna) throws SQLException {
         long valor = rs.getLong(coluna);
         return rs.wasNull() ? null : valor;
+    }
+
+    // ---------- parâmetros em lista (consultas montadas dinamicamente) ----------
+
+    /**
+     * Preenche os "?" na ordem da lista. Aceita Long, Integer, String, enums e LocalDateTime.
+     * Usado quando a consulta é montada conforme os filtros, para não errar a posição dos parâmetros.
+     *
+     * @return próximo índice livre
+     */
+    public static int preencher(PreparedStatement stmt, List<Object> parametros) throws SQLException {
+        int i = 1;
+        for (Object valor : parametros) {
+            if (valor instanceof Long) {
+                stmt.setLong(i, (Long) valor);
+            } else if (valor instanceof Integer) {
+                stmt.setInt(i, (Integer) valor);
+            } else if (valor instanceof Enum) {
+                stmt.setString(i, ((Enum<?>) valor).name());
+            } else if (valor instanceof LocalDateTime) {
+                stmt.setTimestamp(i, Timestamp.valueOf((LocalDateTime) valor));
+            } else if (valor instanceof String) {
+                stmt.setString(i, (String) valor);
+            } else {
+                throw new IllegalArgumentException("Tipo de parâmetro não suportado: " + valor);
+            }
+            i++;
+        }
+        return i;
     }
 
     // ---------- IN (...) dinâmico ----------
