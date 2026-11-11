@@ -36,7 +36,7 @@
 | Resolver denúncia: autor marca **ou** 3 moradores confirmam | ✅ Pronto |
 | Relatórios: "Números da cidade", por categoria, por bairro, mais engajadas | ✅ Pronto |
 | Trocar senha / excluir conta | ✅ Pronto |
-| "Cidade viva" (conteúdo de exemplo automático, selo "Exemplo") | 🕒 Planejado |
+| "Cidade viva": conteúdo de exemplo automático em cidades novas, atividade simulada, selo "Exemplo" | ✅ Pronto |
 
 ---
 
@@ -258,6 +258,8 @@ Resposta **201** (`UsuarioResponse`):
 ```
 
 Regras: nome 3–100; e-mail válido (até 120, guardado em minúsculas); **senha 8–64 com pelo menos uma letra e um número**; cidade 2–80; `uf` = sigla de estado válida. E-mail já usado → **409**.
+
+> ⏳ **Cidade nova demora alguns segundos.** Se a pessoa é a primeira da cidade, a API prepara o conteúdo de exemplo da cidade ("cidade viva", seção 8.10) antes de responder. Mostre **"Preparando sua cidade…"** depois de enviar o cadastro. A resposta traz `"cidadePreparada": true`; se vier `false`, o cadastro funcionou, mas o feed terá só conteúdo real (sugestão: "Sua cidade ainda está começando").
 
 > A tela 03 tem um campo único "Cidade e estado". A API precisa de **`cidade` e `uf` separados**. Recomendado: um `<select>` de cidades (ver seção 11).
 
@@ -512,12 +514,40 @@ Denúncias sem bairro aparecem como `"bairro": "Não informado"`.
 
 Use o `id` para abrir o detalhe (`GET /denuncias/{id}`).
 
-### 8.10 Em desenvolvimento
+### 8.10 "Cidade viva" (conteúdo de demonstração)
 
-| Item | Para quê |
-|---|---|
-| Campo `autor.simulado` | Selo "Exemplo" para conteúdo de demonstração ("cidade viva") |
-| `cidadePreparada` no cadastro | Indica se a cidade nova recebeu conteúdo de exemplo |
+Para o sistema nunca parecer vazio — inclusive quando o avaliador se cadastrar numa cidade qualquer:
+
+- **Primeira pessoa de uma cidade:** a API cria **12 moradores de exemplo** e **12 denúncias** com votos, comentários e confirmações dos últimos dias. Tem de tudo: crateras muito votadas, calçadas com poucos votos (mas que sobem no "Para você" de idosos e PCD), denúncias resolvidas, uma em andamento e **uma com "2 de 3 moradores confirmaram"** — esperando a 3ª confirmação.
+- **Atividade contínua:** ao abrir o feed, se passaram 10 minutos desde a última atividade da cidade, surgem 1 a 3 novidades (votos, comentários, às vezes uma denúncia nova).
+- Moradores de exemplo **não aparecem** em `GET /usuarios`, **não fazem login** e **nunca** votam/comentam em denúncias de pessoas reais.
+
+**O que o front precisa fazer:**
+
+1. **Selo "Exemplo"** no card e no comentário quando `autor.simulado` for `true`:
+
+   ```json
+   "autor": { "id": 21, "nome": "Dona Lúcia Ramos", "simulado": true }
+   ```
+
+2. **Imagens de demonstração.** As denúncias de exemplo usam `imagemUrl` no formato `img/demo/<categoria>-<1 a 3>.jpg`. Coloque estes 18 arquivos em `public/img/demo/`:
+
+   | Categoria | Arquivos |
+   |---|---|
+   | Asfalto | `asfalto-1.jpg`, `asfalto-2.jpg`, `asfalto-3.jpg` |
+   | Iluminação | `iluminacao-1.jpg` … `iluminacao-3.jpg` |
+   | Calçada e acessibilidade | `calcada-acessibilidade-1.jpg` … `-3.jpg` |
+   | Segurança | `seguranca-1.jpg` … `-3.jpg` |
+   | Limpeza urbana | `limpeza-urbana-1.jpg` … `-3.jpg` |
+   | Outros | `outros-1.jpg` … `-3.jpg` |
+
+   Use as mesmas imagens na tela "Adicionar foto" da nova denúncia (o usuário escolhe uma; envie o caminho em `imagemUrl`).
+
+3. **"Preparando sua cidade…"** após o cadastro (seção 8.2).
+
+`GET /relatorios/resumo` também traz `denunciasSimuladas` (quantas das denúncias da cidade são de exemplo), para transparência.
+
+> Para a equipe: existem rotas de preparo/reset da demonstração em `/api/simulacao/*`, protegidas por uma chave configurada no `db.properties` (`simulacao.chave`). **O front não usa essas rotas.**
 
 Este guia será atualizado quando ficarem prontas.
 
@@ -563,7 +593,8 @@ Este guia será atualizado quando ficarem prontas.
 
 | Objeto | Campos |
 |---|---|
-| `UsuarioResponse` | `id, nome, email, cidade, uf, criadoEm, perfilPreenchido` |
+| `UsuarioResponse` | `id, nome, email, cidade, uf, criadoEm, perfilPreenchido, cidadePreparada?` (só no cadastro) |
+| `AutorResponse` (em denúncias e comentários) | `id, nome, simulado` |
 | `PlacarResponse` | `upvotes, downvotes, saldo, meuVoto?` |
 | `ComentarioResponse` | `id, idDenuncia, texto, autor {id, nome}, meu, criadoEm, editadoEm?` |
 | `DireitoResumoResponse` | `id, titulo, resumo, icone` |
@@ -596,6 +627,7 @@ Ajustes em relação ao Figma, combinados com o grupo:
 7. *(Opcional)* Selo **"Para você"** no card quando `relevanteParaMim` for `true`.
 8. **Bloco "Números da cidade"** (ex.: no topo do feed) com `GET /relatorios/resumo` — mostra impacto (% resolvidas) e conta como diferencial "Relatórios com SQL" na avaliação.
 9. *(Opcional)* No Perfil, opções **"Trocar senha"** e **"Excluir minha conta"** (com confirmação de senha).
+10. **Selo "Exemplo"**, **18 imagens de demonstração** e tela **"Preparando sua cidade…"** (seção 8.10).
 
 ---
 
@@ -613,3 +645,4 @@ Ajustes em relação ao Figma, combinados com o grupo:
 |---|---|
 | 11/11/2026 | Primeira versão: usuários, login, perfil, direitos, denúncias, feed, votos, comentários e resolução pela comunidade. |
 | 11/11/2026 | Relatórios da cidade (§8.9), trocar senha e excluir conta (§8.2). Pedidos 8 e 9 ao front. |
+| 11/11/2026 | "Cidade viva" (§8.10): `autor.simulado`, `cidadePreparada`, `denunciasSimuladas`, imagens de demonstração. Pedido 10 ao front. |
