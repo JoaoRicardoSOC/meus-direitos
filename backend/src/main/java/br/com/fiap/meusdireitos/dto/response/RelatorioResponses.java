@@ -16,11 +16,12 @@ public final class RelatorioResponses {
     /** "Números da cidade". */
     public record Resumo(String cidade, String uf, int usuarios, int denuncias, int abertas, int emAndamento,
                          int resolvidas, double percentualResolvidas, int votos, int comentarios,
-                         int confirmacoesDeResolucao, int temasDeDireitos) {
+                         int confirmacoesDeResolucao, int temasDeDireitos, int denunciasSimuladas) {
 
         public static Resumo de(String cidade, String uf, ResumoCidade r) {
             return new Resumo(cidade, uf, r.usuarios(), r.denuncias(), r.abertas(), r.emAndamento(), r.resolvidas(),
-                    r.percentualResolvidas(), r.votos(), r.comentarios(), r.confirmacoes(), r.temasDeDireitos());
+                    r.percentualResolvidas(), r.votos(), r.comentarios(), r.confirmacoes(), r.temasDeDireitos(),
+                    r.denunciasSimuladas());
         }
     }
 

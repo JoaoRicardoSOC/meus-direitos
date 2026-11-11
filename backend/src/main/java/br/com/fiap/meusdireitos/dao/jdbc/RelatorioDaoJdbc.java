@@ -38,10 +38,12 @@ public class RelatorioDaoJdbc implements RelatorioDao {
                     + "  WHERE " + DA_CIDADE + ") AS qt_comentarios, "
                     + "(SELECT COUNT(*) FROM tb_confirmacao_resolucao r INNER JOIN tb_denuncia d ON d.cd_denuncia = r.cd_denuncia "
                     + "  WHERE " + DA_CIDADE + ") AS qt_confirmacoes, "
+                    + "(SELECT COUNT(*) FROM tb_denuncia d INNER JOIN tb_usuario u ON u.cd_usuario = d.cd_usuario "
+                    + "  WHERE " + DA_CIDADE + " AND u.st_simulado = 'S') AS qt_simuladas, "
                     + "(SELECT COUNT(*) FROM tb_direito) AS qt_temas "
                     + "FROM dual";
     /** Quantas vezes o par (cidade, UF) aparece no SQL_RESUMO. */
-    private static final int OCORRENCIAS_CIDADE_RESUMO = 8;
+    private static final int OCORRENCIAS_CIDADE_RESUMO = 9;
 
     /** Contagem por categoria e situação: GROUP BY + SUM com CASE. */
     private static final String SQL_POR_CATEGORIA =
@@ -97,7 +99,8 @@ public class RelatorioDaoJdbc implements RelatorioDao {
                 rs.next();
                 return new ResumoCidade(rs.getInt("qt_usuarios"), rs.getInt("qt_denuncias"), rs.getInt("qt_abertas"),
                         rs.getInt("qt_andamento"), rs.getInt("qt_resolvidas"), rs.getInt("qt_votos"),
-                        rs.getInt("qt_comentarios"), rs.getInt("qt_confirmacoes"), rs.getInt("qt_temas"));
+                        rs.getInt("qt_comentarios"), rs.getInt("qt_confirmacoes"), rs.getInt("qt_temas"),
+                        rs.getInt("qt_simuladas"));
             }
         }
     }
