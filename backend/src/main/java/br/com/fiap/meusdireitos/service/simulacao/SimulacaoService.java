@@ -13,6 +13,7 @@ import br.com.fiap.meusdireitos.dao.jdbc.SemeaduraCidadeDaoJdbc;
 import br.com.fiap.meusdireitos.dao.jdbc.UsuarioDaoJdbc;
 import br.com.fiap.meusdireitos.dao.jdbc.VotoDenunciaDaoJdbc;
 import br.com.fiap.meusdireitos.model.Comentario;
+import br.com.fiap.meusdireitos.model.ConfirmacaoResolucao;
 import br.com.fiap.meusdireitos.model.Denuncia;
 import br.com.fiap.meusdireitos.model.SemeaduraCidade;
 import br.com.fiap.meusdireitos.model.Usuario;
@@ -30,8 +31,11 @@ import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -104,32 +108,96 @@ public class SimulacaoService {
         });
     }
 
+    /**
+     * Grava o pacote com lotes JDBC (addBatch/executeBatch): em vez de ~130 idas ao banco, uma por
+     * tabela, mais uma consulta para recuperar os ids gerados de moradores e denúncias.
+     */
     private void gravarPacote(Connection con, PacoteCidade pacote, String cidade, String uf) throws SQLException {
-        UsuarioDao usuarioDao = new UsuarioDaoJdbc(con);
-        LocalDateTime cadastro = pacote.denuncias().get(0).criadaEm().minusDays(3);
-        List<Long> ids = new ArrayList<>();
-        for (int i = 0; i < pacote.moradores().size(); i++) {
-            ids.add(usuarioDao.inserir(morador(pacote.moradores().get(i), i, cidade, uf, cadastro)).getId());
-        }
+        List<Long> ids = gravarMoradores(new UsuarioDaoJdbc(con), pacote, cidade, uf);
+        List<Long> idsDenuncias = gravarDenuncias(new DenunciaDaoJdbc(con), pacote, ids, cidade, uf);
 
-        DenunciaDaoJdbc denunciaDao = new DenunciaDaoJdbc(con);
-        VotoDenunciaDao votoDao = new VotoDenunciaDaoJdbc(con);
-        ComentarioDaoJdbc comentarioDao = new ComentarioDaoJdbc(con);
-        ConfirmacaoResolucaoDao confirmacaoDao = new ConfirmacaoResolucaoDaoJdbc(con);
-        for (DenunciaPlanejada planejada : pacote.denuncias()) {
-            Long idDenuncia = denunciaDao.inserir(denuncia(planejada, ids, cidade, uf)).getId();
+        List<VotoDenuncia> votos = new ArrayList<>();
+        List<Comentario> comentarios = new ArrayList<>();
+        List<ConfirmacaoResolucao> confirmacoes = new ArrayList<>();
+        for (int i = 0; i < pacote.denuncias().size(); i++) {
+            DenunciaPlanejada planejada = pacote.denuncias().get(i);
+            Long idDenuncia = idsDenuncias.get(i);
             for (VotoPlanejado v : planejada.votos()) {
                 VotoDenuncia voto = new VotoDenuncia(ids.get(v.morador()), idDenuncia, v.tipo());
                 voto.setDataVoto(v.quando());
-                votoDao.salvar(voto);
+                votos.add(voto);
             }
             for (ComentarioPlanejado c : planejada.comentarios()) {
-                comentarioDao.inserir(comentario(idDenuncia, ids.get(c.morador()), c.texto(), c.quando()));
+                comentarios.add(comentario(idDenuncia, ids.get(c.morador()), c.texto(), c.quando()));
             }
             for (ConfirmacaoPlanejada c : planejada.confirmacoes()) {
-                confirmacaoDao.confirmar(ids.get(c.morador()), idDenuncia, c.quando());
+                confirmacoes.add(new ConfirmacaoResolucao(ids.get(c.morador()), idDenuncia, c.quando()));
             }
         }
+        new VotoDenunciaDaoJdbc(con).inserirEmLote(votos);
+        new ComentarioDaoJdbc(con).inserirEmLote(comentarios);
+        new ConfirmacaoResolucaoDaoJdbc(con).confirmarEmLote(confirmacoes);
+    }
+
+    /** @return ids dos moradores, na mesma ordem de {@code pacote.moradores()} */
+    private List<Long> gravarMoradores(UsuarioDao usuarioDao, PacoteCidade pacote, String cidade, String uf)
+            throws SQLException {
+        LocalDateTime cadastro = pacote.denuncias().get(0).criadaEm().minusDays(3);
+        List<Usuario> moradores = new ArrayList<>();
+        List<String> emails = new ArrayList<>();
+        for (int i = 0; i < pacote.moradores().size(); i++) {
+            Usuario morador = morador(pacote.moradores().get(i), i, cidade, uf, cadastro);
+            moradores.add(morador);
+            emails.add(morador.getEmail());
+        }
+        usuarioDao.inserirEmLote(moradores);
+        Map<String, Long> porEmail = usuarioDao.idsPorEmail(emails);
+        List<Long> ids = new ArrayList<>();
+        for (String email : emails) {
+            ids.add(exigirId(porEmail.get(email), "morador " + email));
+        }
+        return ids;
+    }
+
+    /**
+     * Denúncias com par autor+título único vão em lote; uma eventual repetição (raríssima, pois o
+     * título leva rua e número) é gravada individualmente, para o id não ser confundido.
+     *
+     * @return ids das denúncias, na mesma ordem de {@code pacote.denuncias()}
+     */
+    private List<Long> gravarDenuncias(DenunciaDaoJdbc denunciaDao, PacoteCidade pacote, List<Long> ids,
+                                       String cidade, String uf) throws SQLException {
+        List<Denuncia> denuncias = new ArrayList<>();
+        List<Denuncia> emLote = new ArrayList<>();
+        Set<String> chaves = new HashSet<>();
+        for (DenunciaPlanejada planejada : pacote.denuncias()) {
+            Denuncia d = denuncia(planejada, ids, cidade, uf);
+            denuncias.add(d);
+            if (chaves.add(DenunciaDaoJdbc.chaveAutorTitulo(d.getIdAutor(), d.getTitulo()))) {
+                emLote.add(d);
+            }
+        }
+        denunciaDao.inserirEmLote(emLote);
+        Map<String, Long> porChave = denunciaDao.idsPorAutorETitulo(ids);
+        for (Denuncia d : emLote) {
+            d.setId(exigirId(porChave.get(DenunciaDaoJdbc.chaveAutorTitulo(d.getIdAutor(), d.getTitulo())),
+                    "denúncia " + d.getTitulo()));
+        }
+        List<Long> idsDenuncias = new ArrayList<>();
+        for (Denuncia d : denuncias) {
+            if (d.getId() == null) {
+                denunciaDao.inserir(d);
+            }
+            idsDenuncias.add(d.getId());
+        }
+        return idsDenuncias;
+    }
+
+    private static Long exigirId(Long id, String descricao) throws SQLException {
+        if (id == null) {
+            throw new SQLException("Id gerado não encontrado após inserção em lote: " + descricao);
+        }
+        return id;
     }
 
     // ================================================================== pulso de atividade
