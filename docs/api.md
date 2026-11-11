@@ -648,3 +648,4 @@ Ajustes em relação ao Figma, combinados com o grupo:
 | 11/11/2026 | "Cidade viva" (§8.10): `autor.simulado`, `cidadePreparada`, `denunciasSimuladas`, imagens de demonstração. Pedido 10 ao front. |
 | 11/11/2026 | Cadastro na primeira conta de uma cidade caiu de ~7,5 s para ~1–2 s (conteúdo de exemplo gravado em lote). Sem mudança de contrato. |
 | 11/11/2026 | Robustez: `imagemUrl` validada, `busca` até 100 caracteres, escrita no catálogo de direitos exige `X-Chave-Admin`. |
+| 11/11/2026 | Cidade comparada sem acento, maiúsculas e espaços repetidos em feed, busca, relatórios e confirmação ("Sao Paulo" = "São Paulo"). Coleção do Insomnia em `docs/insomnia/`. |

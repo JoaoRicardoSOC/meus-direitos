@@ -33,15 +33,24 @@ Plataforma colaborativa que une **zeladoria urbana** e **informação sobre dire
 
 ## Como executar
 
-> Esta seção será completada ao longo do desenvolvimento.
-
 1. **Banco de dados:** execute `database/script.sql` no Oracle (SQL Developer).
-2. **Back-end:** veja `backend/README.md` (configuração da conexão e `mvn clean compile exec:java`). A API sobe em `http://localhost:8080/api`.
+2. **Back-end:** siga [`backend/README.md`](backend/README.md): copie `db.properties.example` para `db.properties`, preencha usuário e senha do Oracle e rode `mvn clean compile exec:java` na pasta `backend/`. A API sobe em `http://localhost:8080/api`.
 3. **Front-end:** veja `frontend/README.md`.
+
+## Documentação
+
+| Documento | Conteúdo |
+|---|---|
+| [`docs/api.md`](docs/api.md) | Contrato da API REST: rotas, corpos, respostas, erros e guia de integração do front-end |
+| [`docs/insomnia/meus-direitos.insomnia.json`](docs/insomnia/meus-direitos.insomnia.json) | Coleção do Insomnia com todas as rotas e uma pasta de erros tratados (importe em *Import → From File*) |
+| [`backend/README.md`](backend/README.md) | Arquitetura, decisões técnicas e limitações do back-end |
+| [`docs/diagramas/`](docs/diagramas/) | Diagrama de classes e modelo de dados |
 
 ## Uso de IA generativa
 
-> Esta seção será completada na entrega com as ferramentas usadas por cada frente e a finalidade de cada uso.
+- **Back-end:** Claude (Anthropic), via Claude Code. Usado para analisar o enunciado, planejar a arquitetura, gerar e revisar código, montar os testes de robustez e documentar a API. Todo o código foi revisado, compreendido e testado pelos integrantes do back-end. Detalhes em [`backend/README.md`](backend/README.md#7-uso-de-ia-generativa-back-end).
+- **Front-end:** _a completar pela equipe do front-end._
+- **Banco de dados:** _a completar pelo responsável pelo banco._
 
 ## Integrantes
 
