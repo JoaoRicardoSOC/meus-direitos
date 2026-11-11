@@ -1,0 +1,91 @@
+{
+  "moradores": [
+    "Ana Martins", "Carlos Souza", "Dona Lúcia Ramos", "João Pedro Lima", "Patrícia Gomes", "Seu Benedito Alves",
+    "Renata Oliveira", "Marcos Vinícius", "Fernanda Costa", "Rafael Nunes", "Juliana Rocha", "Seu Antônio Prado",
+    "Beatriz Lopes", "Thiago Almeida", "Camila Ferreira", "Dona Cida Moreira", "Lucas Barbosa", "Aline Teixeira",
+    "Roberto Dias", "Vanessa Cardoso"
+  ],
+  "logradouros": [
+    "Rua das Flores", "Avenida Brasil", "Rua XV de Novembro", "Rua São José", "Avenida Independência",
+    "Rua Sete de Setembro", "Rua Tiradentes", "Avenida Getúlio Vargas", "Rua Dom Pedro II", "Rua da Paz",
+    "Rua Santa Rita", "Avenida das Nações"
+  ],
+  "bairros": [
+    "Centro", "Vila Nova", "Jardim América", "Bela Vista", "Santa Cecília", "Jardim das Acácias",
+    "Vila Esperança", "Parque São Jorge", "Jardim Primavera", "Boa Vista"
+  ],
+  "modelos": [
+    { "categoria": "ASFALTO", "titulo": "Buraco próximo à faixa de pedestres",
+      "descricao": "O asfalto cedeu perto da faixa na {logradouro} e dificulta a travessia de moradores. O problema piorou depois das chuvas." },
+    { "categoria": "ASFALTO", "titulo": "Cratera na {logradouro}",
+      "descricao": "Cratera enorme na altura do número {numero}. Vários carros já furaram o pneu e motos desviam pela contramão." },
+    { "categoria": "ASFALTO", "titulo": "Asfalto afundando perto da escola",
+      "descricao": "O asfalto está afundando em frente à escola da {logradouro}. Na saída das crianças vira um risco para todo mundo." },
+    { "categoria": "ASFALTO", "titulo": "Remendo mal feito virou buraco de novo",
+      "descricao": "Taparam o buraco da {logradouro}, {numero} há um mês e ele já abriu de novo, ainda maior." },
+    { "categoria": "ASFALTO", "titulo": "Buracos em sequência no corredor de ônibus",
+      "descricao": "São pelo menos cinco buracos seguidos no corredor de ônibus da {logradouro}. Os ônibus andam em zigue-zague." },
+
+    { "categoria": "CALCADA_ACESSIBILIDADE", "titulo": "Calçada quebrada em frente à UBS",
+      "descricao": "Pedras soltas na calçada da {logradouro}, {numero}. Quem usa bengala ou cadeira de rodas precisa desviar pela rua." },
+    { "categoria": "CALCADA_ACESSIBILIDADE", "titulo": "Rampa de acesso bloqueada",
+      "descricao": "A rampa de cadeirantes da esquina da {logradouro} vive bloqueada por carros estacionados." },
+    { "categoria": "CALCADA_ACESSIBILIDADE", "titulo": "Raiz de árvore levantou a calçada",
+      "descricao": "A raiz levantou toda a calçada perto do número {numero}. Idosos já tropeçaram ali mais de uma vez." },
+    { "categoria": "CALCADA_ACESSIBILIDADE", "titulo": "Piso tátil arrancado no ponto de ônibus",
+      "descricao": "O piso tátil do ponto de ônibus da {logradouro} foi arrancado. Pessoas cegas perdem a referência." },
+    { "categoria": "CALCADA_ACESSIBILIDADE", "titulo": "Calçada sem rampa na travessia do mercado",
+      "descricao": "Na travessia em frente ao mercado da {logradouro} não tem rampa de nenhum dos lados. Cadeirantes ficam presos." },
+
+    { "categoria": "ILUMINACAO", "titulo": "Poste apagado há semanas",
+      "descricao": "O poste na esquina da {logradouro} está apagado e a rua fica muito escura à noite." },
+    { "categoria": "ILUMINACAO", "titulo": "Lâmpada piscando na praça",
+      "descricao": "A iluminação da praça perto do número {numero} fica piscando a noite toda e às vezes apaga de vez." },
+    { "categoria": "ILUMINACAO", "titulo": "Trecho escuro no caminho do metrô",
+      "descricao": "Três postes seguidos sem luz na {logradouro}, justamente no caminho de quem volta do metrô." },
+    { "categoria": "ILUMINACAO", "titulo": "Poste aceso durante o dia",
+      "descricao": "O poste da {logradouro}, {numero} fica aceso o dia inteiro. Desperdício de energia." },
+
+    { "categoria": "LIMPEZA_URBANA", "titulo": "Entulho acumulado na esquina",
+      "descricao": "Descartam entulho e móveis velhos na esquina da {logradouro} há semanas. Já tem rato aparecendo." },
+    { "categoria": "LIMPEZA_URBANA", "titulo": "Bueiro entupido alagando a rua",
+      "descricao": "O bueiro em frente ao número {numero} está entupido de lixo e a rua alaga toda vez que chove." },
+    { "categoria": "LIMPEZA_URBANA", "titulo": "Lixeiras quebradas na praça",
+      "descricao": "As lixeiras da praça da {logradouro} estão quebradas e o lixo fica espalhado pela grama." },
+    { "categoria": "LIMPEZA_URBANA", "titulo": "Coleta de lixo não passa há dias",
+      "descricao": "A coleta não passa na {logradouro} desde a semana passada. Os sacos estão se acumulando na calçada." },
+
+    { "categoria": "SEGURANCA", "titulo": "Terreno abandonado sem muro",
+      "descricao": "O terreno da {logradouro}, {numero} está abandonado, sem muro e com mato alto. Moradores evitam passar à noite." },
+    { "categoria": "SEGURANCA", "titulo": "Semáforo de pedestres quebrado",
+      "descricao": "O semáforo de pedestres da {logradouro} está desligado e os carros não param para a travessia." },
+    { "categoria": "SEGURANCA", "titulo": "Faixa de pedestres apagada",
+      "descricao": "A pintura da faixa em frente ao número {numero} sumiu. Os motoristas nem percebem que ali é travessia." },
+
+    { "categoria": "OUTROS", "titulo": "Banco da praça quebrado",
+      "descricao": "O banco da praça da {logradouro} está quebrado há meses. Os idosos que caminham ali não têm onde descansar." },
+    { "categoria": "OUTROS", "titulo": "Placa de rua caída",
+      "descricao": "A placa com o nome da {logradouro} caiu e entregadores não acham os endereços." },
+    { "categoria": "OUTROS", "titulo": "Árvore com galho pendurado",
+      "descricao": "Um galho grande está pendurado sobre a calçada do número {numero}, prestes a cair." }
+  ],
+  "comentarios": [
+    "Também notei esse problema.", "Passo aqui todo dia, está cada vez pior.", "Já liguei na ouvidoria e nada ainda.",
+    "Minha mãe quase caiu aí semana passada.", "Obrigado por registrar!", "Hoje vi uma equipe da prefeitura olhando.",
+    "Isso já tem mais de um mês.", "Com chuva fica muito pior.", "Vou compartilhar com o grupo do bairro.",
+    "Meu filho passa aqui para ir à escola, é perigoso.", "Já mandei foto para a subprefeitura.",
+    "Quanto mais votos, mais chance de resolverem.", "Ontem um carro quase bateu por causa disso.",
+    "Concordo, precisa de solução urgente.", "A vizinhança toda está reclamando.", "Abri um protocolo também.",
+    "À noite é ainda mais complicado.", "Os ônibus estão desviando por causa disso.", "Isso afeta muito os idosos da rua.",
+    "Coloquei um cone para avisar, mas não resolve.", "Moro na rua de trás e também sofro com isso.",
+    "Alguém sabe se tem previsão de conserto?", "Vamos cobrar na reunião do bairro."
+  ],
+  "comentariosResolvida": [
+    "Consertaram ontem, ficou ótimo!", "Finalmente resolveram, valeu a pressão de todos.",
+    "Passei hoje e está tudo certo agora.", "Resolvido! Obrigado a quem votou e cobrou."
+  ],
+  "respostasAutor": [
+    "Obrigado pelo apoio, pessoal!", "Atualizei a denúncia com mais detalhes.",
+    "A prefeitura respondeu que vai mandar uma equipe.", "Quem puder, confirma aqui quando consertarem."
+  ]
+}
