@@ -10,6 +10,7 @@ import br.com.fiap.meusdireitos.dto.response.PaginaResponse;
 import br.com.fiap.meusdireitos.dto.response.PlacarResponse;
 import br.com.fiap.meusdireitos.service.AutenticacaoService;
 import br.com.fiap.meusdireitos.service.ComentarioService;
+import br.com.fiap.meusdireitos.service.ConfirmacaoResolucaoService;
 import br.com.fiap.meusdireitos.service.DenunciaService;
 import br.com.fiap.meusdireitos.service.FeedService;
 import br.com.fiap.meusdireitos.service.VotoService;
@@ -46,6 +47,7 @@ public class DenunciaResource {
     private final FeedService feed = new FeedService();
     private final VotoService votos = new VotoService();
     private final ComentarioService comentarios = new ComentarioService();
+    private final ConfirmacaoResolucaoService confirmacoes = new ConfirmacaoResolucaoService();
     private final AutenticacaoService autenticacao = new AutenticacaoService();
 
     // ------------------------------------------------------------------ consultas
@@ -128,6 +130,21 @@ public class DenunciaResource {
     @Path("{id: \\d+}/voto")
     public PlacarResponse removerVoto(@HeaderParam(USUARIO) String usuarioId, @PathParam("id") Long id) {
         return votos.removerVoto(autenticacao.idDoUsuarioLogado(usuarioId), id);
+    }
+
+    // ------------------------------------------------------------------ confirmação da comunidade
+
+    /** "Já foi resolvido": com 3 confirmações de moradores, a denúncia vira RESOLVIDA. */
+    @PUT
+    @Path("{id: \\d+}/confirmacao")
+    public DenunciaResponse confirmarResolucao(@HeaderParam(USUARIO) String usuarioId, @PathParam("id") Long id) {
+        return confirmacoes.confirmar(autenticacao.idDoUsuarioLogado(usuarioId), id);
+    }
+
+    @DELETE
+    @Path("{id: \\d+}/confirmacao")
+    public DenunciaResponse retirarConfirmacao(@HeaderParam(USUARIO) String usuarioId, @PathParam("id") Long id) {
+        return confirmacoes.retirar(autenticacao.idDoUsuarioLogado(usuarioId), id);
     }
 
     // ------------------------------------------------------------------ comentários
