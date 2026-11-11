@@ -19,7 +19,7 @@ import java.util.List;
 public class ComentarioDaoJdbc implements ComentarioDao {
 
     private static final String SELECT =
-            "SELECT c.cd_comentario, c.cd_denuncia, c.cd_usuario, u.nm_usuario, c.ds_comentario, c.dt_criacao, "
+            "SELECT c.cd_comentario, c.cd_denuncia, c.cd_usuario, u.nm_usuario, u.st_simulado, c.ds_comentario, c.dt_criacao, "
                     + "c.dt_edicao FROM tb_comentario c INNER JOIN tb_usuario u ON u.cd_usuario = c.cd_usuario ";
 
     private static final String SQL_INSERIR =
@@ -148,6 +148,7 @@ public class ComentarioDaoJdbc implements ComentarioDao {
         c.setIdDenuncia(rs.getLong("cd_denuncia"));
         c.setIdAutor(rs.getLong("cd_usuario"));
         c.setNomeAutor(rs.getString("nm_usuario"));
+        c.setAutorSimulado("S".equals(rs.getString("st_simulado")));
         c.setTexto(rs.getString("ds_comentario"));
         c.setDataCriacao(JdbcUtil.getDataHora(rs, "dt_criacao"));
         c.setDataEdicao(JdbcUtil.getDataHora(rs, "dt_edicao"));

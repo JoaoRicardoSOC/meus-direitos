@@ -23,7 +23,7 @@ public record DenunciaResponse(Long id, String protocolo, String titulo, String 
                 Denuncia.CONFIRMACOES_PARA_RESOLVER, detalhada.isConfirmadaPeloLeitor());
         return new DenunciaResponse(d.getId(), d.getProtocolo(), d.getTitulo(), d.getDescricao(),
                 OpcaoResponse.de(d.getCategoria()), OpcaoResponse.de(d.getStatus()), d.getEndereco(), d.getBairro(),
-                d.getCidade(), d.getUf(), d.getImagemUrl(), new AutorResponse(d.getIdAutor(), d.getNomeAutor()),
+                d.getCidade(), d.getUf(), d.getImagemUrl(), new AutorResponse(d.getIdAutor(), d.getNomeAutor(), d.isAutorSimulado()),
                 PlacarResponse.de(detalhada.getPlacar()), detalhada.getComentarios(), resolucao,
                 detalhada.getRelevanteParaLeitor(), d.getDataCriacao(), d.getDataAtualizacao());
     }

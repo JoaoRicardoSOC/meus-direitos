@@ -47,10 +47,10 @@ public class DenunciaDaoJdbc implements DenunciaDao {
                     + "ds_endereco, nm_bairro, nm_cidade, sg_uf, ds_imagem_url, dt_criacao, dt_atualizacao) "
                     + "VALUES (seq_denuncia.NEXTVAL, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
     private static final String SQL_BUSCAR_POR_ID =
-            "SELECT " + COLUNAS + ", u.nm_usuario AS nm_autor FROM tb_denuncia d "
+            "SELECT " + COLUNAS + ", u.nm_usuario AS nm_autor, u.st_simulado AS st_autor_simulado FROM tb_denuncia d "
                     + "INNER JOIN tb_usuario u ON u.cd_usuario = d.cd_usuario WHERE d.cd_denuncia = ?";
     private static final String SQL_LISTAR =
-            "SELECT " + COLUNAS + ", u.nm_usuario AS nm_autor FROM tb_denuncia d "
+            "SELECT " + COLUNAS + ", u.nm_usuario AS nm_autor, u.st_simulado AS st_autor_simulado FROM tb_denuncia d "
                     + "INNER JOIN tb_usuario u ON u.cd_usuario = d.cd_usuario ORDER BY d.dt_criacao DESC";
     private static final String SQL_ATUALIZAR =
             "UPDATE tb_denuncia SET ds_titulo = ?, ds_denuncia = ?, tp_categoria = ?, ds_endereco = ?, nm_bairro = ?, "
@@ -66,7 +66,7 @@ public class DenunciaDaoJdbc implements DenunciaDao {
 
     /** %s = colunas extras do feed; %s = WHERE; %s = ORDER BY. */
     private static final String SQL_DETALHADA =
-            "SELECT " + COLUNAS + ", u.nm_usuario AS nm_autor, "
+            "SELECT " + COLUNAS + ", u.nm_usuario AS nm_autor, u.st_simulado AS st_autor_simulado, "
                     + "COUNT(CASE WHEN v.tp_voto = 'UP' THEN 1 END) AS qt_up, "
                     + "COUNT(CASE WHEN v.tp_voto = 'DOWN' THEN 1 END) AS qt_down, "
                     + "NVL(SUM(CASE v.tp_voto WHEN 'UP' THEN 1 WHEN 'DOWN' THEN -1 END), 0) AS nr_saldo, "
@@ -81,7 +81,7 @@ public class DenunciaDaoJdbc implements DenunciaDao {
                     + "INNER JOIN tb_usuario u ON u.cd_usuario = d.cd_usuario "
                     + "LEFT JOIN tb_voto_denuncia v ON v.cd_denuncia = d.cd_denuncia "
                     + "WHERE %s "
-                    + "GROUP BY " + COLUNAS + ", u.nm_usuario "
+                    + "GROUP BY " + COLUNAS + ", u.nm_usuario, u.st_simulado "
                     + "ORDER BY %s";
 
     /** Colunas extras do feed: relevância para o leitor. %s = marcadores do IN (duas vezes). */
@@ -377,6 +377,7 @@ public class DenunciaDaoJdbc implements DenunciaDao {
         d.setId(rs.getLong("cd_denuncia"));
         d.setIdAutor(rs.getLong("cd_usuario"));
         d.setNomeAutor(rs.getString("nm_autor"));
+        d.setAutorSimulado("S".equals(rs.getString("st_autor_simulado")));
         d.setTitulo(rs.getString("ds_titulo"));
         d.setDescricao(rs.getString("ds_denuncia"));
         d.setCategoria(JdbcUtil.getEnum(rs, "tp_categoria", CategoriaDenuncia.class));

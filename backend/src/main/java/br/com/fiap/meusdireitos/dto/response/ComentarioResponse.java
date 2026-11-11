@@ -14,7 +14,7 @@ public record ComentarioResponse(Long id, Long idDenuncia, String texto, AutorRe
 
     public static ComentarioResponse de(Comentario c, Long idLeitor) {
         return new ComentarioResponse(c.getId(), c.getIdDenuncia(), c.getTexto(),
-                new AutorResponse(c.getIdAutor(), c.getNomeAutor()), c.isAutor(idLeitor),
+                new AutorResponse(c.getIdAutor(), c.getNomeAutor(), c.isAutorSimulado()), c.isAutor(idLeitor),
                 c.getDataCriacao(), c.getDataEdicao());
     }
 }

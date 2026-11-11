@@ -18,6 +18,7 @@ public class Denuncia extends EntidadeBase {
 
     private Long idAutor;
     private String nomeAutor;
+    private boolean autorSimulado;
     private String titulo;
     private String descricao;
     private CategoriaDenuncia categoria;
@@ -80,6 +81,15 @@ public class Denuncia extends EntidadeBase {
 
     public void setNomeAutor(String nomeAutor) {
         this.nomeAutor = nomeAutor;
+    }
+
+    /** @return true se o autor é um morador simulado (conteúdo de demonstração) */
+    public boolean isAutorSimulado() {
+        return autorSimulado;
+    }
+
+    public void setAutorSimulado(boolean autorSimulado) {
+        this.autorSimulado = autorSimulado;
     }
 
     public String getTitulo() {

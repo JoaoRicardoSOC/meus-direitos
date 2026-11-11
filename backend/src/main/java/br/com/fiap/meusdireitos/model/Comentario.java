@@ -10,6 +10,7 @@ public class Comentario extends EntidadeBase {
     private Long idDenuncia;
     private Long idAutor;
     private String nomeAutor;
+    private boolean autorSimulado;
     private String texto;
     private LocalDateTime dataCriacao;
     private LocalDateTime dataEdicao;
@@ -41,6 +42,15 @@ public class Comentario extends EntidadeBase {
 
     public void setNomeAutor(String nomeAutor) {
         this.nomeAutor = nomeAutor;
+    }
+
+    /** @return true se o autor é um morador simulado (conteúdo de demonstração) */
+    public boolean isAutorSimulado() {
+        return autorSimulado;
+    }
+
+    public void setAutorSimulado(boolean autorSimulado) {
+        this.autorSimulado = autorSimulado;
     }
 
     public String getTexto() {
