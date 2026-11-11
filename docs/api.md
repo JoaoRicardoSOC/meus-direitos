@@ -259,7 +259,7 @@ Resposta **201** (`UsuarioResponse`):
 
 Regras: nome 3–100; e-mail válido (até 120, guardado em minúsculas); **senha 8–64 com pelo menos uma letra e um número**; cidade 2–80; `uf` = sigla de estado válida. E-mail já usado → **409**.
 
-> ⏳ **Cidade nova demora alguns segundos.** Se a pessoa é a primeira da cidade, a API prepara o conteúdo de exemplo da cidade ("cidade viva", seção 8.10) antes de responder. Mostre **"Preparando sua cidade…"** depois de enviar o cadastro. A resposta traz `"cidadePreparada": true`; se vier `false`, o cadastro funcionou, mas o feed terá só conteúdo real (sugestão: "Sua cidade ainda está começando").
+> ⏳ **Cidade nova demora um pouco mais (cerca de 1 a 2 s no Oracle da FIAP).** Se a pessoa é a primeira da cidade, a API prepara o conteúdo de exemplo da cidade ("cidade viva", seção 8.10) antes de responder. Mostre **"Preparando sua cidade…"** depois de enviar o cadastro. A resposta traz `"cidadePreparada": true`; se vier `false`, o cadastro funcionou, mas o feed terá só conteúdo real (sugestão: "Sua cidade ainda está começando").
 
 > A tela 03 tem um campo único "Cidade e estado". A API precisa de **`cidade` e `uf` separados**. Recomendado: um `<select>` de cidades (ver seção 11).
 
@@ -646,3 +646,4 @@ Ajustes em relação ao Figma, combinados com o grupo:
 | 11/11/2026 | Primeira versão: usuários, login, perfil, direitos, denúncias, feed, votos, comentários e resolução pela comunidade. |
 | 11/11/2026 | Relatórios da cidade (§8.9), trocar senha e excluir conta (§8.2). Pedidos 8 e 9 ao front. |
 | 11/11/2026 | "Cidade viva" (§8.10): `autor.simulado`, `cidadePreparada`, `denunciasSimuladas`, imagens de demonstração. Pedido 10 ao front. |
+| 11/11/2026 | Cadastro na primeira conta de uma cidade caiu de ~7,5 s para ~1–2 s (conteúdo de exemplo gravado em lote). Sem mudança de contrato. |
