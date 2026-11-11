@@ -20,11 +20,18 @@ import java.util.List;
 public class UsuarioDaoJdbc implements UsuarioDao {
 
     private static final String COLUNAS =
-            "cd_usuario, nm_usuario, ds_email, ds_senha_hash, nm_cidade, sg_uf, dt_cadastro";
+            "cd_usuario, nm_usuario, ds_email, ds_senha_hash, nm_cidade, sg_uf, dt_cadastro, st_simulado";
 
     private static final String SQL_INSERIR =
-            "INSERT INTO tb_usuario (cd_usuario, nm_usuario, ds_email, ds_senha_hash, nm_cidade, sg_uf, dt_cadastro) "
-                    + "VALUES (seq_usuario.NEXTVAL, ?, ?, ?, ?, ?, ?)";
+            "INSERT INTO tb_usuario (cd_usuario, nm_usuario, ds_email, ds_senha_hash, nm_cidade, sg_uf, dt_cadastro, "
+                    + "st_simulado) VALUES (seq_usuario.NEXTVAL, ?, ?, ?, ?, ?, ?, ?)";
+    private static final String SQL_LISTAR_REAIS =
+            "SELECT " + COLUNAS + " FROM tb_usuario WHERE st_simulado = 'N' ORDER BY nm_usuario";
+    private static final String SQL_LISTAR_SIMULADOS =
+            "SELECT " + COLUNAS + " FROM tb_usuario WHERE st_simulado = 'S' ORDER BY cd_usuario";
+    private static final String SQL_LISTAR_SIMULADOS_DA_CIDADE =
+            "SELECT " + COLUNAS + " FROM tb_usuario WHERE st_simulado = 'S' "
+                    + "AND UPPER(nm_cidade) = UPPER(?) AND sg_uf = ? ORDER BY cd_usuario";
     private static final String SQL_BUSCAR_POR_ID =
             "SELECT " + COLUNAS + " FROM tb_usuario WHERE cd_usuario = ?";
     private static final String SQL_BUSCAR_POR_EMAIL =
@@ -49,7 +56,8 @@ public class UsuarioDaoJdbc implements UsuarioDao {
 
     @Override
     public Usuario inserir(Usuario usuario) throws SQLException {
-        LocalDateTime agora = LocalDateTime.now().truncatedTo(ChronoUnit.SECONDS);
+        LocalDateTime agora = usuario.getDataCadastro() != null
+                ? usuario.getDataCadastro() : LocalDateTime.now().truncatedTo(ChronoUnit.SECONDS);
         try (PreparedStatement stmt = conexao.prepareStatement(SQL_INSERIR, new String[]{"cd_usuario"})) {
             stmt.setString(1, usuario.getNome());
             stmt.setString(2, usuario.getEmail());
@@ -57,6 +65,7 @@ public class UsuarioDaoJdbc implements UsuarioDao {
             stmt.setString(4, usuario.getCidade());
             stmt.setString(5, usuario.getUf());
             JdbcUtil.setDataHora(stmt, 6, agora);
+            JdbcUtil.setSimNao(stmt, 7, usuario.isSimulado());
             stmt.executeUpdate();
             try (ResultSet chaves = stmt.getGeneratedKeys()) {
                 if (chaves.next()) {
@@ -98,6 +107,36 @@ public class UsuarioDaoJdbc implements UsuarioDao {
              ResultSet rs = stmt.executeQuery()) {
             while (rs.next()) {
                 usuarios.add(mapear(rs));
+            }
+        }
+        return usuarios;
+    }
+
+    @Override
+    public List<Usuario> listarReais() throws SQLException {
+        return listarCom(SQL_LISTAR_REAIS);
+    }
+
+    @Override
+    public List<Usuario> listarSimulados() throws SQLException {
+        return listarCom(SQL_LISTAR_SIMULADOS);
+    }
+
+    @Override
+    public List<Usuario> listarSimuladosDaCidade(String cidade, String uf) throws SQLException {
+        return listarCom(SQL_LISTAR_SIMULADOS_DA_CIDADE, cidade, uf);
+    }
+
+    private List<Usuario> listarCom(String sql, String... parametros) throws SQLException {
+        List<Usuario> usuarios = new ArrayList<>();
+        try (PreparedStatement stmt = conexao.prepareStatement(sql)) {
+            for (int i = 0; i < parametros.length; i++) {
+                stmt.setString(i + 1, parametros[i]);
+            }
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    usuarios.add(mapear(rs));
+                }
             }
         }
         return usuarios;
@@ -150,7 +189,7 @@ public class UsuarioDaoJdbc implements UsuarioDao {
     }
 
     private Usuario mapear(ResultSet rs) throws SQLException {
-        return new Usuario(
+        Usuario usuario = new Usuario(
                 rs.getLong("cd_usuario"),
                 rs.getString("nm_usuario"),
                 rs.getString("ds_email"),
@@ -158,5 +197,7 @@ public class UsuarioDaoJdbc implements UsuarioDao {
                 rs.getString("nm_cidade"),
                 rs.getString("sg_uf"),
                 JdbcUtil.getDataHora(rs, "dt_cadastro"));
+        usuario.setSimulado(Boolean.TRUE.equals(JdbcUtil.getSimNao(rs, "st_simulado")));
+        return usuario;
     }
 }

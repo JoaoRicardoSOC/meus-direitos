@@ -17,6 +17,8 @@ public class Usuario extends EntidadeBase {
     private String cidade;
     private String uf;
     private LocalDateTime dataCadastro;
+    /** Morador fictício criado pela simulação "cidade viva" (conteúdo de demonstração). */
+    private boolean simulado;
 
     public Usuario() {
     }
@@ -83,5 +85,13 @@ public class Usuario extends EntidadeBase {
 
     public void setDataCadastro(LocalDateTime dataCadastro) {
         this.dataCadastro = dataCadastro;
+    }
+
+    public boolean isSimulado() {
+        return simulado;
+    }
+
+    public void setSimulado(boolean simulado) {
+        this.simulado = simulado;
     }
 }

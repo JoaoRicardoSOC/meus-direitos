@@ -104,7 +104,7 @@ public class UsuarioService {
     public List<UsuarioPublicoResponse> listarPublico() {
         return Transacao.consultar(con -> {
             List<UsuarioPublicoResponse> lista = new ArrayList<>();
-            for (Usuario usuario : new UsuarioDaoJdbc(con).listar()) {
+            for (Usuario usuario : new UsuarioDaoJdbc(con).listarReais()) {
                 lista.add(UsuarioPublicoResponse.de(usuario, null));
             }
             return lista;
