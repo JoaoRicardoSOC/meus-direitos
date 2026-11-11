@@ -1,0 +1,1524 @@
+{
+  "_type": "export",
+  "__export_format": 4,
+  "__export_source": "meus-direitos.gerador",
+  "resources": [
+    {
+      "_id": "wrk_meus_direitos",
+      "_type": "workspace",
+      "parentId": null,
+      "name": "Meus Direitos — API",
+      "description": "FIAP Global Solution 2026/2. Suba a API (backend/README.md) e ajuste as variáveis do ambiente: usuario_id recebe o \"id\" devolvido no cadastro ou no login.",
+      "scope": "collection"
+    },
+    {
+      "_id": "env_base",
+      "_type": "environment",
+      "parentId": "wrk_meus_direitos",
+      "name": "Base Environment",
+      "data": {},
+      "isPrivate": false
+    },
+    {
+      "_id": "env_meus_direitos",
+      "_type": "environment",
+      "parentId": "env_base",
+      "name": "Local",
+      "data": {
+        "base_url": "http://localhost:8080/api",
+        "usuario_id": "1",
+        "outro_usuario_id": "2",
+        "denuncia_id": "1",
+        "comentario_id": "1",
+        "direito_id": "2",
+        "tema_teste_id": "0",
+        "chave_admin": "troque-esta-chave-admin",
+        "chave_simulacao": "troque-esta-chave"
+      },
+      "isPrivate": false
+    },
+    {
+      "_id": "fld_md_001",
+      "_type": "request_group",
+      "parentId": "wrk_meus_direitos",
+      "name": "01 · Saúde e listas",
+      "description": "Rotas públicas, sem banco (exceto /health, que testa a conexão).",
+      "metaSortKey": -999
+    },
+    {
+      "_id": "req_md_002",
+      "_type": "request",
+      "parentId": "fld_md_001",
+      "name": "Saúde da API",
+      "description": "",
+      "method": "GET",
+      "url": "{{ _.base_url }}/health",
+      "body": {},
+      "headers": [],
+      "parameters": [],
+      "authentication": {},
+      "metaSortKey": 2
+    },
+    {
+      "_id": "req_md_003",
+      "_type": "request",
+      "parentId": "fld_md_001",
+      "name": "Categorias de denúncia",
+      "description": "",
+      "method": "GET",
+      "url": "{{ _.base_url }}/categorias",
+      "body": {},
+      "headers": [],
+      "parameters": [],
+      "authentication": {},
+      "metaSortKey": 3
+    },
+    {
+      "_id": "req_md_004",
+      "_type": "request",
+      "parentId": "fld_md_001",
+      "name": "Status de denúncia",
+      "description": "",
+      "method": "GET",
+      "url": "{{ _.base_url }}/status-denuncia",
+      "body": {},
+      "headers": [],
+      "parameters": [],
+      "authentication": {},
+      "metaSortKey": 4
+    },
+    {
+      "_id": "req_md_005",
+      "_type": "request",
+      "parentId": "fld_md_001",
+      "name": "Raça/cor",
+      "description": "",
+      "method": "GET",
+      "url": "{{ _.base_url }}/racas-cor",
+      "body": {},
+      "headers": [],
+      "parameters": [],
+      "authentication": {},
+      "metaSortKey": 5
+    },
+    {
+      "_id": "req_md_006",
+      "_type": "request",
+      "parentId": "fld_md_001",
+      "name": "Deficiências",
+      "description": "",
+      "method": "GET",
+      "url": "{{ _.base_url }}/deficiencias",
+      "body": {},
+      "headers": [],
+      "parameters": [],
+      "authentication": {},
+      "metaSortKey": 6
+    },
+    {
+      "_id": "req_md_007",
+      "_type": "request",
+      "parentId": "fld_md_001",
+      "name": "Percursos escolares",
+      "description": "",
+      "method": "GET",
+      "url": "{{ _.base_url }}/percursos-escolares",
+      "body": {},
+      "headers": [],
+      "parameters": [],
+      "authentication": {},
+      "metaSortKey": 7
+    },
+    {
+      "_id": "fld_md_008",
+      "_type": "request_group",
+      "parentId": "wrk_meus_direitos",
+      "name": "02 · Usuários e login",
+      "description": "Depois do cadastro ou login, copie o \"id\" para a variável usuario_id.",
+      "metaSortKey": -992
+    },
+    {
+      "_id": "req_md_009",
+      "_type": "request",
+      "parentId": "fld_md_008",
+      "name": "Cadastrar",
+      "description": "201. A primeira conta de uma cidade prepara o conteúdo de exemplo (cidadePreparada).",
+      "method": "POST",
+      "url": "{{ _.base_url }}/usuarios",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"nome\": \"Mariana Oliveira\",\n  \"email\": \"mariana@exemplo.com\",\n  \"senha\": \"senha1234\",\n  \"cidade\": \"São Paulo\",\n  \"uf\": \"SP\"\n}"
+      },
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "parameters": [],
+      "authentication": {},
+      "metaSortKey": 9
+    },
+    {
+      "_id": "req_md_010",
+      "_type": "request",
+      "parentId": "fld_md_008",
+      "name": "Login",
+      "description": "",
+      "method": "POST",
+      "url": "{{ _.base_url }}/auth/login",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"email\": \"mariana@exemplo.com\",\n  \"senha\": \"senha1234\"\n}"
+      },
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "parameters": [],
+      "authentication": {},
+      "metaSortKey": 10
+    },
+    {
+      "_id": "req_md_011",
+      "_type": "request",
+      "parentId": "fld_md_008",
+      "name": "Minha conta",
+      "description": "",
+      "method": "GET",
+      "url": "{{ _.base_url }}/usuarios/me",
+      "body": {},
+      "headers": [
+        {
+          "name": "X-Usuario-Id",
+          "value": "{{ _.usuario_id }}"
+        }
+      ],
+      "parameters": [],
+      "authentication": {},
+      "metaSortKey": 11
+    },
+    {
+      "_id": "req_md_012",
+      "_type": "request",
+      "parentId": "fld_md_008",
+      "name": "Atualizar minha conta",
+      "description": "",
+      "method": "PUT",
+      "url": "{{ _.base_url }}/usuarios/me",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"nome\": \"Mariana O. Santos\",\n  \"email\": \"mariana@exemplo.com\",\n  \"cidade\": \"São Paulo\",\n  \"uf\": \"SP\"\n}"
+      },
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        },
+        {
+          "name": "X-Usuario-Id",
+          "value": "{{ _.usuario_id }}"
+        }
+      ],
+      "parameters": [],
+      "authentication": {},
+      "metaSortKey": 12
+    },
+    {
+      "_id": "req_md_013",
+      "_type": "request",
+      "parentId": "fld_md_008",
+      "name": "Trocar senha",
+      "description": "204. Senha atual errada → 400 no campo senhaAtual.",
+      "method": "PUT",
+      "url": "{{ _.base_url }}/usuarios/me/senha",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"senhaAtual\": \"senha1234\",\n  \"novaSenha\": \"novasenha123\"\n}"
+      },
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        },
+        {
+          "name": "X-Usuario-Id",
+          "value": "{{ _.usuario_id }}"
+        }
+      ],
+      "parameters": [],
+      "authentication": {},
+      "metaSortKey": 13
+    },
+    {
+      "_id": "req_md_014",
+      "_type": "request",
+      "parentId": "fld_md_008",
+      "name": "Listar usuários (públicos)",
+      "description": "",
+      "method": "GET",
+      "url": "{{ _.base_url }}/usuarios",
+      "body": {},
+      "headers": [],
+      "parameters": [],
+      "authentication": {},
+      "metaSortKey": 14
+    },
+    {
+      "_id": "req_md_015",
+      "_type": "request",
+      "parentId": "fld_md_008",
+      "name": "Buscar usuário por id",
+      "description": "",
+      "method": "GET",
+      "url": "{{ _.base_url }}/usuarios/{{ _.usuario_id }}",
+      "body": {},
+      "headers": [],
+      "parameters": [],
+      "authentication": {},
+      "metaSortKey": 15
+    },
+    {
+      "_id": "req_md_016",
+      "_type": "request",
+      "parentId": "fld_md_008",
+      "name": "Excluir minha conta",
+      "description": "204. Apaga a conta e tudo o que ela publicou. Irreversível.",
+      "method": "POST",
+      "url": "{{ _.base_url }}/usuarios/me/exclusao",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"senha\": \"senha1234\"\n}"
+      },
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        },
+        {
+          "name": "X-Usuario-Id",
+          "value": "{{ _.usuario_id }}"
+        }
+      ],
+      "parameters": [],
+      "authentication": {},
+      "metaSortKey": 16
+    },
+    {
+      "_id": "fld_md_017",
+      "_type": "request_group",
+      "parentId": "wrk_meus_direitos",
+      "name": "03 · Perfil e direitos",
+      "description": "Questionário opcional \"Meus Direitos\" e catálogo de temas.",
+      "metaSortKey": -983
+    },
+    {
+      "_id": "req_md_018",
+      "_type": "request",
+      "parentId": "fld_md_017",
+      "name": "Salvar perfil",
+      "description": "",
+      "method": "PUT",
+      "url": "{{ _.base_url }}/usuarios/perfil",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"dataNascimento\": \"1958-03-12\",\n  \"racaCor\": \"NAO_INFORMADO\",\n  \"deficiencia\": \"FISICA\",\n  \"percursoEscolar\": \"ESCOLA_PUBLICA\",\n  \"baixaRenda\": true\n}"
+      },
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        },
+        {
+          "name": "X-Usuario-Id",
+          "value": "{{ _.usuario_id }}"
+        }
+      ],
+      "parameters": [],
+      "authentication": {},
+      "metaSortKey": 18
+    },
+    {
+      "_id": "req_md_019",
+      "_type": "request",
+      "parentId": "fld_md_017",
+      "name": "Ver meu perfil",
+      "description": "404 enquanto o questionário não foi respondido.",
+      "method": "GET",
+      "url": "{{ _.base_url }}/usuarios/perfil",
+      "body": {},
+      "headers": [
+        {
+          "name": "X-Usuario-Id",
+          "value": "{{ _.usuario_id }}"
+        }
+      ],
+      "parameters": [],
+      "authentication": {},
+      "metaSortKey": 19
+    },
+    {
+      "_id": "req_md_020",
+      "_type": "request",
+      "parentId": "fld_md_017",
+      "name": "Apagar perfil",
+      "description": "",
+      "method": "DELETE",
+      "url": "{{ _.base_url }}/usuarios/perfil",
+      "body": {},
+      "headers": [
+        {
+          "name": "X-Usuario-Id",
+          "value": "{{ _.usuario_id }}"
+        }
+      ],
+      "parameters": [],
+      "authentication": {},
+      "metaSortKey": 20
+    },
+    {
+      "_id": "req_md_021",
+      "_type": "request",
+      "parentId": "fld_md_017",
+      "name": "Meus direitos (cards)",
+      "description": "",
+      "method": "GET",
+      "url": "{{ _.base_url }}/direitos/meus",
+      "body": {},
+      "headers": [
+        {
+          "name": "X-Usuario-Id",
+          "value": "{{ _.usuario_id }}"
+        }
+      ],
+      "parameters": [],
+      "authentication": {},
+      "metaSortKey": 21
+    },
+    {
+      "_id": "req_md_022",
+      "_type": "request",
+      "parentId": "fld_md_017",
+      "name": "Catálogo de direitos",
+      "description": "",
+      "method": "GET",
+      "url": "{{ _.base_url }}/direitos",
+      "body": {},
+      "headers": [],
+      "parameters": [],
+      "authentication": {},
+      "metaSortKey": 22
+    },
+    {
+      "_id": "req_md_023",
+      "_type": "request",
+      "parentId": "fld_md_017",
+      "name": "Catálogo filtrado por tag",
+      "description": "",
+      "method": "GET",
+      "url": "{{ _.base_url }}/direitos",
+      "body": {},
+      "headers": [],
+      "parameters": [
+        {
+          "name": "tag",
+          "value": "IDOSO"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": 23
+    },
+    {
+      "_id": "req_md_024",
+      "_type": "request",
+      "parentId": "fld_md_017",
+      "name": "Detalhe de um tema",
+      "description": "",
+      "method": "GET",
+      "url": "{{ _.base_url }}/direitos/{{ _.direito_id }}",
+      "body": {},
+      "headers": [],
+      "parameters": [],
+      "authentication": {},
+      "metaSortKey": 24
+    },
+    {
+      "_id": "fld_md_025",
+      "_type": "request_group",
+      "parentId": "wrk_meus_direitos",
+      "name": "04 · Catálogo (administração)",
+      "description": "Exigem X-Chave-Admin = admin.chave do db.properties. Sem ela → 403.",
+      "metaSortKey": -975
+    },
+    {
+      "_id": "req_md_026",
+      "_type": "request",
+      "parentId": "fld_md_025",
+      "name": "Criar tema",
+      "description": "Copie o \"id\" para tema_teste_id antes de editar ou excluir.",
+      "method": "POST",
+      "url": "{{ _.base_url }}/direitos",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"titulo\": \"Tema de teste (pode excluir)\",\n  \"resumo\": \"Saiba onde consultar gratuidades e programas de transporte.\",\n  \"descricao\": \"Passe Livre e outros programas de transporte. Exemplos para pesquisa.\",\n  \"aviso\": \"Os critérios variam por programa e localidade. Confirme as regras no órgão responsável.\",\n  \"baseLegal\": \"Lei 10.741/2003 (Estatuto da Pessoa Idosa), arts. 39 e 40; Lei 8.899/1994 (Passe Livre interestadual)\",\n  \"linkOficial\": \"https://www.gov.br/pt-br/servicos/obter-o-passe-livre-interestadual\",\n  \"icone\": \"TRANSPORTE\",\n  \"ordem\": 99,\n  \"passos\": [\n    {\n      \"titulo\": \"Identifique o programa\",\n      \"texto\": \"Verifique se o deslocamento é municipal, intermunicipal ou interestadual.\"\n    },\n    {\n      \"titulo\": \"Consulte o órgão responsável\",\n      \"texto\": \"Procure o portal oficial do serviço de transporte e confira os critérios atuais.\"\n    }\n  ],\n  \"tags\": [\n    \"IDOSO\",\n    \"PCD\",\n    \"PCD_MOBILIDADE\"\n  ]\n}"
+      },
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        },
+        {
+          "name": "X-Chave-Admin",
+          "value": "{{ _.chave_admin }}"
+        }
+      ],
+      "parameters": [],
+      "authentication": {},
+      "metaSortKey": 26
+    },
+    {
+      "_id": "req_md_027",
+      "_type": "request",
+      "parentId": "fld_md_025",
+      "name": "Editar tema",
+      "description": "",
+      "method": "PUT",
+      "url": "{{ _.base_url }}/direitos/{{ _.tema_teste_id }}",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"titulo\": \"Tema de teste (pode excluir)\",\n  \"resumo\": \"Saiba onde consultar gratuidades e programas de transporte.\",\n  \"descricao\": \"Passe Livre e outros programas de transporte. Exemplos para pesquisa.\",\n  \"aviso\": \"Os critérios variam por programa e localidade. Confirme as regras no órgão responsável.\",\n  \"baseLegal\": \"Lei 10.741/2003 (Estatuto da Pessoa Idosa), arts. 39 e 40; Lei 8.899/1994 (Passe Livre interestadual)\",\n  \"linkOficial\": \"https://www.gov.br/pt-br/servicos/obter-o-passe-livre-interestadual\",\n  \"icone\": \"TRANSPORTE\",\n  \"ordem\": 99,\n  \"passos\": [\n    {\n      \"titulo\": \"Identifique o programa\",\n      \"texto\": \"Verifique se o deslocamento é municipal, intermunicipal ou interestadual.\"\n    },\n    {\n      \"titulo\": \"Consulte o órgão responsável\",\n      \"texto\": \"Procure o portal oficial do serviço de transporte e confira os critérios atuais.\"\n    }\n  ],\n  \"tags\": [\n    \"IDOSO\",\n    \"PCD\",\n    \"PCD_MOBILIDADE\"\n  ]\n}"
+      },
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        },
+        {
+          "name": "X-Chave-Admin",
+          "value": "{{ _.chave_admin }}"
+        }
+      ],
+      "parameters": [],
+      "authentication": {},
+      "metaSortKey": 27
+    },
+    {
+      "_id": "req_md_028",
+      "_type": "request",
+      "parentId": "fld_md_025",
+      "name": "Excluir tema",
+      "description": "",
+      "method": "DELETE",
+      "url": "{{ _.base_url }}/direitos/{{ _.tema_teste_id }}",
+      "body": {},
+      "headers": [
+        {
+          "name": "X-Chave-Admin",
+          "value": "{{ _.chave_admin }}"
+        }
+      ],
+      "parameters": [],
+      "authentication": {},
+      "metaSortKey": 28
+    },
+    {
+      "_id": "fld_md_029",
+      "_type": "request_group",
+      "parentId": "wrk_meus_direitos",
+      "name": "05 · Denúncias",
+      "description": "Copie o \"id\" da denúncia criada para a variável denuncia_id.",
+      "metaSortKey": -971
+    },
+    {
+      "_id": "req_md_030",
+      "_type": "request",
+      "parentId": "fld_md_029",
+      "name": "Criar denúncia",
+      "description": "",
+      "method": "POST",
+      "url": "{{ _.base_url }}/denuncias",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"titulo\": \"Buraco grande na Rua Augusta\",\n  \"descricao\": \"Buraco na faixa da direita, perto do número 1200. Carros desviam de repente.\",\n  \"categoria\": \"ASFALTO\",\n  \"endereco\": \"Rua Augusta, 1200\",\n  \"bairro\": \"Consolação\",\n  \"imagemUrl\": \"img/demo/asfalto-1.jpg\"\n}"
+      },
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        },
+        {
+          "name": "X-Usuario-Id",
+          "value": "{{ _.usuario_id }}"
+        }
+      ],
+      "parameters": [],
+      "authentication": {},
+      "metaSortKey": 30
+    },
+    {
+      "_id": "req_md_031",
+      "_type": "request",
+      "parentId": "fld_md_029",
+      "name": "Ver denúncia",
+      "description": "",
+      "method": "GET",
+      "url": "{{ _.base_url }}/denuncias/{{ _.denuncia_id }}",
+      "body": {},
+      "headers": [
+        {
+          "name": "X-Usuario-Id",
+          "value": "{{ _.usuario_id }}"
+        }
+      ],
+      "parameters": [],
+      "authentication": {},
+      "metaSortKey": 31
+    },
+    {
+      "_id": "req_md_032",
+      "_type": "request",
+      "parentId": "fld_md_029",
+      "name": "Editar denúncia",
+      "description": "",
+      "method": "PUT",
+      "url": "{{ _.base_url }}/denuncias/{{ _.denuncia_id }}",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"titulo\": \"Buraco grande na Rua Augusta (piorou)\",\n  \"descricao\": \"O buraco aumentou depois da chuva.\",\n  \"categoria\": \"ASFALTO\",\n  \"endereco\": \"Rua Augusta, 1200\",\n  \"bairro\": \"Consolação\"\n}"
+      },
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        },
+        {
+          "name": "X-Usuario-Id",
+          "value": "{{ _.usuario_id }}"
+        }
+      ],
+      "parameters": [],
+      "authentication": {},
+      "metaSortKey": 32
+    },
+    {
+      "_id": "req_md_033",
+      "_type": "request",
+      "parentId": "fld_md_029",
+      "name": "Alterar status",
+      "description": "Somente o autor. RESOLVIDA pelo autor também é aceita.",
+      "method": "PATCH",
+      "url": "{{ _.base_url }}/denuncias/{{ _.denuncia_id }}/status",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"status\": \"EM_ANDAMENTO\"\n}"
+      },
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        },
+        {
+          "name": "X-Usuario-Id",
+          "value": "{{ _.usuario_id }}"
+        }
+      ],
+      "parameters": [],
+      "authentication": {},
+      "metaSortKey": 33
+    },
+    {
+      "_id": "req_md_034",
+      "_type": "request",
+      "parentId": "fld_md_029",
+      "name": "Minhas denúncias",
+      "description": "",
+      "method": "GET",
+      "url": "{{ _.base_url }}/denuncias/minhas",
+      "body": {},
+      "headers": [
+        {
+          "name": "X-Usuario-Id",
+          "value": "{{ _.usuario_id }}"
+        }
+      ],
+      "parameters": [],
+      "authentication": {},
+      "metaSortKey": 34
+    },
+    {
+      "_id": "req_md_035",
+      "_type": "request",
+      "parentId": "fld_md_029",
+      "name": "Busca pública",
+      "description": "",
+      "method": "GET",
+      "url": "{{ _.base_url }}/denuncias",
+      "body": {},
+      "headers": [],
+      "parameters": [
+        {
+          "name": "cidade",
+          "value": "São Paulo"
+        },
+        {
+          "name": "uf",
+          "value": "SP"
+        },
+        {
+          "name": "categoria",
+          "value": "ASFALTO"
+        },
+        {
+          "name": "busca",
+          "value": "buraco"
+        },
+        {
+          "name": "pagina",
+          "value": "1"
+        },
+        {
+          "name": "tamanho",
+          "value": "10"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": 35
+    },
+    {
+      "_id": "req_md_036",
+      "_type": "request",
+      "parentId": "fld_md_029",
+      "name": "Excluir denúncia",
+      "description": "",
+      "method": "DELETE",
+      "url": "{{ _.base_url }}/denuncias/{{ _.denuncia_id }}",
+      "body": {},
+      "headers": [
+        {
+          "name": "X-Usuario-Id",
+          "value": "{{ _.usuario_id }}"
+        }
+      ],
+      "parameters": [],
+      "authentication": {},
+      "metaSortKey": 36
+    },
+    {
+      "_id": "fld_md_037",
+      "_type": "request_group",
+      "parentId": "wrk_meus_direitos",
+      "name": "06 · Feed da cidade",
+      "description": "",
+      "metaSortKey": -963
+    },
+    {
+      "_id": "req_md_038",
+      "_type": "request",
+      "parentId": "fld_md_037",
+      "name": "Feed · PARA_VOCE",
+      "description": "",
+      "method": "GET",
+      "url": "{{ _.base_url }}/denuncias/feed",
+      "body": {},
+      "headers": [
+        {
+          "name": "X-Usuario-Id",
+          "value": "{{ _.usuario_id }}"
+        }
+      ],
+      "parameters": [
+        {
+          "name": "ordem",
+          "value": "PARA_VOCE"
+        },
+        {
+          "name": "pagina",
+          "value": "1"
+        },
+        {
+          "name": "tamanho",
+          "value": "10"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": 38
+    },
+    {
+      "_id": "req_md_039",
+      "_type": "request",
+      "parentId": "fld_md_037",
+      "name": "Feed · RECENTES",
+      "description": "",
+      "method": "GET",
+      "url": "{{ _.base_url }}/denuncias/feed",
+      "body": {},
+      "headers": [
+        {
+          "name": "X-Usuario-Id",
+          "value": "{{ _.usuario_id }}"
+        }
+      ],
+      "parameters": [
+        {
+          "name": "ordem",
+          "value": "RECENTES"
+        },
+        {
+          "name": "pagina",
+          "value": "1"
+        },
+        {
+          "name": "tamanho",
+          "value": "10"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": 39
+    },
+    {
+      "_id": "req_md_040",
+      "_type": "request",
+      "parentId": "fld_md_037",
+      "name": "Feed · MAIS_VOTADOS",
+      "description": "",
+      "method": "GET",
+      "url": "{{ _.base_url }}/denuncias/feed",
+      "body": {},
+      "headers": [
+        {
+          "name": "X-Usuario-Id",
+          "value": "{{ _.usuario_id }}"
+        }
+      ],
+      "parameters": [
+        {
+          "name": "ordem",
+          "value": "MAIS_VOTADOS"
+        },
+        {
+          "name": "pagina",
+          "value": "1"
+        },
+        {
+          "name": "tamanho",
+          "value": "10"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": 40
+    },
+    {
+      "_id": "fld_md_041",
+      "_type": "request_group",
+      "parentId": "wrk_meus_direitos",
+      "name": "07 · Votos, comentários e resolução",
+      "description": "Use outro_usuario_id (morador da mesma cidade) para votar, comentar e confirmar a denúncia de outra pessoa.",
+      "metaSortKey": -959
+    },
+    {
+      "_id": "req_md_042",
+      "_type": "request",
+      "parentId": "fld_md_041",
+      "name": "Votar ↑",
+      "description": "",
+      "method": "PUT",
+      "url": "{{ _.base_url }}/denuncias/{{ _.denuncia_id }}/voto",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"tipo\": \"UP\"\n}"
+      },
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        },
+        {
+          "name": "X-Usuario-Id",
+          "value": "{{ _.outro_usuario_id }}"
+        }
+      ],
+      "parameters": [],
+      "authentication": {},
+      "metaSortKey": 42
+    },
+    {
+      "_id": "req_md_043",
+      "_type": "request",
+      "parentId": "fld_md_041",
+      "name": "Votar ↓",
+      "description": "",
+      "method": "PUT",
+      "url": "{{ _.base_url }}/denuncias/{{ _.denuncia_id }}/voto",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"tipo\": \"DOWN\"\n}"
+      },
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        },
+        {
+          "name": "X-Usuario-Id",
+          "value": "{{ _.outro_usuario_id }}"
+        }
+      ],
+      "parameters": [],
+      "authentication": {},
+      "metaSortKey": 43
+    },
+    {
+      "_id": "req_md_044",
+      "_type": "request",
+      "parentId": "fld_md_041",
+      "name": "Remover voto",
+      "description": "",
+      "method": "DELETE",
+      "url": "{{ _.base_url }}/denuncias/{{ _.denuncia_id }}/voto",
+      "body": {},
+      "headers": [
+        {
+          "name": "X-Usuario-Id",
+          "value": "{{ _.outro_usuario_id }}"
+        }
+      ],
+      "parameters": [],
+      "authentication": {},
+      "metaSortKey": 44
+    },
+    {
+      "_id": "req_md_045",
+      "_type": "request",
+      "parentId": "fld_md_041",
+      "name": "Comentários da denúncia",
+      "description": "",
+      "method": "GET",
+      "url": "{{ _.base_url }}/denuncias/{{ _.denuncia_id }}/comentarios",
+      "body": {},
+      "headers": [],
+      "parameters": [],
+      "authentication": {},
+      "metaSortKey": 45
+    },
+    {
+      "_id": "req_md_046",
+      "_type": "request",
+      "parentId": "fld_md_041",
+      "name": "Comentar",
+      "description": "Copie o \"id\" para a variável comentario_id.",
+      "method": "POST",
+      "url": "{{ _.base_url }}/denuncias/{{ _.denuncia_id }}/comentarios",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"texto\": \"Passo por aí todo dia, está perigoso mesmo.\"\n}"
+      },
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        },
+        {
+          "name": "X-Usuario-Id",
+          "value": "{{ _.outro_usuario_id }}"
+        }
+      ],
+      "parameters": [],
+      "authentication": {},
+      "metaSortKey": 46
+    },
+    {
+      "_id": "req_md_047",
+      "_type": "request",
+      "parentId": "fld_md_041",
+      "name": "Editar comentário",
+      "description": "",
+      "method": "PUT",
+      "url": "{{ _.base_url }}/comentarios/{{ _.comentario_id }}",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"texto\": \"Hoje está pior.\"\n}"
+      },
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        },
+        {
+          "name": "X-Usuario-Id",
+          "value": "{{ _.outro_usuario_id }}"
+        }
+      ],
+      "parameters": [],
+      "authentication": {},
+      "metaSortKey": 47
+    },
+    {
+      "_id": "req_md_048",
+      "_type": "request",
+      "parentId": "fld_md_041",
+      "name": "Excluir comentário",
+      "description": "",
+      "method": "DELETE",
+      "url": "{{ _.base_url }}/comentarios/{{ _.comentario_id }}",
+      "body": {},
+      "headers": [
+        {
+          "name": "X-Usuario-Id",
+          "value": "{{ _.outro_usuario_id }}"
+        }
+      ],
+      "parameters": [],
+      "authentication": {},
+      "metaSortKey": 48
+    },
+    {
+      "_id": "req_md_049",
+      "_type": "request",
+      "parentId": "fld_md_041",
+      "name": "Confirmar resolução",
+      "description": "3 confirmações de moradores da cidade marcam como RESOLVIDA. O autor não confirma (422).",
+      "method": "PUT",
+      "url": "{{ _.base_url }}/denuncias/{{ _.denuncia_id }}/confirmacao",
+      "body": {},
+      "headers": [
+        {
+          "name": "X-Usuario-Id",
+          "value": "{{ _.outro_usuario_id }}"
+        }
+      ],
+      "parameters": [],
+      "authentication": {},
+      "metaSortKey": 49
+    },
+    {
+      "_id": "req_md_050",
+      "_type": "request",
+      "parentId": "fld_md_041",
+      "name": "Retirar confirmação",
+      "description": "",
+      "method": "DELETE",
+      "url": "{{ _.base_url }}/denuncias/{{ _.denuncia_id }}/confirmacao",
+      "body": {},
+      "headers": [
+        {
+          "name": "X-Usuario-Id",
+          "value": "{{ _.outro_usuario_id }}"
+        }
+      ],
+      "parameters": [],
+      "authentication": {},
+      "metaSortKey": 50
+    },
+    {
+      "_id": "fld_md_051",
+      "_type": "request_group",
+      "parentId": "wrk_meus_direitos",
+      "name": "08 · Relatórios da cidade",
+      "description": "Sem cidade/uf na URL, usa a cidade do usuário logado.",
+      "metaSortKey": -949
+    },
+    {
+      "_id": "req_md_052",
+      "_type": "request",
+      "parentId": "fld_md_051",
+      "name": "Resumo",
+      "description": "",
+      "method": "GET",
+      "url": "{{ _.base_url }}/relatorios/resumo",
+      "body": {},
+      "headers": [
+        {
+          "name": "X-Usuario-Id",
+          "value": "{{ _.usuario_id }}"
+        }
+      ],
+      "parameters": [],
+      "authentication": {},
+      "metaSortKey": 52
+    },
+    {
+      "_id": "req_md_053",
+      "_type": "request",
+      "parentId": "fld_md_051",
+      "name": "Por categoria",
+      "description": "",
+      "method": "GET",
+      "url": "{{ _.base_url }}/relatorios/categorias",
+      "body": {},
+      "headers": [],
+      "parameters": [
+        {
+          "name": "cidade",
+          "value": "São Paulo"
+        },
+        {
+          "name": "uf",
+          "value": "SP"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": 53
+    },
+    {
+      "_id": "req_md_054",
+      "_type": "request",
+      "parentId": "fld_md_051",
+      "name": "Por bairro",
+      "description": "",
+      "method": "GET",
+      "url": "{{ _.base_url }}/relatorios/bairros",
+      "body": {},
+      "headers": [],
+      "parameters": [
+        {
+          "name": "cidade",
+          "value": "São Paulo"
+        },
+        {
+          "name": "uf",
+          "value": "SP"
+        },
+        {
+          "name": "minimo",
+          "value": "1"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": 54
+    },
+    {
+      "_id": "req_md_055",
+      "_type": "request",
+      "parentId": "fld_md_051",
+      "name": "Engajamento",
+      "description": "",
+      "method": "GET",
+      "url": "{{ _.base_url }}/relatorios/engajamento",
+      "body": {},
+      "headers": [],
+      "parameters": [
+        {
+          "name": "cidade",
+          "value": "São Paulo"
+        },
+        {
+          "name": "uf",
+          "value": "SP"
+        },
+        {
+          "name": "limite",
+          "value": "5"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": 55
+    },
+    {
+      "_id": "fld_md_056",
+      "_type": "request_group",
+      "parentId": "wrk_meus_direitos",
+      "name": "09 · Demonstração (cidade viva)",
+      "description": "Exigem X-Chave-Simulacao = simulacao.chave. Sem ela → 404.",
+      "metaSortKey": -944
+    },
+    {
+      "_id": "req_md_057",
+      "_type": "request",
+      "parentId": "fld_md_056",
+      "name": "Preparar cidade",
+      "description": "",
+      "method": "POST",
+      "url": "{{ _.base_url }}/simulacao/cidades",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"cidade\": \"Campinas\",\n  \"uf\": \"SP\"\n}"
+      },
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        },
+        {
+          "name": "X-Chave-Simulacao",
+          "value": "{{ _.chave_simulacao }}"
+        }
+      ],
+      "parameters": [],
+      "authentication": {},
+      "metaSortKey": 57
+    },
+    {
+      "_id": "req_md_058",
+      "_type": "request",
+      "parentId": "fld_md_056",
+      "name": "Cidades preparadas",
+      "description": "",
+      "method": "GET",
+      "url": "{{ _.base_url }}/simulacao/cidades",
+      "body": {},
+      "headers": [
+        {
+          "name": "X-Chave-Simulacao",
+          "value": "{{ _.chave_simulacao }}"
+        }
+      ],
+      "parameters": [],
+      "authentication": {},
+      "metaSortKey": 58
+    },
+    {
+      "_id": "req_md_059",
+      "_type": "request",
+      "parentId": "fld_md_056",
+      "name": "Gerar atividade agora",
+      "description": "",
+      "method": "POST",
+      "url": "{{ _.base_url }}/simulacao/pulso",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"cidade\": \"Campinas\",\n  \"uf\": \"SP\",\n  \"eventos\": 3\n}"
+      },
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        },
+        {
+          "name": "X-Chave-Simulacao",
+          "value": "{{ _.chave_simulacao }}"
+        }
+      ],
+      "parameters": [],
+      "authentication": {},
+      "metaSortKey": 59
+    },
+    {
+      "_id": "req_md_060",
+      "_type": "request",
+      "parentId": "fld_md_056",
+      "name": "Exportar INSERTs da cidade",
+      "description": "",
+      "method": "GET",
+      "url": "{{ _.base_url }}/simulacao/sql",
+      "body": {},
+      "headers": [
+        {
+          "name": "X-Chave-Simulacao",
+          "value": "{{ _.chave_simulacao }}"
+        }
+      ],
+      "parameters": [
+        {
+          "name": "cidade",
+          "value": "Campinas"
+        },
+        {
+          "name": "uf",
+          "value": "SP"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": 60
+    },
+    {
+      "_id": "req_md_061",
+      "_type": "request",
+      "parentId": "fld_md_056",
+      "name": "Resetar demonstração",
+      "description": "Remove todo o conteúdo simulado. Contas reais ficam intactas.",
+      "method": "DELETE",
+      "url": "{{ _.base_url }}/simulacao",
+      "body": {},
+      "headers": [
+        {
+          "name": "X-Chave-Simulacao",
+          "value": "{{ _.chave_simulacao }}"
+        }
+      ],
+      "parameters": [],
+      "authentication": {},
+      "metaSortKey": 61
+    },
+    {
+      "_id": "fld_md_062",
+      "_type": "request_group",
+      "parentId": "wrk_meus_direitos",
+      "name": "10 · Erros (robustez)",
+      "description": "Cada requisição demonstra um erro tratado: sempre JSON padronizado, nunca stack trace.",
+      "metaSortKey": -938
+    },
+    {
+      "_id": "req_md_063",
+      "_type": "request",
+      "parentId": "fld_md_062",
+      "name": "404 · rota inexistente",
+      "description": "",
+      "method": "GET",
+      "url": "{{ _.base_url }}/naoexiste",
+      "body": {},
+      "headers": [],
+      "parameters": [],
+      "authentication": {},
+      "metaSortKey": 63
+    },
+    {
+      "_id": "req_md_064",
+      "_type": "request",
+      "parentId": "fld_md_062",
+      "name": "404 · denúncia inexistente",
+      "description": "",
+      "method": "GET",
+      "url": "{{ _.base_url }}/denuncias/999999999",
+      "body": {},
+      "headers": [],
+      "parameters": [],
+      "authentication": {},
+      "metaSortKey": 64
+    },
+    {
+      "_id": "req_md_065",
+      "_type": "request",
+      "parentId": "fld_md_062",
+      "name": "405 · método não permitido",
+      "description": "",
+      "method": "DELETE",
+      "url": "{{ _.base_url }}/categorias",
+      "body": {},
+      "headers": [],
+      "parameters": [],
+      "authentication": {},
+      "metaSortKey": 65
+    },
+    {
+      "_id": "req_md_066",
+      "_type": "request",
+      "parentId": "fld_md_062",
+      "name": "415 · corpo em texto",
+      "description": "",
+      "method": "POST",
+      "url": "{{ _.base_url }}/usuarios",
+      "body": {},
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "text/plain"
+        }
+      ],
+      "parameters": [],
+      "authentication": {},
+      "metaSortKey": 66
+    },
+    {
+      "_id": "req_md_067",
+      "_type": "request",
+      "parentId": "fld_md_062",
+      "name": "400 · JSON malformado",
+      "description": "",
+      "method": "POST",
+      "url": "{{ _.base_url }}/usuarios",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{ \"nome\": \"Mariana\", "
+      },
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "parameters": [],
+      "authentication": {},
+      "metaSortKey": 67
+    },
+    {
+      "_id": "req_md_068",
+      "_type": "request",
+      "parentId": "fld_md_062",
+      "name": "400 · campos inválidos (vários de uma vez)",
+      "description": "",
+      "method": "POST",
+      "url": "{{ _.base_url }}/usuarios",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"nome\": \"\",\n  \"email\": \"nao-e-email\",\n  \"senha\": \"123\",\n  \"cidade\": \"X\",\n  \"uf\": \"ZZ\"\n}"
+      },
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "parameters": [],
+      "authentication": {},
+      "metaSortKey": 68
+    },
+    {
+      "_id": "req_md_069",
+      "_type": "request",
+      "parentId": "fld_md_062",
+      "name": "400 · enum inválido",
+      "description": "",
+      "method": "POST",
+      "url": "{{ _.base_url }}/denuncias",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"titulo\": \"Teste de categoria\",\n  \"descricao\": \"Categoria que não existe.\",\n  \"categoria\": \"DRAGAO\",\n  \"endereco\": \"Rua X, 10\"\n}"
+      },
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        },
+        {
+          "name": "X-Usuario-Id",
+          "value": "{{ _.usuario_id }}"
+        }
+      ],
+      "parameters": [],
+      "authentication": {},
+      "metaSortKey": 69
+    },
+    {
+      "_id": "req_md_070",
+      "_type": "request",
+      "parentId": "fld_md_062",
+      "name": "400 · paginação inválida",
+      "description": "",
+      "method": "GET",
+      "url": "{{ _.base_url }}/denuncias",
+      "body": {},
+      "headers": [],
+      "parameters": [
+        {
+          "name": "pagina",
+          "value": "-1"
+        },
+        {
+          "name": "tamanho",
+          "value": "100000"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": 70
+    },
+    {
+      "_id": "req_md_071",
+      "_type": "request",
+      "parentId": "fld_md_062",
+      "name": "401 · sem login",
+      "description": "",
+      "method": "GET",
+      "url": "{{ _.base_url }}/denuncias/minhas",
+      "body": {},
+      "headers": [],
+      "parameters": [],
+      "authentication": {},
+      "metaSortKey": 71
+    },
+    {
+      "_id": "req_md_072",
+      "_type": "request",
+      "parentId": "fld_md_062",
+      "name": "401 · login errado",
+      "description": "",
+      "method": "POST",
+      "url": "{{ _.base_url }}/auth/login",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"email\": \"mariana@exemplo.com\",\n  \"senha\": \"errada\"\n}"
+      },
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "parameters": [],
+      "authentication": {},
+      "metaSortKey": 72
+    },
+    {
+      "_id": "req_md_073",
+      "_type": "request",
+      "parentId": "fld_md_062",
+      "name": "403 · editar denúncia de outra pessoa",
+      "description": "",
+      "method": "PUT",
+      "url": "{{ _.base_url }}/denuncias/{{ _.denuncia_id }}",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"titulo\": \"Tentando editar\",\n  \"descricao\": \"Não sou o autor desta denúncia.\",\n  \"categoria\": \"OUTROS\",\n  \"endereco\": \"Rua X, 10\"\n}"
+      },
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        },
+        {
+          "name": "X-Usuario-Id",
+          "value": "{{ _.outro_usuario_id }}"
+        }
+      ],
+      "parameters": [],
+      "authentication": {},
+      "metaSortKey": 73
+    },
+    {
+      "_id": "req_md_074",
+      "_type": "request",
+      "parentId": "fld_md_062",
+      "name": "403 · catálogo sem chave",
+      "description": "",
+      "method": "DELETE",
+      "url": "{{ _.base_url }}/direitos/{{ _.direito_id }}",
+      "body": {},
+      "headers": [],
+      "parameters": [],
+      "authentication": {},
+      "metaSortKey": 74
+    },
+    {
+      "_id": "req_md_075",
+      "_type": "request",
+      "parentId": "fld_md_062",
+      "name": "409 · e-mail já cadastrado",
+      "description": "",
+      "method": "POST",
+      "url": "{{ _.base_url }}/usuarios",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"nome\": \"Mariana Oliveira\",\n  \"email\": \"mariana@exemplo.com\",\n  \"senha\": \"senha1234\",\n  \"cidade\": \"São Paulo\",\n  \"uf\": \"SP\"\n}"
+      },
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "parameters": [],
+      "authentication": {},
+      "metaSortKey": 75
+    },
+    {
+      "_id": "req_md_076",
+      "_type": "request",
+      "parentId": "fld_md_062",
+      "name": "422 · autor confirmando a própria denúncia",
+      "description": "",
+      "method": "PUT",
+      "url": "{{ _.base_url }}/denuncias/{{ _.denuncia_id }}/confirmacao",
+      "body": {},
+      "headers": [
+        {
+          "name": "X-Usuario-Id",
+          "value": "{{ _.usuario_id }}"
+        }
+      ],
+      "parameters": [],
+      "authentication": {},
+      "metaSortKey": 76
+    }
+  ]
+}
