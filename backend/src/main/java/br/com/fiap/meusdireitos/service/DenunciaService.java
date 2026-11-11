@@ -4,6 +4,7 @@ import br.com.fiap.meusdireitos.dao.DenunciaDao;
 import br.com.fiap.meusdireitos.dao.FiltroDenuncia;
 import br.com.fiap.meusdireitos.dao.Transacao;
 import br.com.fiap.meusdireitos.dao.jdbc.ComentarioDaoJdbc;
+import br.com.fiap.meusdireitos.dao.jdbc.ConfirmacaoResolucaoDaoJdbc;
 import br.com.fiap.meusdireitos.dao.jdbc.DenunciaDaoJdbc;
 import br.com.fiap.meusdireitos.dao.jdbc.UsuarioDaoJdbc;
 import br.com.fiap.meusdireitos.dao.jdbc.VotoDenunciaDaoJdbc;
@@ -110,15 +111,20 @@ public class DenunciaService {
                         + "' para '" + req.status().getDescricao() + "'.");
             }
             dao.atualizarStatus(id, req.status());
+            if (req.status() == StatusDenuncia.ABERTA) {
+                // reaberta: as confirmações antigas não valem mais (o problema voltou)
+                new ConfirmacaoResolucaoDaoJdbc(con).excluirPorDenuncia(id);
+            }
             return DenunciaResponse.de(dao.buscarDetalhada(id, idUsuario));
         });
     }
 
-    /** Exclui a denúncia com seus comentários e votos, numa única transação. */
+    /** Exclui a denúncia com seus comentários, votos e confirmações, numa única transação. */
     public void excluir(Long idUsuario, Long id) {
         Transacao.executarSemRetorno(con -> {
             DenunciaDao dao = new DenunciaDaoJdbc(con);
             exigirAutor(dao.buscarPorId(id), idUsuario, "excluí-la");
+            new ConfirmacaoResolucaoDaoJdbc(con).excluirPorDenuncia(id);
             new ComentarioDaoJdbc(con).excluirPorDenuncia(id);
             new VotoDenunciaDaoJdbc(con).excluirPorDenuncia(id);
             dao.excluir(id);
