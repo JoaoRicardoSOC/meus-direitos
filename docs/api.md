@@ -12,7 +12,7 @@
 5. [Cliente `fetch` recomendado](#5-cliente-fetch-recomendado)
 6. [Erros](#6-erros)
 7. [Mapa: telas do Figma → chamadas](#7-mapa-telas-do-figma--chamadas)
-8. [Referência dos endpoints](#8-referência-dos-endpoints)
+8. [Referência dos endpoints](#8-referência-dos-endpoints) — inclui [relatórios](#89-relatórios-da-cidade)
 9. [Objetos devolvidos pela API](#9-objetos-devolvidos-pela-api)
 10. [Dicas de interface](#10-dicas-de-interface)
 11. [Pedidos do back-end para o front-end](#11-pedidos-do-back-end-para-o-front-end)
@@ -34,8 +34,8 @@
 | Votos (↑ / ↓) com placar atualizado | ✅ Pronto |
 | Conversa do bairro (comentários) | ✅ Pronto |
 | Resolver denúncia: autor marca **ou** 3 moradores confirmam | ✅ Pronto |
-| Relatórios ("Números da cidade") | 🕒 Em desenvolvimento |
-| Excluir conta / trocar senha | 🕒 Em desenvolvimento |
+| Relatórios: "Números da cidade", por categoria, por bairro, mais engajadas | ✅ Pronto |
+| Trocar senha / excluir conta | ✅ Pronto |
 | "Cidade viva" (conteúdo de exemplo automático, selo "Exemplo") | 🕒 Planejado |
 
 ---
@@ -217,6 +217,8 @@ Todo erro vem neste formato:
 | 18 Excluir denúncia | `DELETE /denuncias/{id}` |
 | 19 Perfil | `GET /usuarios/me` |
 | 20 / 21 Editar perfil | `PUT /usuarios/me` |
+| *(sem tela)* Trocar senha · Excluir conta | `PUT /usuarios/me/senha` · `POST /usuarios/me/exclusao` |
+| *(sem tela)* Números da cidade | `GET /relatorios/resumo` (sugestão: bloco no topo do feed) |
 | 22 Meus Direitos (primeiro acesso) | `GET /usuarios/perfil` → **404** = mostrar esta tela |
 | 23–27 Questionário | `GET /racas-cor`, `/deficiencias`, `/percursos-escolares` (selects) → no fim, `PUT /usuarios/perfil` |
 | 28 Meus Direitos (temas) | `GET /direitos/meus` (ou use `direitos` da resposta do `PUT /usuarios/perfil`) |
@@ -275,6 +277,33 @@ Regras: nome 3–100; e-mail válido (até 120, guardado em minúsculas); **senh
 | GET | `/usuarios/{id}` | `{ "id", "nome", "cidade", "uf", "totalDenuncias" }` |
 
 `perfilPreenchido` indica se o usuário já respondeu o questionário de "Meus Direitos".
+
+#### `PUT /usuarios/me/senha` 🔒 — trocar senha
+
+```json
+{ "senhaAtual": "senha1234", "novaSenha": "novaSenha2026" }
+```
+
+**204** se deu certo. Erros (todos **400**, com o campo indicado em `campos`):
+
+| Campo | Mensagem |
+|---|---|
+| `senhaAtual` | "Senha atual incorreta." |
+| `novaSenha` | mesma regra do cadastro (8–64, letra e número) ou "A nova senha deve ser diferente da atual." |
+
+> A senha atual errada vem como **400 no campo**, não 401 — então o cliente da seção 5 **não** desloga a pessoa por um erro de digitação.
+
+#### `POST /usuarios/me/exclusao` 🔒 — excluir a conta
+
+```json
+{ "senha": "senha1234" }
+```
+
+- **204** → conta excluída. Apague o `usuarioId` do `localStorage` e volte para a tela inicial.
+- Senha errada → **400** no campo `senha` ("Senha incorreta.").
+- **O que é apagado** (não tem volta): a conta, o questionário, as denúncias da pessoa e, junto com elas, votos, comentários e confirmações que estavam nelas, além dos votos, comentários e confirmações que a pessoa fez em denúncias de outros.
+- É `POST` (e não `DELETE`) porque a senha vai no corpo.
+- Sugestão de tela: confirmação "Excluir minha conta" com campo de senha (não há tela no Figma).
 
 ### 8.3 Perfil "Meus Direitos" (questionário)
 
@@ -438,13 +467,57 @@ Quando mostrar o botão "Já foi resolvido": usuário logado, **não** é o auto
 
 `editadoEm` só aparece se o comentário foi editado (mostre "editado"). O contador do card vem em `denuncia.comentarios`.
 
-### 8.9 Em desenvolvimento
+### 8.9 Relatórios da cidade
 
-| Rota | Para quê |
+Rotas **públicas**. A cidade vem de `?cidade=&uf=`; se você **não** enviar, a API usa a cidade do usuário logado (pelo `X-Usuario-Id`). Sem nenhum dos dois → **400**.
+
+| Método | Rota | Para quê |
+|---|---|---|
+| GET | `/relatorios/resumo` | Bloco **"Números da cidade"** (sugestão: topo do feed ou tela de impacto) |
+| GET | `/relatorios/categorias` | Denúncias por categoria e situação (gráfico de barras) |
+| GET | `/relatorios/bairros?minimo=1` | Bairros com mais problemas; `minimo` = só bairros com pelo menos N denúncias |
+| GET | `/relatorios/engajamento?limite=5` | Denúncias com mais votos + comentários (`limite` 1–20) |
+
+`GET /relatorios/resumo`:
+
+```json
+{ "cidade": "São Paulo", "uf": "SP", "usuarios": 4, "denuncias": 3, "abertas": 2, "emAndamento": 0,
+  "resolvidas": 1, "percentualResolvidas": 33.3, "votos": 3, "comentarios": 0,
+  "confirmacoesDeResolucao": 0, "temasDeDireitos": 5 }
+```
+
+`GET /relatorios/categorias`:
+
+```json
+[ { "categoria": { "codigo": "ASFALTO", "descricao": "Asfalto" },
+    "total": 1, "abertas": 1, "emAndamento": 0, "resolvidas": 0, "percentualResolvidas": 0.0 } ]
+```
+
+`GET /relatorios/bairros`:
+
+```json
+[ { "bairro": "Centro", "total": 2, "resolvidas": 1, "percentualResolvidas": 50.0, "saldoVotos": 1 } ]
+```
+
+Denúncias sem bairro aparecem como `"bairro": "Não informado"`.
+
+`GET /relatorios/engajamento`:
+
+```json
+[ { "id": 2, "titulo": "Cratera enorme na Avenida Brasil",
+    "categoria": { "codigo": "ASFALTO", "descricao": "Asfalto" },
+    "status": { "codigo": "ABERTA", "descricao": "Em aberto" },
+    "votos": 2, "saldo": 2, "comentarios": 0, "engajamento": 2 } ]
+```
+
+Use o `id` para abrir o detalhe (`GET /denuncias/{id}`).
+
+### 8.10 Em desenvolvimento
+
+| Item | Para quê |
 |---|---|
-| `GET /relatorios/resumo?cidade=&uf=` | Bloco "Números da cidade" (usuários, denúncias, resolvidas, votos, comentários) |
-| `DELETE /usuarios/me` · `PUT /usuarios/me/senha` | Excluir conta · trocar senha |
 | Campo `autor.simulado` | Selo "Exemplo" para conteúdo de demonstração ("cidade viva") |
+| `cidadePreparada` no cadastro | Indica se a cidade nova recebeu conteúdo de exemplo |
 
 Este guia será atualizado quando ficarem prontas.
 
@@ -521,6 +594,8 @@ Ajustes em relação ao Figma, combinados com o grupo:
 5. **Foto:** escolher entre imagens de demonstração e enviar só o caminho (`imagemUrl`).
 6. **Resolver denúncias:** em "Minha denúncia", botão **"Marcar como resolvida"** (vira **"Reabrir"**); no detalhe, para os outros moradores, botão **"Já foi resolvido"** com o texto **"2 de 3 moradores confirmaram"**.
 7. *(Opcional)* Selo **"Para você"** no card quando `relevanteParaMim` for `true`.
+8. **Bloco "Números da cidade"** (ex.: no topo do feed) com `GET /relatorios/resumo` — mostra impacto (% resolvidas) e conta como diferencial "Relatórios com SQL" na avaliação.
+9. *(Opcional)* No Perfil, opções **"Trocar senha"** e **"Excluir minha conta"** (com confirmação de senha).
 
 ---
 
@@ -537,3 +612,4 @@ Ajustes em relação ao Figma, combinados com o grupo:
 | Data | Mudança |
 |---|---|
 | 11/11/2026 | Primeira versão: usuários, login, perfil, direitos, denúncias, feed, votos, comentários e resolução pela comunidade. |
+| 11/11/2026 | Relatórios da cidade (§8.9), trocar senha e excluir conta (§8.2). Pedidos 8 e 9 ao front. |
