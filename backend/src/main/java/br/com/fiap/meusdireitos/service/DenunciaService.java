@@ -160,7 +160,7 @@ public class DenunciaService {
                 .obrigatorio("categoria", req.categoria())
                 .obrigatorio("endereco", req.endereco()).tamanho("endereco", req.endereco(), 5, 150)
                 .tamanho("bairro", req.bairro(), 0, 80)
-                .tamanho("imagemUrl", req.imagemUrl(), 0, 300)
+                .imagem("imagemUrl", req.imagemUrl())
                 .lancarSeHouverErros();
     }
 

@@ -104,4 +104,24 @@ class ValidadorTest {
         assertThrows(ValidacaoException.class, () -> Validador.corpoObrigatorio(null));
         assertDoesNotThrow(() -> Validador.corpoObrigatorio(new Object()));
     }
+
+    @Test
+    void imagemAceitaEnderecoWebECaminhoDoFront() {
+        assertDoesNotThrow(() -> new Validador()
+                .imagem("imagemUrl", "img/demo/asfalto-1.jpg")
+                .imagem("imagemUrl", "https://exemplo.com/foto.png")
+                .imagem("imagemUrl", null)
+                .imagem("imagemUrl", "  ")
+                .lancarSeHouverErros());
+    }
+
+    @Test
+    void imagemRecusaEsquemasPerigososECaminhosForaDaPasta() {
+        for (String invalida : List.of("javascript:alert(1)", "data:image/png;base64,AAA", "../../etc/passwd",
+                "//outro-site.com/x.png", "img/demo/a b.jpg", "img/" + "a".repeat(300) + ".jpg")) {
+            ValidacaoException e = assertThrows(ValidacaoException.class,
+                    () -> new Validador().imagem("imagemUrl", invalida).lancarSeHouverErros(), invalida);
+            assertEquals("imagemUrl", e.getCampos().get(0).campo());
+        }
+    }
 }

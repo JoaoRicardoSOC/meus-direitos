@@ -137,6 +137,21 @@ public class Validador {
         return regra(valido, campo, "Informe um endereço começando com https://");
     }
 
+    /**
+     * Imagem: endereço http(s) ou caminho de arquivo do front (ex.: {@code img/demo/asfalto-1.jpg}).
+     * Recusa esquemas como {@code javascript:} e {@code data:}, e caminhos com "..". Ignora nulos e vazios.
+     */
+    public Validador imagem(String campo, String valor) {
+        if (valor == null || valor.isBlank()) {
+            return this;
+        }
+        String limpo = valor.trim();
+        boolean web = limpo.startsWith("https://") || limpo.startsWith("http://");
+        boolean caminho = limpo.matches("[A-Za-z0-9_./-]+") && !limpo.startsWith("//") && !limpo.contains("..");
+        boolean valido = limpo.length() <= 300 && !limpo.contains(" ") && (web || caminho);
+        return regra(valido, campo, "Informe um endereço https:// ou um caminho como img/demo/asfalto-1.jpg");
+    }
+
     /** Data anterior a hoje. Ignora valores nulos. */
     public Validador dataNoPassado(String campo, LocalDate valor) {
         if (valor == null) {
