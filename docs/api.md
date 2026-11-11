@@ -350,7 +350,7 @@ Resposta **200** (`PerfilCompletoResponse`):
 | GET 🔒 | `/direitos/meus` | Cards dos temas aplicáveis ao usuário (`DireitoResumoResponse[]`). Sem questionário → `[]` |
 | GET | `/direitos` | Catálogo completo. Filtro opcional: `?tag=IDOSO` |
 | GET | `/direitos/{id}` | Tema completo (`DireitoResponse`, telas 29–31) |
-| POST / PUT / DELETE | `/direitos`, `/direitos/{id}` | Cadastro do catálogo (uso administrativo; o front não precisa) |
+| POST / PUT / DELETE | `/direitos`, `/direitos/{id}` | Cadastro do catálogo (uso administrativo; o front não precisa). Exige o cabeçalho `X-Chave-Admin`; sem ele → **403** |
 
 `DireitoResponse` (tela de detalhe):
 
@@ -382,13 +382,13 @@ Valores de `icone`: `TRANSPORTE`, `PRIORIDADE`, `MUNICIPIO`, `EDUCACAO`, `SAUDE`
 ```
 
 - **Cidade e UF não são enviadas**: a denúncia fica na cidade do usuário.
-- Regras: título 5–120; descrição 10–1000; categoria obrigatória; endereço 5–150; bairro até 80 (opcional); `imagemUrl` até 300 (opcional).
+- Regras: título 5–120; descrição 10–1000; categoria obrigatória; endereço 5–150; bairro até 80 (opcional); `imagemUrl` opcional, até 300: endereço `https://` **ou** caminho do front como `img/demo/asfalto-1.jpg` (recusa `javascript:`, `data:` e `..` → **400** no campo).
 - Resposta **201** com `DenunciaResponse` (seção 9). Use **`protocolo`** na tela 16 ("PROTOCOLO DEMO · #2026-0142").
 
 | Método | Rota | Descrição |
 |---|---|---|
 | GET 🔒 | `/denuncias/feed?ordem=&pagina=&tamanho=` | **Feed da cidade do usuário** (`PaginaResponse`). `ordem`: `PARA_VOCE` (padrão), `RECENTES`, `MAIS_VOTADOS` |
-| GET | `/denuncias?cidade=&uf=&categoria=&status=&busca=&pagina=&tamanho=` | Listagem pública com filtros opcionais, da mais recente para a mais antiga |
+| GET | `/denuncias?cidade=&uf=&categoria=&status=&busca=&pagina=&tamanho=` | Listagem pública com filtros opcionais, da mais recente para a mais antiga. `busca` até 100 caracteres |
 | GET 🔒 | `/denuncias/minhas` | Denúncias do usuário (lista simples, sem paginação) |
 | GET | `/denuncias/{id}` | Detalhe. Se enviar `X-Usuario-Id`, vem `meuVoto` e `euConfirmei` |
 | PUT 🔒 | `/denuncias/{id}` | Mesmo corpo do POST. **Só o autor** (403) |
@@ -647,3 +647,4 @@ Ajustes em relação ao Figma, combinados com o grupo:
 | 11/11/2026 | Relatórios da cidade (§8.9), trocar senha e excluir conta (§8.2). Pedidos 8 e 9 ao front. |
 | 11/11/2026 | "Cidade viva" (§8.10): `autor.simulado`, `cidadePreparada`, `denunciasSimuladas`, imagens de demonstração. Pedido 10 ao front. |
 | 11/11/2026 | Cadastro na primeira conta de uma cidade caiu de ~7,5 s para ~1–2 s (conteúdo de exemplo gravado em lote). Sem mudança de contrato. |
+| 11/11/2026 | Robustez: `imagemUrl` validada, `busca` até 100 caracteres, escrita no catálogo de direitos exige `X-Chave-Admin`. |
