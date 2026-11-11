@@ -131,11 +131,8 @@ public class UsuarioService {
         return letra && numero;
     }
 
-    /**
-     * Verifica se o usuário já respondeu o questionário.
-     * Ponto de integração com o perfil demográfico (implementado na etapa do perfil).
-     */
+    /** Verifica se o usuário já respondeu o questionário de "Meus Direitos". */
     static boolean possuiPerfil(Connection con, Long idUsuario) throws SQLException {
-        return false;
+        return PerfilService.possuiPerfil(con, idUsuario);
     }
 }
