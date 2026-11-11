@@ -67,6 +67,23 @@ public final class AppConfig {
     }
 
     /**
+     * Liga a "cidade viva": conteúdo de demonstração para cidades novas e atividade simulada no feed.
+     * Padrão: ligada. Use simulacao.ativa=false para desligar (ex.: testes).
+     */
+    public static boolean simulacaoAtiva() {
+        return !"false".equalsIgnoreCase(valor("simulacao.ativa", "MD_SIMULACAO_ATIVA", "true"));
+    }
+
+    /**
+     * Chave exigida (cabeçalho X-Chave-Simulacao) nas rotas de preparo da demonstração.
+     *
+     * @return a chave, ou null se não configurada (nesse caso as rotas ficam desabilitadas)
+     */
+    public static String simulacaoChave() {
+        return valor("simulacao.chave", "MD_SIMULACAO_CHAVE", null);
+    }
+
+    /**
      * Lista as configurações obrigatórias que não foram informadas.
      *
      * @return nomes das chaves ausentes (vazia quando está tudo configurado)

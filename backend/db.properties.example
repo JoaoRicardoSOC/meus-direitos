@@ -14,3 +14,10 @@ server.uri=http://localhost:8080/api/
 
 # Origens do front-end liberadas no CORS, separadas por vírgula (MD_CORS_ORIGENS)
 cors.origens=http://localhost:5173
+
+# "Cidade viva": conteúdo de demonstração para cidades novas e atividade simulada (MD_SIMULACAO_ATIVA)
+simulacao.ativa=true
+
+# Chave das rotas /api/simulacao/* (cabeçalho X-Chave-Simulacao). Sem chave, as rotas ficam desligadas
+# (MD_SIMULACAO_CHAVE). Use um valor difícil de adivinhar e não o versione.
+simulacao.chave=troque-esta-chave
