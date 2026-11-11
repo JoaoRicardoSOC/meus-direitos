@@ -69,7 +69,11 @@ public class DenunciaDaoJdbc implements DenunciaDao {
                     + "COUNT(CASE WHEN v.tp_voto = 'DOWN' THEN 1 END) AS qt_down, "
                     + "NVL(SUM(CASE v.tp_voto WHEN 'UP' THEN 1 WHEN 'DOWN' THEN -1 END), 0) AS nr_saldo, "
                     + "MAX(CASE WHEN v.cd_usuario = ? THEN v.tp_voto END) AS tp_meu_voto, "
-                    + "(SELECT COUNT(*) FROM tb_comentario c WHERE c.cd_denuncia = d.cd_denuncia) AS qt_comentarios"
+                    + "(SELECT COUNT(*) FROM tb_comentario c WHERE c.cd_denuncia = d.cd_denuncia) AS qt_comentarios, "
+                    + "(SELECT COUNT(*) FROM tb_confirmacao_resolucao r WHERE r.cd_denuncia = d.cd_denuncia) "
+                    + "AS qt_confirmacoes, "
+                    + "(SELECT COUNT(*) FROM tb_confirmacao_resolucao r WHERE r.cd_denuncia = d.cd_denuncia "
+                    + "AND r.cd_usuario = ?) AS st_confirmei"
                     + "%s "
                     + "FROM tb_denuncia d "
                     + "INNER JOIN tb_usuario u ON u.cd_usuario = d.cd_usuario "
@@ -203,7 +207,7 @@ public class DenunciaDaoJdbc implements DenunciaDao {
     @Override
     public DenunciaDetalhada buscarDetalhada(Long id, Long idLeitor) throws SQLException {
         List<Object> parametros = new ArrayList<>();
-        parametros.add(leitor(idLeitor));
+        adicionarLeitor(parametros, idLeitor);
         parametros.add(id);
         String sql = String.format(SQL_DETALHADA, "", "d.cd_denuncia = ?", ORDEM_RECENTES);
         List<DenunciaDetalhada> resultado = executarConsulta(sql, parametros, false);
@@ -216,7 +220,7 @@ public class DenunciaDaoJdbc implements DenunciaDao {
     @Override
     public List<DenunciaDetalhada> listarPorAutor(Long idAutor, Long idLeitor) throws SQLException {
         List<Object> parametros = new ArrayList<>();
-        parametros.add(leitor(idLeitor));
+        adicionarLeitor(parametros, idLeitor);
         parametros.add(idAutor);
         String sql = String.format(SQL_DETALHADA, "", "d.cd_usuario = ?", ORDEM_RECENTES);
         return executarConsulta(sql, parametros, false);
@@ -229,7 +233,7 @@ public class DenunciaDaoJdbc implements DenunciaDao {
         String where = montarWhere(filtro, parametrosWhere);
 
         List<Object> parametros = new ArrayList<>();
-        parametros.add(leitor(idLeitor));
+        adicionarLeitor(parametros, idLeitor);
         parametros.addAll(parametrosWhere);
         String sql = String.format(SQL_DETALHADA, "", where, ORDEM_RECENTES);
 
@@ -250,7 +254,7 @@ public class DenunciaDaoJdbc implements DenunciaDao {
 
         // a ordem dos parâmetros segue a ordem dos "?" no SQL: SELECT (leitor, extras) → WHERE
         List<Object> parametros = new ArrayList<>();
-        parametros.add(leitor(idLeitor));
+        adicionarLeitor(parametros, idLeitor);
         parametros.addAll(categorias);         // st_relevante
         parametros.addAll(categorias);         // nr_relevancia
         parametros.add(bonusRelevancia);
@@ -343,15 +347,19 @@ public class DenunciaDaoJdbc implements DenunciaDao {
                     Placar placar = new Placar(rs.getInt("qt_up"), rs.getInt("qt_down"),
                             JdbcUtil.getEnum(rs, "tp_meu_voto", TipoVoto.class));
                     Boolean relevante = comRelevancia ? rs.getInt("st_relevante") == 1 : null;
-                    lista.add(new DenunciaDetalhada(mapearDenuncia(rs), placar, rs.getInt("qt_comentarios"), relevante));
+                    lista.add(new DenunciaDetalhada(mapearDenuncia(rs), placar, rs.getInt("qt_comentarios"),
+                            rs.getInt("qt_confirmacoes"), rs.getInt("st_confirmei") > 0, relevante));
                 }
             }
         }
         return lista;
     }
 
-    private static long leitor(Long idLeitor) {
-        return idLeitor == null ? SEM_LEITOR : idLeitor;
+    /** O leitor aparece duas vezes no SELECT base: no "meu voto" e no "eu confirmei". */
+    private static void adicionarLeitor(List<Object> parametros, Long idLeitor) {
+        long leitor = idLeitor == null ? SEM_LEITOR : idLeitor;
+        parametros.add(leitor);
+        parametros.add(leitor);
     }
 
     private static Denuncia mapearDenuncia(ResultSet rs) throws SQLException {
