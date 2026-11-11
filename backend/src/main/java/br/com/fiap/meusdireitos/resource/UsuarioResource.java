@@ -1,7 +1,9 @@
 package br.com.fiap.meusdireitos.resource;
 
+import br.com.fiap.meusdireitos.dto.request.AlteracaoSenhaRequest;
 import br.com.fiap.meusdireitos.dto.request.AtualizacaoUsuarioRequest;
 import br.com.fiap.meusdireitos.dto.request.CadastroUsuarioRequest;
+import br.com.fiap.meusdireitos.dto.request.ExclusaoContaRequest;
 import br.com.fiap.meusdireitos.dto.response.UsuarioPublicoResponse;
 import br.com.fiap.meusdireitos.dto.response.UsuarioResponse;
 import br.com.fiap.meusdireitos.service.AutenticacaoService;
@@ -65,5 +67,23 @@ public class UsuarioResource {
     public UsuarioResponse atualizarMinhaConta(@HeaderParam(CABECALHO_USUARIO) String usuarioId,
                                                AtualizacaoUsuarioRequest req) {
         return service.atualizarConta(autenticacao.idDoUsuarioLogado(usuarioId), req);
+    }
+
+    @PUT
+    @Path("me/senha")
+    public Response alterarSenha(@HeaderParam(CABECALHO_USUARIO) String usuarioId, AlteracaoSenhaRequest req) {
+        service.alterarSenha(autenticacao.idDoUsuarioLogado(usuarioId), req);
+        return Response.noContent().build();
+    }
+
+    /**
+     * Exclui a conta e todos os dados da pessoa. O corpo traz a senha para confirmar.
+     * É POST (e não DELETE) porque o Jersey não lê corpo em requisições DELETE.
+     */
+    @POST
+    @Path("me/exclusao")
+    public Response excluirMinhaConta(@HeaderParam(CABECALHO_USUARIO) String usuarioId, ExclusaoContaRequest req) {
+        service.excluirConta(autenticacao.idDoUsuarioLogado(usuarioId), req);
+        return Response.noContent().build();
     }
 }
