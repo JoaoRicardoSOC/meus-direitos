@@ -1,5 +1,6 @@
 package br.com.fiap.meusdireitos.model;
 
+import br.com.fiap.meusdireitos.model.enums.StatusDenuncia;
 import br.com.fiap.meusdireitos.model.enums.TipoVoto;
 import org.junit.jupiter.api.Test;
 
@@ -47,6 +48,33 @@ class DenunciaTest {
         assertEquals("SP", d.getUf());
         assertNull(d.getBairro());
         assertEquals("Buraco na via", d.getTitulo());
+    }
+
+    @Test
+    void denunciaResolvidaNaoAceitaNovasConfirmacoes() {
+        Denuncia d = new Denuncia();
+        assertTrue(d.aceitaConfirmacaoDeResolucao()); // ABERTA por padrão
+        d.setStatus(StatusDenuncia.EM_ANDAMENTO);
+        assertTrue(d.aceitaConfirmacaoDeResolucao());
+        d.setStatus(StatusDenuncia.RESOLVIDA);
+        assertFalse(d.aceitaConfirmacaoDeResolucao());
+    }
+
+    @Test
+    void tresConfirmacoesResolvem() {
+        assertFalse(Denuncia.confirmacoesSuficientes(2));
+        assertTrue(Denuncia.confirmacoesSuficientes(3));
+    }
+
+    @Test
+    void comparaCidadeSemDiferenciarMaiusculas() {
+        Denuncia d = new Denuncia();
+        d.setCidade("São Paulo");
+        d.setUf("SP");
+        assertTrue(d.ehDaCidade(" são paulo ", "sp"));
+        assertFalse(d.ehDaCidade("Campinas", "SP"));
+        assertFalse(d.ehDaCidade("São Paulo", "RJ"));
+        assertFalse(d.ehDaCidade(null, "SP"));
     }
 
     @Test

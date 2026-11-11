@@ -13,6 +13,9 @@ import java.time.LocalDateTime;
  */
 public class Denuncia extends EntidadeBase {
 
+    /** Quantos moradores precisam confirmar "já foi resolvido" para a denúncia virar RESOLVIDA. */
+    public static final int CONFIRMACOES_PARA_RESOLVER = 3;
+
     private Long idAutor;
     private String nomeAutor;
     private String titulo;
@@ -42,6 +45,25 @@ public class Denuncia extends EntidadeBase {
     /** @return true se o usuário informado é o autor (único que pode editar, excluir ou mudar o status) */
     public boolean isAutor(Long idUsuario) {
         return idAutor != null && idAutor.equals(idUsuario);
+    }
+
+    /** @return true se a denúncia ainda pode receber confirmações de resolução (não está resolvida) */
+    public boolean aceitaConfirmacaoDeResolucao() {
+        return status != StatusDenuncia.RESOLVIDA;
+    }
+
+    /** @return true se o total de confirmações já basta para considerar o problema resolvido */
+    public static boolean confirmacoesSuficientes(int confirmacoes) {
+        return confirmacoes >= CONFIRMACOES_PARA_RESOLVER;
+    }
+
+    /**
+     * Só moradores da mesma cidade confirmam a resolução (quem passa pelo local sabe se foi consertado).
+     * A comparação ignora maiúsculas/minúsculas e espaços nas pontas.
+     */
+    public boolean ehDaCidade(String outraCidade, String outraUf) {
+        return cidade != null && outraCidade != null && uf != null && outraUf != null
+                && cidade.trim().equalsIgnoreCase(outraCidade.trim()) && uf.trim().equalsIgnoreCase(outraUf.trim());
     }
 
     public Long getIdAutor() {
