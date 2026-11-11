@@ -2,7 +2,12 @@ package br.com.fiap.meusdireitos.service;
 
 import br.com.fiap.meusdireitos.dao.Transacao;
 import br.com.fiap.meusdireitos.dao.jdbc.UsuarioDaoJdbc;
+import br.com.fiap.meusdireitos.dto.request.LoginRequest;
+import br.com.fiap.meusdireitos.dto.response.UsuarioResponse;
 import br.com.fiap.meusdireitos.exception.NaoAutenticadoException;
+import br.com.fiap.meusdireitos.model.Usuario;
+import br.com.fiap.meusdireitos.service.validacao.Validador;
+import br.com.fiap.meusdireitos.util.SenhaUtil;
 
 /**
  * Login e identificação do usuário nas rotas que exigem conta.
@@ -13,7 +18,34 @@ import br.com.fiap.meusdireitos.exception.NaoAutenticadoException;
  */
 public class AutenticacaoService {
 
+    /** Mensagem única para e-mail inexistente e senha errada: não revela qual dos dois falhou. */
+    private static final String MSG_LOGIN_INVALIDO = "E-mail ou senha inválidos.";
     private static final String MSG_SEM_SESSAO = "Faça login para continuar.";
+
+    /** Hash de uma senha aleatória, usado quando o e-mail não existe (ver {@link #entrar}). */
+    private static final String HASH_FICTICIO = SenhaUtil.gerarHash(java.util.UUID.randomUUID().toString());
+
+    /**
+     * @throws NaoAutenticadoException se o e-mail não existir ou a senha não conferir
+     */
+    public UsuarioResponse entrar(LoginRequest req) {
+        Validador.corpoObrigatorio(req);
+        new Validador()
+                .obrigatorio("email", req.email())
+                .obrigatorio("senha", req.senha())
+                .lancarSeHouverErros();
+
+        return Transacao.consultar(con -> {
+            Usuario usuario = new UsuarioDaoJdbc(con).buscarPorEmail(Usuario.normalizarEmail(req.email()));
+            // Calcula o hash mesmo sem usuário: o tempo de resposta não revela se o e-mail tem conta
+            String hashParaComparar = usuario == null ? HASH_FICTICIO : usuario.getSenhaHash();
+            boolean senhaConfere = SenhaUtil.verificar(req.senha(), hashParaComparar);
+            if (usuario == null || !senhaConfere) {
+                throw new NaoAutenticadoException(MSG_LOGIN_INVALIDO);
+            }
+            return UsuarioResponse.de(usuario, UsuarioService.possuiPerfil(con, usuario.getId()));
+        });
+    }
 
     /**
      * Resolve o usuário logado a partir do cabeçalho X-Usuario-Id.
