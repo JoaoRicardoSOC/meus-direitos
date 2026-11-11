@@ -15,4 +15,7 @@ public interface ComentarioDao extends CrudDao<Comentario> {
 
     /** Remove todos os comentários de uma denúncia (usado ao excluí-la). */
     void excluirPorDenuncia(Long idDenuncia) throws SQLException;
+
+    /** Remove os comentários escritos pelo usuário e os feitos nas denúncias dele (exclusão de conta). */
+    void excluirDoUsuario(Long idUsuario) throws SQLException;
 }

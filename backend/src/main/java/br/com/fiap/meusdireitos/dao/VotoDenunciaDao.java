@@ -23,4 +23,7 @@ public interface VotoDenunciaDao {
 
     /** Remove todos os votos de uma denúncia (usado ao excluí-la). */
     void excluirPorDenuncia(Long idDenuncia) throws SQLException;
+
+    /** Remove os votos dados pelo usuário e os recebidos nas denúncias dele (exclusão de conta). */
+    void excluirDoUsuario(Long idUsuario) throws SQLException;
 }

@@ -18,4 +18,7 @@ public interface ConfirmacaoResolucaoDao {
 
     /** Remove todas as confirmações da denúncia (ao reabrir ou excluir). */
     void excluirPorDenuncia(Long idDenuncia) throws SQLException;
+
+    /** Remove as confirmações feitas pelo usuário e as recebidas nas denúncias dele (exclusão de conta). */
+    void excluirDoUsuario(Long idUsuario) throws SQLException;
 }

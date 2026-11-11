@@ -59,6 +59,8 @@ public class DenunciaDaoJdbc implements DenunciaDao {
             "UPDATE tb_denuncia SET st_denuncia = ?, dt_atualizacao = ? WHERE cd_denuncia = ?";
     private static final String SQL_EXCLUIR =
             "DELETE FROM tb_denuncia WHERE cd_denuncia = ?";
+    private static final String SQL_EXCLUIR_DO_AUTOR =
+            "DELETE FROM tb_denuncia WHERE cd_usuario = ?";
 
     // ------------------------------------------------------------------ consultas de tela
 
@@ -199,6 +201,14 @@ public class DenunciaDaoJdbc implements DenunciaDao {
             if (stmt.executeUpdate() == 0) {
                 throw new EntidadeNaoEncontradaException("Denúncia não encontrada para exclusão.");
             }
+        }
+    }
+
+    @Override
+    public int excluirDoAutor(Long idAutor) throws SQLException {
+        try (PreparedStatement stmt = conexao.prepareStatement(SQL_EXCLUIR_DO_AUTOR)) {
+            stmt.setLong(1, idAutor);
+            return stmt.executeUpdate();
         }
     }
 

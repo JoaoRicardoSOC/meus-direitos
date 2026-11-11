@@ -22,6 +22,14 @@ public interface DenunciaDao extends CrudDao<Denuncia> {
     void atualizarStatus(Long id, StatusDenuncia status) throws SQLException;
 
     /**
+     * Exclui todas as denúncias de um autor (exclusão de conta). Votos, comentários e
+     * confirmações dessas denúncias devem ser excluídos antes, na mesma transação.
+     *
+     * @return quantidade de denúncias excluídas
+     */
+    int excluirDoAutor(Long idAutor) throws SQLException;
+
+    /**
      * @throws br.com.fiap.meusdireitos.exception.EntidadeNaoEncontradaException se não existir
      */
     DenunciaDetalhada buscarDetalhada(Long id, Long idLeitor) throws SQLException;

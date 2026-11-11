@@ -25,6 +25,10 @@ public class ConfirmacaoResolucaoDaoJdbc implements ConfirmacaoResolucaoDao {
     private static final String SQL_EXCLUIR_POR_DENUNCIA =
             "DELETE FROM tb_confirmacao_resolucao WHERE cd_denuncia = ?";
 
+    private static final String SQL_EXCLUIR_DO_USUARIO =
+            "DELETE FROM tb_confirmacao_resolucao WHERE cd_usuario = ? "
+                    + "OR cd_denuncia IN (SELECT cd_denuncia FROM tb_denuncia WHERE cd_usuario = ?)";
+
     private final Connection conexao;
 
     public ConfirmacaoResolucaoDaoJdbc(Connection conexao) {
@@ -70,6 +74,15 @@ public class ConfirmacaoResolucaoDaoJdbc implements ConfirmacaoResolucaoDao {
     public void excluirPorDenuncia(Long idDenuncia) throws SQLException {
         try (PreparedStatement stmt = conexao.prepareStatement(SQL_EXCLUIR_POR_DENUNCIA)) {
             stmt.setLong(1, idDenuncia);
+            stmt.executeUpdate();
+        }
+    }
+
+    @Override
+    public void excluirDoUsuario(Long idUsuario) throws SQLException {
+        try (PreparedStatement stmt = conexao.prepareStatement(SQL_EXCLUIR_DO_USUARIO)) {
+            stmt.setLong(1, idUsuario);
+            stmt.setLong(2, idUsuario);
             stmt.executeUpdate();
         }
     }
