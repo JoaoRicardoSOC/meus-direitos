@@ -84,6 +84,15 @@ public final class AppConfig {
     }
 
     /**
+     * Chave exigida (cabeçalho X-Chave-Admin) para criar, editar e excluir temas do catálogo de direitos.
+     *
+     * @return a chave, ou null se não configurada (nesse caso o catálogo fica somente leitura)
+     */
+    public static String adminChave() {
+        return valor("admin.chave", "MD_ADMIN_CHAVE", null);
+    }
+
+    /**
      * Lista as configurações obrigatórias que não foram informadas.
      *
      * @return nomes das chaves ausentes (vazia quando está tudo configurado)

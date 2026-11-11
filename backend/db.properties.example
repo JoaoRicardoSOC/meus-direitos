@@ -21,3 +21,7 @@ simulacao.ativa=true
 # Chave das rotas /api/simulacao/* (cabeçalho X-Chave-Simulacao). Sem chave, as rotas ficam desligadas
 # (MD_SIMULACAO_CHAVE). Use um valor difícil de adivinhar e não o versione.
 simulacao.chave=troque-esta-chave
+
+# Chave para criar, editar e excluir temas do catálogo de direitos (cabeçalho X-Chave-Admin; MD_ADMIN_CHAVE).
+# Sem chave, o catálogo fica somente leitura. Use um valor difícil de adivinhar e não o versione.
+admin.chave=troque-esta-chave-admin

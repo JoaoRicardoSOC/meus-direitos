@@ -1,11 +1,14 @@
 package br.com.fiap.meusdireitos.resource;
 
+import br.com.fiap.meusdireitos.config.AppConfig;
 import br.com.fiap.meusdireitos.dto.request.DireitoRequest;
 import br.com.fiap.meusdireitos.dto.response.DireitoResponse;
 import br.com.fiap.meusdireitos.dto.response.DireitoResumoResponse;
+import br.com.fiap.meusdireitos.exception.AcessoNegadoException;
 import br.com.fiap.meusdireitos.service.AutenticacaoService;
 import br.com.fiap.meusdireitos.service.DireitoService;
 import br.com.fiap.meusdireitos.service.PerfilService;
+import br.com.fiap.meusdireitos.util.ChaveUtil;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.DELETE;
 import jakarta.ws.rs.GET;
@@ -26,12 +29,16 @@ import java.util.List;
 
 /**
  * Catálogo de temas de direitos (CRUD completo).
- * No MVP não há perfil de administrador: o cadastro é usado pela equipe e pelos dados iniciais.
+ * <p>
+ * A leitura é pública. Criar, editar e excluir exigem o cabeçalho {@code X-Chave-Admin} igual a
+ * {@code admin.chave} do db.properties (sem chave configurada, o catálogo fica somente leitura).
  */
 @Path("direitos")
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON)
 public class DireitoResource {
+
+    static final String CABECALHO_CHAVE = "X-Chave-Admin";
 
     private final DireitoService service = new DireitoService();
     private final PerfilService perfilService = new PerfilService();
@@ -56,7 +63,8 @@ public class DireitoResource {
     }
 
     @POST
-    public Response criar(DireitoRequest req, @Context UriInfo uriInfo) {
+    public Response criar(@HeaderParam(CABECALHO_CHAVE) String chave, DireitoRequest req, @Context UriInfo uriInfo) {
+        exigirChaveAdmin(chave);
         DireitoResponse criado = service.criar(req);
         URI local = uriInfo.getAbsolutePathBuilder().path(String.valueOf(criado.id())).build();
         return Response.created(local).entity(criado).build();
@@ -64,14 +72,24 @@ public class DireitoResource {
 
     @PUT
     @Path("{id: \\d+}")
-    public DireitoResponse atualizar(@PathParam("id") Long id, DireitoRequest req) {
+    public DireitoResponse atualizar(@HeaderParam(CABECALHO_CHAVE) String chave, @PathParam("id") Long id,
+                                     DireitoRequest req) {
+        exigirChaveAdmin(chave);
         return service.atualizar(id, req);
     }
 
     @DELETE
     @Path("{id: \\d+}")
-    public Response excluir(@PathParam("id") Long id) {
+    public Response excluir(@HeaderParam(CABECALHO_CHAVE) String chave, @PathParam("id") Long id) {
+        exigirChaveAdmin(chave);
         service.excluir(id);
         return Response.noContent().build();
+    }
+
+    /** A escrita no catálogo é da equipe: exige o cabeçalho X-Chave-Admin igual a admin.chave. */
+    private static void exigirChaveAdmin(String informada) {
+        if (!ChaveUtil.confere(AppConfig.adminChave(), informada)) {
+            throw new AcessoNegadoException("Somente a administração pode alterar o catálogo de direitos.");
+        }
     }
 }
