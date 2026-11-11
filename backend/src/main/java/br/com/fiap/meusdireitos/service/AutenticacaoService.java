@@ -48,6 +48,22 @@ public class AutenticacaoService {
     }
 
     /**
+     * Para rotas públicas que mostram algo a mais a quem está logado (ex.: o próprio voto).
+     *
+     * @return id informado no cabeçalho, ou null se ausente ou inválido (nunca lança exceção)
+     */
+    public Long idOpcional(String cabecalho) {
+        if (cabecalho == null || cabecalho.isBlank()) {
+            return null;
+        }
+        try {
+            return Long.parseLong(cabecalho.trim());
+        } catch (NumberFormatException e) {
+            return null;
+        }
+    }
+
+    /**
      * Resolve o usuário logado a partir do cabeçalho X-Usuario-Id.
      *
      * @param cabecalho valor recebido no cabeçalho (pode ser nulo)

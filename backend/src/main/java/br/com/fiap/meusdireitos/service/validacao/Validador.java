@@ -69,6 +69,28 @@ public class Validador {
                 List.of(new ErroCampo(campo, "Valores aceitos: " + aceitos + ".")));
     }
 
+    /**
+     * Lê um número inteiro recebido como texto (ex.: ?pagina=2).
+     *
+     * @return o número, ou {@code padrao} se o texto for nulo ou vazio
+     * @throws ValidacaoException se não for um número inteiro entre min e max
+     */
+    public static int inteiro(String campo, String valor, int padrao, int min, int max) {
+        if (valor == null || valor.isBlank()) {
+            return padrao;
+        }
+        try {
+            int numero = Integer.parseInt(valor.trim());
+            if (numero >= min && numero <= max) {
+                return numero;
+            }
+        } catch (NumberFormatException e) {
+            // tratado abaixo com a mesma mensagem
+        }
+        throw new ValidacaoException("Parâmetro '" + campo + "' inválido.",
+                List.of(new ErroCampo(campo, "Informe um número inteiro entre " + min + " e " + max + ".")));
+    }
+
     /** Valor não pode ser nulo nem, se for texto, vazio/só espaços. */
     public Validador obrigatorio(String campo, Object valor) {
         boolean vazio = valor == null || (valor instanceof String && ((String) valor).isBlank());
