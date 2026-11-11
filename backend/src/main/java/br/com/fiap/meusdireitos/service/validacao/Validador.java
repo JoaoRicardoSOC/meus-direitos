@@ -46,6 +46,29 @@ public class Validador {
         }
     }
 
+    /**
+     * Converte um texto (ex.: parâmetro de URL) para o enum correspondente, sem diferenciar maiúsculas.
+     *
+     * @return o valor do enum, ou null se o texto for nulo ou vazio
+     * @throws ValidacaoException com a lista de valores aceitos, se o texto não corresponder a nenhum valor
+     */
+    public static <E extends Enum<E>> E converterEnum(Class<E> tipo, String valor, String campo) {
+        if (valor == null || valor.isBlank()) {
+            return null;
+        }
+        for (E constante : tipo.getEnumConstants()) {
+            if (constante.name().equalsIgnoreCase(valor.trim())) {
+                return constante;
+            }
+        }
+        StringBuilder aceitos = new StringBuilder();
+        for (E constante : tipo.getEnumConstants()) {
+            aceitos.append(aceitos.length() == 0 ? "" : ", ").append(constante.name());
+        }
+        throw new ValidacaoException("Valor '" + valor + "' não é aceito.",
+                List.of(new ErroCampo(campo, "Valores aceitos: " + aceitos + ".")));
+    }
+
     /** Valor não pode ser nulo nem, se for texto, vazio/só espaços. */
     public Validador obrigatorio(String campo, Object valor) {
         boolean vazio = valor == null || (valor instanceof String && ((String) valor).isBlank());
@@ -79,6 +102,17 @@ public class Validador {
             return this;
         }
         return regra(UFS.contains(valor.trim().toUpperCase()), campo, "UF inválida. Use a sigla do estado, ex.: SP.");
+    }
+
+    /** Endereço web começando com http:// ou https://, com até 300 caracteres. Ignora nulos e vazios. */
+    public Validador url(String campo, String valor) {
+        if (valor == null || valor.isBlank()) {
+            return this;
+        }
+        String limpo = valor.trim();
+        boolean valido = limpo.length() <= 300 && (limpo.startsWith("https://") || limpo.startsWith("http://"))
+                && !limpo.contains(" ");
+        return regra(valido, campo, "Informe um endereço começando com https://");
     }
 
     /** Data anterior a hoje. Ignora valores nulos. */

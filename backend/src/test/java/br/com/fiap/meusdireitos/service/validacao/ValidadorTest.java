@@ -2,6 +2,7 @@ package br.com.fiap.meusdireitos.service.validacao;
 
 import br.com.fiap.meusdireitos.exception.ErroCampo;
 import br.com.fiap.meusdireitos.exception.ValidacaoException;
+import br.com.fiap.meusdireitos.model.enums.TagDemografica;
 import org.junit.jupiter.api.Test;
 
 import java.time.LocalDate;
@@ -10,6 +11,7 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -72,6 +74,29 @@ class ValidadorTest {
                 .tamanho("a", null, 1, 2).email("b", null).uf("c", null)
                 .dataNoPassado("d", null).intervalo("e", null, 1, 2)
                 .temErros());
+    }
+
+    @Test
+    void converteEnumSemDiferenciarMaiusculas() {
+        assertEquals(TagDemografica.PPI, Validador.converterEnum(TagDemografica.class, " ppi ", "tag"));
+        assertNull(Validador.converterEnum(TagDemografica.class, "", "tag"));
+        assertNull(Validador.converterEnum(TagDemografica.class, null, "tag"));
+    }
+
+    @Test
+    void enumInexistenteInformaValoresAceitos() {
+        ValidacaoException e = assertThrows(ValidacaoException.class,
+                () -> Validador.converterEnum(TagDemografica.class, "xyz", "tag"));
+        assertEquals("tag", e.getCampos().get(0).campo());
+        assertTrue(e.getCampos().get(0).mensagem().contains("IDOSO"));
+    }
+
+    @Test
+    void urlPrecisaComecarComHttp() {
+        assertFalse(new Validador().url("link", "https://www.gov.br").temErros());
+        assertFalse(new Validador().url("link", "").temErros());
+        assertTrue(new Validador().url("link", "ftp://x").temErros());
+        assertTrue(new Validador().url("link", "https://com espaco").temErros());
     }
 
     @Test
