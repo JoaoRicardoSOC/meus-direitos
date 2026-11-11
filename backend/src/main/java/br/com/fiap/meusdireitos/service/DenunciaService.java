@@ -34,6 +34,7 @@ public class DenunciaService {
     static final int TAMANHO_PADRAO = 10;
     static final int TAMANHO_MAXIMO = 50;
     static final int PAGINA_MAXIMA = 10_000;
+    static final int TAMANHO_MAXIMO_BUSCA = 100;
 
     /**
      * Registra uma denúncia na cidade do autor.
@@ -64,6 +65,7 @@ public class DenunciaService {
      */
     public PaginaResponse<DenunciaResponse> pesquisar(String cidade, String uf, String categoria, String status,
                                                       String busca, String pagina, String tamanho, Long idLeitor) {
+        new Validador().tamanho("busca", busca, 0, TAMANHO_MAXIMO_BUSCA).lancarSeHouverErros();
         FiltroDenuncia filtro = new FiltroDenuncia(vazioParaNulo(cidade), vazioParaNulo(uf),
                 Validador.converterEnum(CategoriaDenuncia.class, categoria, "categoria"),
                 Validador.converterEnum(StatusDenuncia.class, status, "status"),
