@@ -18,6 +18,7 @@ import br.com.fiap.meusdireitos.exception.ConflitoException;
 import br.com.fiap.meusdireitos.exception.ErroCampo;
 import br.com.fiap.meusdireitos.exception.ValidacaoException;
 import br.com.fiap.meusdireitos.model.Usuario;
+import br.com.fiap.meusdireitos.service.simulacao.SimulacaoService;
 import br.com.fiap.meusdireitos.service.validacao.Validador;
 import br.com.fiap.meusdireitos.util.SenhaUtil;
 
@@ -53,14 +54,16 @@ public class UsuarioService {
         usuario.setUf(req.uf());
         usuario.setSenhaHash(SenhaUtil.gerarHash(req.senha()));
 
-        return Transacao.executar(con -> {
+        Transacao.executarSemRetorno(con -> {
             UsuarioDao dao = new UsuarioDaoJdbc(con);
             if (dao.buscarPorEmail(usuario.getEmail()) != null) {
                 throw new ConflitoException(MSG_EMAIL_EM_USO);
             }
             dao.inserir(usuario);
-            return UsuarioResponse.de(usuario, false);
         });
+        // Depois do cadastro confirmado (outra transação): prepara a "cidade viva". Se falhar, o cadastro vale.
+        boolean cidadePreparada = new SimulacaoService().prepararCidade(usuario.getCidade(), usuario.getUf());
+        return UsuarioResponse.de(usuario, false, cidadePreparada);
     }
 
     /** Dados da própria conta. */
