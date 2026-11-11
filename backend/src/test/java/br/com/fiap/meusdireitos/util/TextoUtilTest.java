@@ -17,6 +17,14 @@ class TextoUtilTest {
     }
 
     @Test
+    void capitalizaNomesDeCidade() {
+        assertEquals("São Paulo", TextoUtil.capitalizar("são paulo"));
+        assertEquals("Rio de Janeiro", TextoUtil.capitalizar("RIO DE JANEIRO"));
+        assertEquals("Vitória da Conquista", TextoUtil.capitalizar("  vitória   DA conquista "));
+        assertNull(TextoUtil.capitalizar(null));
+    }
+
+    @Test
     void slugServeParaEmail() {
         assertEquals("sao.paulo", TextoUtil.slug("São Paulo"));
         assertEquals("santa.barbara.d.oeste", TextoUtil.slug("Santa Bárbara d'Oeste"));

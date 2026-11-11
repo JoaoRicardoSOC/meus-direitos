@@ -25,6 +25,26 @@ public final class TextoUtil {
     }
 
     /**
+     * Nome próprio com iniciais maiúsculas, mantendo acentos e preposições em minúsculas.
+     * Ex.: "são paulo" → "São Paulo"; "santa bárbara d'oeste" → "Santa Bárbara D'oeste".
+     */
+    public static String capitalizar(String texto) {
+        if (texto == null) {
+            return null;
+        }
+        StringBuilder resultado = new StringBuilder();
+        for (String palavra : texto.trim().toLowerCase().split("\\s+")) {
+            if (resultado.length() > 0) {
+                resultado.append(' ');
+            }
+            boolean preposicao = palavra.matches("de|da|do|das|dos|e");
+            resultado.append(preposicao || palavra.isEmpty() ? palavra
+                    : Character.toUpperCase(palavra.charAt(0)) + palavra.substring(1));
+        }
+        return resultado.toString();
+    }
+
+    /**
      * Versão para e-mail: só letras e números minúsculos, separados por ponto.
      * Ex.: "São Paulo" → "sao.paulo".
      */
