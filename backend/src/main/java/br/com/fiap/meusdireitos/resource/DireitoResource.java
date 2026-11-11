@@ -2,10 +2,14 @@ package br.com.fiap.meusdireitos.resource;
 
 import br.com.fiap.meusdireitos.dto.request.DireitoRequest;
 import br.com.fiap.meusdireitos.dto.response.DireitoResponse;
+import br.com.fiap.meusdireitos.dto.response.DireitoResumoResponse;
+import br.com.fiap.meusdireitos.service.AutenticacaoService;
 import br.com.fiap.meusdireitos.service.DireitoService;
+import br.com.fiap.meusdireitos.service.PerfilService;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.DELETE;
 import jakarta.ws.rs.GET;
+import jakarta.ws.rs.HeaderParam;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.PUT;
 import jakarta.ws.rs.Path;
@@ -30,10 +34,19 @@ import java.util.List;
 public class DireitoResource {
 
     private final DireitoService service = new DireitoService();
+    private final PerfilService perfilService = new PerfilService();
+    private final AutenticacaoService autenticacao = new AutenticacaoService();
 
     @GET
     public List<DireitoResponse> listar(@QueryParam("tag") String tag) {
         return service.listar(tag);
+    }
+
+    /** Temas aplicáveis ao usuário logado, de acordo com as respostas do questionário. */
+    @GET
+    @Path("meus")
+    public List<DireitoResumoResponse> meus(@HeaderParam(UsuarioResource.CABECALHO_USUARIO) String usuarioId) {
+        return perfilService.direitosDoUsuario(autenticacao.idDoUsuarioLogado(usuarioId));
     }
 
     @GET
