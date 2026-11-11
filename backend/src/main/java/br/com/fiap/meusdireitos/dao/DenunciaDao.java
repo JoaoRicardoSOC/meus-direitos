@@ -21,6 +21,9 @@ public interface DenunciaDao extends CrudDao<Denuncia> {
 
     void atualizarStatus(Long id, StatusDenuncia status) throws SQLException;
 
+    /** @return denúncias de moradores simulados na cidade (para o pulso de atividade) */
+    List<Denuncia> listarSimuladasDaCidade(String cidade, String uf) throws SQLException;
+
     /**
      * Exclui todas as denúncias de um autor (exclusão de conta). Votos, comentários e
      * confirmações dessas denúncias devem ser excluídos antes, na mesma transação.

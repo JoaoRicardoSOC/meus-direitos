@@ -13,6 +13,8 @@ public interface VotoDenunciaDao {
     /** Cria o voto ou troca o tipo do voto existente (um voto por usuário por denúncia). */
     void salvar(VotoDenuncia voto) throws SQLException;
 
+    boolean jaVotou(Long idUsuario, Long idDenuncia) throws SQLException;
+
     /** @return true se havia voto e ele foi removido */
     boolean remover(Long idUsuario, Long idDenuncia) throws SQLException;
 

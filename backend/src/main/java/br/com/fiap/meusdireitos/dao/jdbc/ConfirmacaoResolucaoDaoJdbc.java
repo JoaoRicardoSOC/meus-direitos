@@ -37,10 +37,15 @@ public class ConfirmacaoResolucaoDaoJdbc implements ConfirmacaoResolucaoDao {
 
     @Override
     public boolean confirmar(Long idUsuario, Long idDenuncia) throws SQLException {
+        return confirmar(idUsuario, idDenuncia, LocalDateTime.now().truncatedTo(ChronoUnit.SECONDS));
+    }
+
+    @Override
+    public boolean confirmar(Long idUsuario, Long idDenuncia, LocalDateTime quando) throws SQLException {
         try (PreparedStatement stmt = conexao.prepareStatement(SQL_INSERIR)) {
             stmt.setLong(1, idUsuario);
             stmt.setLong(2, idDenuncia);
-            JdbcUtil.setDataHora(stmt, 3, LocalDateTime.now().truncatedTo(ChronoUnit.SECONDS));
+            JdbcUtil.setDataHora(stmt, 3, quando);
             stmt.executeUpdate();
             return true;
         } catch (SQLIntegrityConstraintViolationException jaConfirmada) {

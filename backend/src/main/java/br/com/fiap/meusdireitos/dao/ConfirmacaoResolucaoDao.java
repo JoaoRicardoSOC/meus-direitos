@@ -1,6 +1,7 @@
 package br.com.fiap.meusdireitos.dao;
 
 import java.sql.SQLException;
+import java.time.LocalDateTime;
 
 /**
  * Confirmações de moradores de que o problema foi resolvido (TB_CONFIRMACAO_RESOLUCAO,
@@ -10,6 +11,9 @@ public interface ConfirmacaoResolucaoDao {
 
     /** @return true se a confirmação foi registrada agora; false se a pessoa já tinha confirmado */
     boolean confirmar(Long idUsuario, Long idDenuncia) throws SQLException;
+
+    /** Igual a {@link #confirmar(Long, Long)}, com a data informada (conteúdo de demonstração). */
+    boolean confirmar(Long idUsuario, Long idDenuncia, LocalDateTime quando) throws SQLException;
 
     /** @return true se havia confirmação e ela foi retirada */
     boolean retirar(Long idUsuario, Long idDenuncia) throws SQLException;

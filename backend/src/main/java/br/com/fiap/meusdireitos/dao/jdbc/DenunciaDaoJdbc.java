@@ -205,6 +205,25 @@ public class DenunciaDaoJdbc implements DenunciaDao {
     }
 
     @Override
+    public List<Denuncia> listarSimuladasDaCidade(String cidade, String uf) throws SQLException {
+        String sql = "SELECT " + COLUNAS + ", u.nm_usuario AS nm_autor, u.st_simulado AS st_autor_simulado "
+                + "FROM tb_denuncia d INNER JOIN tb_usuario u ON u.cd_usuario = d.cd_usuario "
+                + "WHERE u.st_simulado = 'S' AND UPPER(d.nm_cidade) = UPPER(?) AND d.sg_uf = ? "
+                + "ORDER BY d.dt_criacao DESC";
+        List<Denuncia> lista = new ArrayList<>();
+        try (PreparedStatement stmt = conexao.prepareStatement(sql)) {
+            stmt.setString(1, cidade);
+            stmt.setString(2, uf);
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    lista.add(mapearDenuncia(rs));
+                }
+            }
+        }
+        return lista;
+    }
+
+    @Override
     public int excluirDoAutor(Long idAutor) throws SQLException {
         try (PreparedStatement stmt = conexao.prepareStatement(SQL_EXCLUIR_DO_AUTOR)) {
             stmt.setLong(1, idAutor);

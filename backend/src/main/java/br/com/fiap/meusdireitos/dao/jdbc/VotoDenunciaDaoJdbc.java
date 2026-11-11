@@ -61,6 +61,18 @@ public class VotoDenunciaDaoJdbc implements VotoDenunciaDao {
     }
 
     @Override
+    public boolean jaVotou(Long idUsuario, Long idDenuncia) throws SQLException {
+        try (PreparedStatement stmt = conexao.prepareStatement(
+                "SELECT 1 FROM tb_voto_denuncia WHERE cd_usuario = ? AND cd_denuncia = ?")) {
+            stmt.setLong(1, idUsuario);
+            stmt.setLong(2, idDenuncia);
+            try (ResultSet rs = stmt.executeQuery()) {
+                return rs.next();
+            }
+        }
+    }
+
+    @Override
     public boolean remover(Long idUsuario, Long idDenuncia) throws SQLException {
         try (PreparedStatement stmt = conexao.prepareStatement(SQL_REMOVER)) {
             stmt.setLong(1, idUsuario);
