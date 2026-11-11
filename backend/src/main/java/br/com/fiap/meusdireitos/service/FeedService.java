@@ -11,6 +11,7 @@ import br.com.fiap.meusdireitos.model.Usuario;
 import br.com.fiap.meusdireitos.model.enums.CategoriaDenuncia;
 import br.com.fiap.meusdireitos.model.enums.OrdemFeed;
 import br.com.fiap.meusdireitos.model.enums.TagDemografica;
+import br.com.fiap.meusdireitos.service.simulacao.SimulacaoService;
 import br.com.fiap.meusdireitos.service.validacao.Validador;
 
 import java.time.LocalDate;
@@ -41,6 +42,11 @@ public class FeedService {
         int numeroPagina = Validador.inteiro("pagina", pagina, 1, 1, DenunciaService.PAGINA_MAXIMA);
         int tamanhoPagina = Validador.inteiro("tamanho", tamanho, DenunciaService.TAMANHO_PADRAO, 1,
                 DenunciaService.TAMANHO_MAXIMO);
+
+        // "Cidade viva": antes de montar o feed, gera atividade simulada se já passou o intervalo.
+        // Roda em transação própria e nunca lança exceção: o feed não depende dela.
+        Usuario leitor = Transacao.consultar(con -> new UsuarioDaoJdbc(con).buscarPorId(idUsuario));
+        new SimulacaoService().pulsarSeNecessario(leitor.getCidade(), leitor.getUf());
 
         return Transacao.consultar(con -> {
             Usuario usuario = new UsuarioDaoJdbc(con).buscarPorId(idUsuario);
