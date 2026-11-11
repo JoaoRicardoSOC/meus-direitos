@@ -6,6 +6,7 @@ import br.com.fiap.meusdireitos.exception.EntidadeNaoEncontradaException;
 import br.com.fiap.meusdireitos.model.SemeaduraCidade;
 import br.com.fiap.meusdireitos.service.simulacao.SimulacaoService;
 import br.com.fiap.meusdireitos.service.validacao.Validador;
+import br.com.fiap.meusdireitos.util.ChaveUtil;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.DELETE;
 import jakarta.ws.rs.GET;
@@ -16,8 +17,6 @@ import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.MediaType;
 
-import java.security.MessageDigest;
-import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
 
@@ -84,10 +83,7 @@ public class SimulacaoResource {
     }
 
     private static void exigirChave(String informada) {
-        String configurada = AppConfig.simulacaoChave();
-        boolean confere = configurada != null && informada != null && MessageDigest.isEqual(
-                configurada.getBytes(StandardCharsets.UTF_8), informada.getBytes(StandardCharsets.UTF_8));
-        if (!confere) {
+        if (!ChaveUtil.confere(AppConfig.simulacaoChave(), informada)) {
             throw new EntidadeNaoEncontradaException("A rota solicitada não existe.");
         }
     }
