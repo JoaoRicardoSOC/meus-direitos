@@ -3,6 +3,7 @@ package br.com.fiap.meusdireitos.dao.jdbc;
 import br.com.fiap.meusdireitos.dao.UsuarioDao;
 import br.com.fiap.meusdireitos.exception.EntidadeNaoEncontradaException;
 import br.com.fiap.meusdireitos.model.Usuario;
+import br.com.fiap.meusdireitos.util.TextoUtil;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -33,7 +34,7 @@ public class UsuarioDaoJdbc implements UsuarioDao {
             "SELECT " + COLUNAS + " FROM tb_usuario WHERE st_simulado = 'S' ORDER BY cd_usuario";
     private static final String SQL_LISTAR_SIMULADOS_DA_CIDADE =
             "SELECT " + COLUNAS + " FROM tb_usuario WHERE st_simulado = 'S' "
-                    + "AND UPPER(nm_cidade) = UPPER(?) AND sg_uf = ? ORDER BY cd_usuario";
+                    + "AND " + JdbcUtil.cidadeIgual("nm_cidade") + " AND sg_uf = ? ORDER BY cd_usuario";
     private static final String SQL_BUSCAR_POR_ID =
             "SELECT " + COLUNAS + " FROM tb_usuario WHERE cd_usuario = ?";
     private static final String SQL_BUSCAR_POR_EMAIL =
@@ -165,7 +166,7 @@ public class UsuarioDaoJdbc implements UsuarioDao {
 
     @Override
     public List<Usuario> listarSimuladosDaCidade(String cidade, String uf) throws SQLException {
-        return listarCom(SQL_LISTAR_SIMULADOS_DA_CIDADE, cidade, uf);
+        return listarCom(SQL_LISTAR_SIMULADOS_DA_CIDADE, TextoUtil.chaveCidade(cidade), uf);
     }
 
     private List<Usuario> listarCom(String sql, String... parametros) throws SQLException {

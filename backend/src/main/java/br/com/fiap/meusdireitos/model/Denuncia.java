@@ -2,6 +2,7 @@ package br.com.fiap.meusdireitos.model;
 
 import br.com.fiap.meusdireitos.model.enums.CategoriaDenuncia;
 import br.com.fiap.meusdireitos.model.enums.StatusDenuncia;
+import br.com.fiap.meusdireitos.util.TextoUtil;
 
 import java.time.LocalDateTime;
 
@@ -64,7 +65,8 @@ public class Denuncia extends EntidadeBase {
      */
     public boolean ehDaCidade(String outraCidade, String outraUf) {
         return cidade != null && outraCidade != null && uf != null && outraUf != null
-                && cidade.trim().equalsIgnoreCase(outraCidade.trim()) && uf.trim().equalsIgnoreCase(outraUf.trim());
+                && TextoUtil.chaveCidade(cidade).equals(TextoUtil.chaveCidade(outraCidade))
+                && uf.trim().equalsIgnoreCase(outraUf.trim());
     }
 
     public Long getIdAutor() {

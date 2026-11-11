@@ -11,6 +11,7 @@ import br.com.fiap.meusdireitos.model.enums.CategoriaDenuncia;
 import br.com.fiap.meusdireitos.model.enums.OrdemFeed;
 import br.com.fiap.meusdireitos.model.enums.StatusDenuncia;
 import br.com.fiap.meusdireitos.model.enums.TipoVoto;
+import br.com.fiap.meusdireitos.util.TextoUtil;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -250,11 +251,11 @@ public class DenunciaDaoJdbc implements DenunciaDao {
     public List<Denuncia> listarSimuladasDaCidade(String cidade, String uf) throws SQLException {
         String sql = "SELECT " + COLUNAS + ", u.nm_usuario AS nm_autor, u.st_simulado AS st_autor_simulado "
                 + "FROM tb_denuncia d INNER JOIN tb_usuario u ON u.cd_usuario = d.cd_usuario "
-                + "WHERE u.st_simulado = 'S' AND UPPER(d.nm_cidade) = UPPER(?) AND d.sg_uf = ? "
+                + "WHERE u.st_simulado = 'S' AND " + JdbcUtil.cidadeIgual("d.nm_cidade") + " AND d.sg_uf = ? "
                 + "ORDER BY d.dt_criacao DESC";
         List<Denuncia> lista = new ArrayList<>();
         try (PreparedStatement stmt = conexao.prepareStatement(sql)) {
-            stmt.setString(1, cidade);
+            stmt.setString(1, TextoUtil.chaveCidade(cidade));
             stmt.setString(2, uf);
             try (ResultSet rs = stmt.executeQuery()) {
                 while (rs.next()) {
@@ -321,7 +322,7 @@ public class DenunciaDaoJdbc implements DenunciaDao {
             categorias.add(SEM_CATEGORIA);
         }
         String extras = String.format(COLUNAS_RELEVANCIA, JdbcUtil.placeholders(categorias.size()));
-        String where = "UPPER(d.nm_cidade) = UPPER(?) AND d.sg_uf = ?";
+        String where = JdbcUtil.cidadeIgual("d.nm_cidade") + " AND d.sg_uf = ?";
 
         // a ordem dos parâmetros segue a ordem dos "?" no SQL: SELECT (leitor, extras) → WHERE
         List<Object> parametros = new ArrayList<>();
@@ -330,12 +331,12 @@ public class DenunciaDaoJdbc implements DenunciaDao {
         parametros.addAll(categorias);         // nr_relevancia
         parametros.add(bonusRelevancia);
         parametros.add(penalidadeResolvida);
-        parametros.add(cidade);
+        parametros.add(TextoUtil.chaveCidade(cidade));
         parametros.add(uf);
 
         String sql = String.format(SQL_DETALHADA, extras, where, ordenacao(ordem));
         List<DenunciaDetalhada> itens = executarPaginada(sql, parametros, pagina, tamanho, true);
-        return new Pagina<>(pagina, tamanho, contar(where, List.of(cidade, uf)), itens);
+        return new Pagina<>(pagina, tamanho, contar(where, List.of(TextoUtil.chaveCidade(cidade), uf)), itens);
     }
 
     // ================================================================== auxiliares
@@ -357,8 +358,8 @@ public class DenunciaDaoJdbc implements DenunciaDao {
         List<String> condicoes = new ArrayList<>();
         condicoes.add("1 = 1");
         if (filtro.cidade() != null) {
-            condicoes.add("UPPER(d.nm_cidade) = UPPER(?)");
-            parametros.add(filtro.cidade().trim());
+            condicoes.add(JdbcUtil.cidadeIgual("d.nm_cidade"));
+            parametros.add(TextoUtil.chaveCidade(filtro.cidade()));
         }
         if (filtro.uf() != null) {
             condicoes.add("d.sg_uf = ?");

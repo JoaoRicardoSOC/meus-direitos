@@ -142,4 +142,16 @@ public final class JdbcUtil {
         }
         return marcadores.toString();
     }
+
+    private static final String COM_ACENTO = "ÁÀÂÃÄÉÈÊËÍÌÎÏÓÒÔÕÖÚÙÛÜÇÑ";
+    private static final String SEM_ACENTO = "AAAAAEEEEIIIIOOOOOUUUUCN";
+
+    /**
+     * Condição SQL que compara a cidade sem diferenciar maiúsculas, acentos e espaços repetidos
+     * ("Sao Paulo" = "São  Paulo"). O valor do "?" deve vir de {@code TextoUtil.chaveCidade}.
+     */
+    public static String cidadeIgual(String coluna) {
+        return "TRANSLATE(UPPER(REGEXP_REPLACE(TRIM(" + coluna + "), ' +', ' ')), '" + COM_ACENTO + "', '"
+                + SEM_ACENTO + "') = ?";
+    }
 }

@@ -72,6 +72,7 @@ class DenunciaTest {
         d.setCidade("São Paulo");
         d.setUf("SP");
         assertTrue(d.ehDaCidade(" são paulo ", "sp"));
+        assertTrue(d.ehDaCidade("Sao  Paulo", "SP")); // sem acento e com espaço repetido
         assertFalse(d.ehDaCidade("Campinas", "SP"));
         assertFalse(d.ehDaCidade("São Paulo", "RJ"));
         assertFalse(d.ehDaCidade(null, "SP"));

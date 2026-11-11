@@ -7,6 +7,7 @@ import br.com.fiap.meusdireitos.model.relatorio.DenunciaEngajamento;
 import br.com.fiap.meusdireitos.model.relatorio.ResumoCidade;
 import br.com.fiap.meusdireitos.model.relatorio.TotalPorBairro;
 import br.com.fiap.meusdireitos.model.relatorio.TotalPorCategoria;
+import br.com.fiap.meusdireitos.util.TextoUtil;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -21,13 +22,13 @@ import java.util.List;
  */
 public class RelatorioDaoJdbc implements RelatorioDao {
 
-    /** Filtro de cidade usado em todas as consultas (sem diferenciar maiúsculas). */
-    private static final String DA_CIDADE = "UPPER(d.nm_cidade) = UPPER(?) AND d.sg_uf = ?";
+    /** Filtro de cidade usado em todas as consultas (sem diferenciar maiúsculas nem acentos). */
+    private static final String DA_CIDADE = JdbcUtil.cidadeIgual("d.nm_cidade") + " AND d.sg_uf = ?";
 
     /** Indicadores gerais: várias subconsultas escalares em uma única linha (FROM dual). */
     private static final String SQL_RESUMO =
             "SELECT "
-                    + "(SELECT COUNT(*) FROM tb_usuario u WHERE UPPER(u.nm_cidade) = UPPER(?) AND u.sg_uf = ?) AS qt_usuarios, "
+                    + "(SELECT COUNT(*) FROM tb_usuario u WHERE " + JdbcUtil.cidadeIgual("u.nm_cidade") + " AND u.sg_uf = ?) AS qt_usuarios, "
                     + "(SELECT COUNT(*) FROM tb_denuncia d WHERE " + DA_CIDADE + ") AS qt_denuncias, "
                     + "(SELECT COUNT(*) FROM tb_denuncia d WHERE " + DA_CIDADE + " AND d.st_denuncia = 'ABERTA') AS qt_abertas, "
                     + "(SELECT COUNT(*) FROM tb_denuncia d WHERE " + DA_CIDADE + " AND d.st_denuncia = 'EM_ANDAMENTO') AS qt_andamento, "
@@ -92,7 +93,7 @@ public class RelatorioDaoJdbc implements RelatorioDao {
         try (PreparedStatement stmt = conexao.prepareStatement(SQL_RESUMO)) {
             int i = 1;
             for (int n = 0; n < OCORRENCIAS_CIDADE_RESUMO; n++) {
-                stmt.setString(i++, cidade);
+                stmt.setString(i++, TextoUtil.chaveCidade(cidade));
                 stmt.setString(i++, uf);
             }
             try (ResultSet rs = stmt.executeQuery()) {
@@ -109,7 +110,7 @@ public class RelatorioDaoJdbc implements RelatorioDao {
     public List<TotalPorCategoria> porCategoria(String cidade, String uf) throws SQLException {
         List<TotalPorCategoria> lista = new ArrayList<>();
         try (PreparedStatement stmt = conexao.prepareStatement(SQL_POR_CATEGORIA)) {
-            stmt.setString(1, cidade);
+            stmt.setString(1, TextoUtil.chaveCidade(cidade));
             stmt.setString(2, uf);
             try (ResultSet rs = stmt.executeQuery()) {
                 while (rs.next()) {
@@ -126,7 +127,7 @@ public class RelatorioDaoJdbc implements RelatorioDao {
     public List<TotalPorBairro> porBairro(String cidade, String uf, int minimo) throws SQLException {
         List<TotalPorBairro> lista = new ArrayList<>();
         try (PreparedStatement stmt = conexao.prepareStatement(SQL_POR_BAIRRO)) {
-            stmt.setString(1, cidade);
+            stmt.setString(1, TextoUtil.chaveCidade(cidade));
             stmt.setString(2, uf);
             stmt.setInt(3, minimo);
             try (ResultSet rs = stmt.executeQuery()) {
@@ -143,7 +144,7 @@ public class RelatorioDaoJdbc implements RelatorioDao {
     public List<DenunciaEngajamento> engajamento(String cidade, String uf, int limite) throws SQLException {
         List<DenunciaEngajamento> lista = new ArrayList<>();
         try (PreparedStatement stmt = conexao.prepareStatement(SQL_ENGAJAMENTO)) {
-            stmt.setString(1, cidade);
+            stmt.setString(1, TextoUtil.chaveCidade(cidade));
             stmt.setString(2, uf);
             stmt.setInt(3, limite);
             try (ResultSet rs = stmt.executeQuery()) {
