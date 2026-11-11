@@ -1,6 +1,7 @@
 package br.com.fiap.meusdireitos.dao.jdbc;
 
 import br.com.fiap.meusdireitos.dao.ConfirmacaoResolucaoDao;
+import br.com.fiap.meusdireitos.model.ConfirmacaoResolucao;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -9,6 +10,7 @@ import java.sql.SQLException;
 import java.sql.SQLIntegrityConstraintViolationException;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
+import java.util.List;
 
 /**
  * Implementação JDBC de {@link ConfirmacaoResolucaoDao}.
@@ -52,6 +54,19 @@ public class ConfirmacaoResolucaoDaoJdbc implements ConfirmacaoResolucaoDao {
             // ORA-00001 na chave primária: a pessoa já tinha confirmado (operação idempotente).
             // Uma FK inválida (ORA-02291) também cai aqui, mas o service valida a denúncia antes.
             return false;
+        }
+    }
+
+    @Override
+    public void confirmarEmLote(List<ConfirmacaoResolucao> confirmacoes) throws SQLException {
+        try (PreparedStatement stmt = conexao.prepareStatement(SQL_INSERIR)) {
+            for (ConfirmacaoResolucao c : confirmacoes) {
+                stmt.setLong(1, c.idUsuario());
+                stmt.setLong(2, c.idDenuncia());
+                JdbcUtil.setDataHora(stmt, 3, c.data());
+                stmt.addBatch();
+            }
+            stmt.executeBatch();
         }
     }
 

@@ -19,7 +19,9 @@ import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Implementação JDBC de {@link DenunciaDao}.
@@ -109,24 +111,8 @@ public class DenunciaDaoJdbc implements DenunciaDao {
 
     @Override
     public Denuncia inserir(Denuncia denuncia) throws SQLException {
-        LocalDateTime agora = LocalDateTime.now().truncatedTo(ChronoUnit.SECONDS);
-        if (denuncia.getDataCriacao() == null) {
-            denuncia.setDataCriacao(agora);
-        }
-        denuncia.setDataAtualizacao(denuncia.getDataCriacao());
         try (PreparedStatement stmt = conexao.prepareStatement(SQL_INSERIR, new String[]{"cd_denuncia"})) {
-            stmt.setLong(1, denuncia.getIdAutor());
-            stmt.setString(2, denuncia.getTitulo());
-            stmt.setString(3, denuncia.getDescricao());
-            JdbcUtil.setEnum(stmt, 4, denuncia.getCategoria());
-            JdbcUtil.setEnum(stmt, 5, denuncia.getStatus());
-            stmt.setString(6, denuncia.getEndereco());
-            stmt.setString(7, denuncia.getBairro());
-            stmt.setString(8, denuncia.getCidade());
-            stmt.setString(9, denuncia.getUf());
-            stmt.setString(10, denuncia.getImagemUrl());
-            JdbcUtil.setDataHora(stmt, 11, denuncia.getDataCriacao());
-            JdbcUtil.setDataHora(stmt, 12, denuncia.getDataAtualizacao());
+            preencherInsercao(stmt, denuncia);
             stmt.executeUpdate();
             try (ResultSet chaves = stmt.getGeneratedKeys()) {
                 if (chaves.next()) {
@@ -135,6 +121,62 @@ public class DenunciaDaoJdbc implements DenunciaDao {
             }
         }
         return denuncia;
+    }
+
+    @Override
+    public void inserirEmLote(List<Denuncia> denuncias) throws SQLException {
+        try (PreparedStatement stmt = conexao.prepareStatement(SQL_INSERIR)) {
+            for (Denuncia denuncia : denuncias) {
+                preencherInsercao(stmt, denuncia);
+                stmt.addBatch();
+            }
+            stmt.executeBatch();
+        }
+    }
+
+    @Override
+    public Map<String, Long> idsPorAutorETitulo(List<Long> autores) throws SQLException {
+        Map<String, Long> ids = new HashMap<>();
+        if (autores.isEmpty()) {
+            return ids;
+        }
+        String sql = "SELECT cd_denuncia, cd_usuario, ds_titulo FROM tb_denuncia WHERE cd_usuario IN ("
+                + JdbcUtil.placeholders(autores.size()) + ")";
+        try (PreparedStatement stmt = conexao.prepareStatement(sql)) {
+            JdbcUtil.preencher(stmt, new ArrayList<>(autores));
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    ids.put(chaveAutorTitulo(rs.getLong("cd_usuario"), rs.getString("ds_titulo")),
+                            rs.getLong("cd_denuncia"));
+                }
+            }
+        }
+        return ids;
+    }
+
+    /** Chave usada em {@link #idsPorAutorETitulo}: "idAutor|título". */
+    public static String chaveAutorTitulo(Long idAutor, String titulo) {
+        return idAutor + "|" + titulo;
+    }
+
+    /** Parâmetros do INSERT (os mesmos na inserção individual e em lote). */
+    private static void preencherInsercao(PreparedStatement stmt, Denuncia denuncia) throws SQLException {
+        if (denuncia.getDataCriacao() == null) {
+            denuncia.setDataCriacao(LocalDateTime.now().truncatedTo(ChronoUnit.SECONDS));
+        }
+        denuncia.setDataAtualizacao(denuncia.getDataCriacao());
+        stmt.setLong(1, denuncia.getIdAutor());
+        stmt.setString(2, denuncia.getTitulo());
+        stmt.setString(3, denuncia.getDescricao());
+        JdbcUtil.setEnum(stmt, 4, denuncia.getCategoria());
+        JdbcUtil.setEnum(stmt, 5, denuncia.getStatus());
+        stmt.setString(6, denuncia.getEndereco());
+        stmt.setString(7, denuncia.getBairro());
+        stmt.setString(8, denuncia.getCidade());
+        stmt.setString(9, denuncia.getUf());
+        stmt.setString(10, denuncia.getImagemUrl());
+        JdbcUtil.setDataHora(stmt, 11, denuncia.getDataCriacao());
+        JdbcUtil.setDataHora(stmt, 12, denuncia.getDataAtualizacao());
     }
 
     @Override

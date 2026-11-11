@@ -4,6 +4,7 @@ import br.com.fiap.meusdireitos.model.Placar;
 import br.com.fiap.meusdireitos.model.VotoDenuncia;
 
 import java.sql.SQLException;
+import java.util.List;
 
 /**
  * Acesso aos votos (TB_VOTO_DENUNCIA, tabela associativa N:N entre usuário e denúncia).
@@ -14,6 +15,9 @@ public interface VotoDenunciaDao {
     void salvar(VotoDenuncia voto) throws SQLException;
 
     boolean jaVotou(Long idUsuario, Long idDenuncia) throws SQLException;
+
+    /** Grava vários votos novos de uma vez (lote JDBC), para o conteúdo de demonstração. */
+    void inserirEmLote(List<VotoDenuncia> votos) throws SQLException;
 
     /** @return true se havia voto e ele foi removido */
     boolean remover(Long idUsuario, Long idDenuncia) throws SQLException;

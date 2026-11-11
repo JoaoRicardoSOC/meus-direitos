@@ -9,6 +9,7 @@ import br.com.fiap.meusdireitos.model.enums.StatusDenuncia;
 
 import java.sql.SQLException;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Acesso às denúncias (TB_DENUNCIA).
@@ -20,6 +21,16 @@ import java.util.List;
 public interface DenunciaDao extends CrudDao<Denuncia> {
 
     void atualizarStatus(Long id, StatusDenuncia status) throws SQLException;
+
+    /** Grava várias denúncias de uma vez (lote JDBC), para o conteúdo de demonstração. */
+    void inserirEmLote(List<Denuncia> denuncias) throws SQLException;
+
+    /**
+     * Recupera os ids das denúncias dos autores informados (após uma inserção em lote).
+     *
+     * @return mapa "idAutor|título" → id da denúncia
+     */
+    Map<String, Long> idsPorAutorETitulo(List<Long> autores) throws SQLException;
 
     /** @return denúncias de moradores simulados na cidade (para o pulso de atividade) */
     List<Denuncia> listarSimuladasDaCidade(String cidade, String uf) throws SQLException;

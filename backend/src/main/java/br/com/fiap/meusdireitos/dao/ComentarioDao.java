@@ -16,6 +16,9 @@ public interface ComentarioDao extends CrudDao<Comentario> {
     /** Remove todos os comentários de uma denúncia (usado ao excluí-la). */
     void excluirPorDenuncia(Long idDenuncia) throws SQLException;
 
+    /** Grava vários comentários de uma vez (lote JDBC), para o conteúdo de demonstração. */
+    void inserirEmLote(List<Comentario> comentarios) throws SQLException;
+
     /** Remove os comentários escritos pelo usuário e os feitos nas denúncias dele (exclusão de conta). */
     void excluirDoUsuario(Long idUsuario) throws SQLException;
 }

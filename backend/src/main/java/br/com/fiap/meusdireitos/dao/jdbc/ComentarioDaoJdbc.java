@@ -64,6 +64,20 @@ public class ComentarioDaoJdbc implements ComentarioDao {
     }
 
     @Override
+    public void inserirEmLote(List<Comentario> comentarios) throws SQLException {
+        try (PreparedStatement stmt = conexao.prepareStatement(SQL_INSERIR)) {
+            for (Comentario c : comentarios) {
+                stmt.setLong(1, c.getIdDenuncia());
+                stmt.setLong(2, c.getIdAutor());
+                stmt.setString(3, c.getTexto());
+                JdbcUtil.setDataHora(stmt, 4, c.getDataCriacao());
+                stmt.addBatch();
+            }
+            stmt.executeBatch();
+        }
+    }
+
+    @Override
     public Comentario buscarPorId(Long id) throws SQLException {
         try (PreparedStatement stmt = conexao.prepareStatement(SQL_BUSCAR_POR_ID)) {
             stmt.setLong(1, id);

@@ -12,6 +12,7 @@ import java.sql.SQLException;
 import java.sql.SQLIntegrityConstraintViolationException;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
+import java.util.List;
 
 /**
  * Implementação JDBC de {@link VotoDenunciaDao}.
@@ -57,6 +58,20 @@ public class VotoDenunciaDaoJdbc implements VotoDenunciaDao {
             executar(SQL_INSERIR, voto);
         } catch (SQLIntegrityConstraintViolationException corrida) {
             executar(SQL_ATUALIZAR, voto); // o voto foi criado por outra requisição: atualiza
+        }
+    }
+
+    @Override
+    public void inserirEmLote(List<VotoDenuncia> votos) throws SQLException {
+        try (PreparedStatement stmt = conexao.prepareStatement(SQL_INSERIR)) {
+            for (VotoDenuncia voto : votos) {
+                JdbcUtil.setEnum(stmt, 1, voto.getTipo());
+                JdbcUtil.setDataHora(stmt, 2, voto.getDataVoto());
+                stmt.setLong(3, voto.getIdUsuario());
+                stmt.setLong(4, voto.getIdDenuncia());
+                stmt.addBatch();
+            }
+            stmt.executeBatch();
         }
     }
 

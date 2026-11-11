@@ -4,6 +4,7 @@ import br.com.fiap.meusdireitos.model.Usuario;
 
 import java.sql.SQLException;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Acesso aos dados de usuários (TB_USUARIO).
@@ -24,6 +25,12 @@ public interface UsuarioDao extends CrudDao<Usuario> {
 
     /** @return moradores simulados de uma cidade */
     List<Usuario> listarSimuladosDaCidade(String cidade, String uf) throws SQLException;
+
+    /** Grava vários usuários de uma vez (lote JDBC), para o conteúdo de demonstração. */
+    void inserirEmLote(List<Usuario> usuarios) throws SQLException;
+
+    /** @return mapa e-mail → id, dos e-mails informados que existirem */
+    Map<String, Long> idsPorEmail(List<String> emails) throws SQLException;
 
     /** @return true se existe usuário com o id informado */
     boolean existe(Long id) throws SQLException;

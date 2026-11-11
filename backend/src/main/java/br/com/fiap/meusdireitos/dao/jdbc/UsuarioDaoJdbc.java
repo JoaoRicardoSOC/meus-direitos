@@ -11,7 +11,9 @@ import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Implementação JDBC de {@link UsuarioDao}.
@@ -75,6 +77,45 @@ public class UsuarioDaoJdbc implements UsuarioDao {
         }
         usuario.setDataCadastro(agora);
         return usuario;
+    }
+
+    @Override
+    public void inserirEmLote(List<Usuario> usuarios) throws SQLException {
+        try (PreparedStatement stmt = conexao.prepareStatement(SQL_INSERIR)) {
+            for (Usuario usuario : usuarios) {
+                if (usuario.getDataCadastro() == null) {
+                    usuario.setDataCadastro(LocalDateTime.now().truncatedTo(ChronoUnit.SECONDS));
+                }
+                stmt.setString(1, usuario.getNome());
+                stmt.setString(2, usuario.getEmail());
+                stmt.setString(3, usuario.getSenhaHash());
+                stmt.setString(4, usuario.getCidade());
+                stmt.setString(5, usuario.getUf());
+                JdbcUtil.setDataHora(stmt, 6, usuario.getDataCadastro());
+                JdbcUtil.setSimNao(stmt, 7, usuario.isSimulado());
+                stmt.addBatch();
+            }
+            stmt.executeBatch();
+        }
+    }
+
+    @Override
+    public Map<String, Long> idsPorEmail(List<String> emails) throws SQLException {
+        Map<String, Long> ids = new HashMap<>();
+        if (emails.isEmpty()) {
+            return ids;
+        }
+        String sql = "SELECT cd_usuario, ds_email FROM tb_usuario WHERE ds_email IN ("
+                + JdbcUtil.placeholders(emails.size()) + ")";
+        try (PreparedStatement stmt = conexao.prepareStatement(sql)) {
+            JdbcUtil.preencher(stmt, new ArrayList<>(emails));
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    ids.put(rs.getString("ds_email"), rs.getLong("cd_usuario"));
+                }
+            }
+        }
+        return ids;
     }
 
     @Override
