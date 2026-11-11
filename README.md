@@ -46,12 +46,6 @@ Plataforma colaborativa que une **zeladoria urbana** e **informação sobre dire
 | [`backend/README.md`](backend/README.md) | Arquitetura, decisões técnicas e limitações do back-end |
 | [`docs/diagramas/`](docs/diagramas/) | Diagrama de classes e modelo de dados |
 
-## Uso de IA generativa
-
-- **Back-end:** Claude (Anthropic), via Claude Code. Usado para analisar o enunciado, planejar a arquitetura, gerar e revisar código, montar os testes de robustez e documentar a API. Todo o código foi revisado, compreendido e testado pelos integrantes do back-end. Detalhes em [`backend/README.md`](backend/README.md#7-uso-de-ia-generativa-back-end).
-- **Front-end:** _a completar pela equipe do front-end._
-- **Banco de dados:** _a completar pelo responsável pelo banco._
-
 ## Integrantes
 
 | Nome | RM | Frente |
