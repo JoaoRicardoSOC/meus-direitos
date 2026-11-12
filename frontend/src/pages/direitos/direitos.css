@@ -69,12 +69,7 @@
   gap: 12px;
 }
 
-/* Tela 32: de onde vêm os canais (localização ou cidade do cadastro) */
-.md-canais-local {
-  align-items: center;
-}
-
-/* Ação secundária em forma de link: "Usar minha localização" */
+/* Ação secundária em forma de link: "Trocar" a origem dos canais (tela 32) */
 .md-link-botao {
   padding: 0;
   border: 0;

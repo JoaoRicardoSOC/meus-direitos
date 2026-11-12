@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import Tela from '../../components/Tela.jsx';
 import Cabecalho from '../../components/Cabecalho.jsx';
@@ -11,23 +11,48 @@ import {
 } from './localizacao.js';
 import './direitos.css';
 
+/** De onde buscar os canais: posição atual do aparelho ou cidade do cadastro. */
+const MODO = { POSICAO: 'posicao', CADASTRO: 'cadastro' };
+const CHAVE_MODO = 'md:canais-modo';
+
 const MOTIVO_SEM_LOCALIZACAO = {
   negada: 'Você não permitiu o acesso à localização.',
   'sem-suporte': 'Este navegador não informa a localização.',
   indisponivel: 'Não foi possível descobrir sua localização agora.',
 };
 
+function lerModo() {
+  try {
+    const salvo = sessionStorage.getItem(CHAVE_MODO);
+    return Object.values(MODO).includes(salvo) ? salvo : null;
+  } catch {
+    return null;
+  }
+}
+
+function gravarModo(modo) {
+  try {
+    if (modo) sessionStorage.setItem(CHAVE_MODO, modo);
+    else sessionStorage.removeItem(CHAVE_MODO);
+  } catch {
+    // armazenamento indisponível: a escolha vale só nesta tela
+  }
+}
+
 /**
- * Descobre de onde partir: posição do aparelho ou, sem ela, a cidade do cadastro.
- * Devolve os endereços dos três canais e uma frase explicando a origem.
+ * Resolve os três canais a partir do modo escolhido.
+ * Com "localização atual", se a posição não vier (negada, sem suporte, demora), usa a cidade do
+ * cadastro e devolve o motivo para a tela explicar.
  */
-async function resolverCanais(usuario) {
+async function resolverCanais(usuario, modo) {
   let posicao = null;
   let motivo = null;
-  try {
-    posicao = await obterPosicao();
-  } catch (erro) {
-    motivo = erro.message;
+  if (modo === MODO.POSICAO) {
+    try {
+      posicao = await obterPosicao();
+    } catch (erro) {
+      motivo = erro.message;
+    }
   }
 
   const chave = posicao
@@ -43,7 +68,7 @@ async function resolverCanais(usuario) {
     // OpenStreetMap indisponível: seguimos com o que temos
   }
 
-  // Sem conseguir identificar a cidade pela posição, a prefeitura usa a cidade do cadastro
+  // Sem identificar a cidade, a prefeitura usa a cidade do cadastro
   const cidade = lugar?.cidade ?? usuario?.cidade;
   const uf = lugar?.uf ?? usuario?.uf;
   const prefeitura = lugar
@@ -51,7 +76,7 @@ async function resolverCanais(usuario) {
     : { url: buscaDaPrefeitura(cidade, uf), oficial: false };
   const cras = buscaDeCras({ lat: posicao?.lat ?? lugar?.lat, lon: posicao?.lon ?? lugar?.lon, cidade, uf });
 
-  const resultado = { origem: posicao ? 'posicao' : 'cadastro', cidade, uf, prefeitura, cras };
+  const resultado = { origem: posicao ? MODO.POSICAO : MODO.CADASTRO, cidade, uf, prefeitura, cras };
   gravarCache(chave, resultado);
   return { ...resultado, motivo };
 }
@@ -67,28 +92,36 @@ function dominio(url) {
 
 /**
  * 32 · Direitos / Canais oficiais.
- * Ao entrar, pede a localização: a prefeitura é a da cidade onde a pessoa está, o Gov.br é único
- * e o atendimento presencial procura CRAS próximos. Sem localização, usa a cidade do cadastro.
+ * Antes de buscar, a pessoa escolhe: localização atual ou cidade do cadastro. Depois, a prefeitura
+ * é a dessa cidade, o Gov.br é único e o atendimento presencial procura CRAS próximos.
+ * A escolha fica guardada na sessão; "Trocar" permite escolher de novo.
  */
 export default function CanaisOficiais() {
   const { usuario } = useSessao();
+  const [modo, setModo] = useState(lerModo);
   const [canais, setCanais] = useState(null);
-  const [tentativa, setTentativa] = useState(0);
 
   useEffect(() => {
+    if (!modo) return undefined;
     let ativo = true;
     setCanais(null);
-    resolverCanais(usuario).then((resultado) => {
+    resolverCanais(usuario, modo).then((resultado) => {
       if (ativo) setCanais(resultado);
     });
     return () => {
       ativo = false;
     };
-    // Refaz só ao pedir de novo a localização; a cidade do cadastro é apenas a reserva.
-  }, [tentativa]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [modo]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const tentarDeNovo = useCallback(() => setTentativa((n) => n + 1), []);
+  function escolher(novoModo) {
+    gravarModo(novoModo);
+    setCanais(null);
+    setModo(novoModo);
+  }
+
+  const cidadeCadastro = cidadeUf(usuario?.cidade, usuario?.uf);
   const localidade = canais ? cidadeUf(canais.cidade, canais.uf) : '';
+  const buscando = modo && !canais;
 
   return (
     <Tela titulo="Canais de consulta" comNavegacao>
@@ -98,25 +131,53 @@ export default function CanaisOficiais() {
       <h2 className="md-titulo">Confirme na fonte oficial.</h2>
       <p className="md-corpo">Escolha um canal para pesquisar os critérios.</p>
 
-      <div className="md-informacao md-canais-local" aria-live="polite">
-        {!canais && <Carregando texto="Procurando os canais da sua região…" />}
-        {canais?.origem === 'posicao' && (
-          <p className="md-legenda">
-            Você está em <strong>{localidade}</strong>. Os canais abaixo são desta região.
-          </p>
-        )}
-        {canais?.origem === 'cadastro' && (
-          <div className="d-flex flex-column gap-2">
+      <section className="md-card md-canais-origem" aria-labelledby="canais-origem-titulo" aria-live="polite">
+        {!modo && (
+          <>
+            <h3 id="canais-origem-titulo" className="md-negrito">
+              Onde buscar a prefeitura e o CRAS?
+            </h3>
             <p className="md-legenda">
-              {MOTIVO_SEM_LOCALIZACAO[canais.motivo] ?? MOTIVO_SEM_LOCALIZACAO.indisponivel} Usamos a cidade
-              do seu cadastro: <strong>{localidade}</strong>.
+              Com a localização atual, mostramos os canais de onde você está agora.
             </p>
-            <button type="button" className="md-link-botao align-self-start" onClick={tentarDeNovo}>
-              Usar minha localização
+            <button type="button" className="md-botao md-botao-primario" onClick={() => escolher(MODO.POSICAO)}>
+              Usar minha localização atual
+            </button>
+            <button type="button" className="md-botao md-botao-secundario" onClick={() => escolher(MODO.CADASTRO)}>
+              Usar a cidade do cadastro{cidadeCadastro ? ` (${cidadeCadastro})` : ''}
+            </button>
+          </>
+        )}
+
+        {buscando && (
+          <>
+            <h3 id="canais-origem-titulo" className="md-oculto-visualmente">Buscando os canais</h3>
+            <Carregando
+              texto={modo === MODO.POSICAO ? 'Pegando sua localização…' : 'Procurando os canais da sua cidade…'}
+            />
+          </>
+        )}
+
+        {canais && (
+          <div className="d-flex flex-column gap-2">
+            <h3 id="canais-origem-titulo" className="md-oculto-visualmente">Origem dos canais</h3>
+            {canais.origem === MODO.POSICAO && (
+              <p className="md-legenda">
+                Você está em <strong>{localidade}</strong>. Os canais abaixo são desta região.
+              </p>
+            )}
+            {canais.origem === MODO.CADASTRO && (
+              <p className="md-legenda">
+                {canais.motivo && `${MOTIVO_SEM_LOCALIZACAO[canais.motivo] ?? MOTIVO_SEM_LOCALIZACAO.indisponivel} `}
+                Canais da cidade do seu cadastro: <strong>{localidade}</strong>.
+              </p>
+            )}
+            <button type="button" className="md-link-botao align-self-start" onClick={() => escolher(null)}>
+              Trocar
             </button>
           </div>
         )}
-      </div>
+      </section>
 
       <ul className="md-direito-canais list-unstyled m-0">
         <li>
@@ -124,6 +185,7 @@ export default function CanaisOficiais() {
             titulo="Portal da Prefeitura"
             texto="Serviços e benefícios municipais"
             link={canais?.prefeitura.url}
+            pendente={modo ? 'Localizando…' : 'Escolha acima onde buscar.'}
             detalhe={
               canais &&
               (canais.prefeitura.oficial
@@ -133,26 +195,25 @@ export default function CanaisOficiais() {
           />
         </li>
         <li>
-          <CardCanal
-            titulo="Portal Gov.br"
-            texto="Programas e serviços federais"
-            link={PORTAL_GOV_BR}
-            detalhe="gov.br"
-          />
+          <CardCanal titulo="Portal Gov.br" texto="Programas e serviços federais" link={PORTAL_GOV_BR} detalhe="gov.br" />
         </li>
         <li>
           <CardCanal
             titulo="Atendimento presencial"
             texto="Busque o CRAS ou órgão responsável na sua região."
             link={canais?.cras}
-            detalhe={canais && (canais.origem === 'posicao' ? 'CRAS perto de você, no mapa' : `CRAS em ${localidade}, no mapa`)}
+            pendente={modo ? 'Localizando…' : 'Escolha acima onde buscar.'}
+            detalhe={
+              canais && (canais.origem === MODO.POSICAO ? 'CRAS perto de você, no mapa' : `CRAS em ${localidade}, no mapa`)
+            }
           />
         </li>
       </ul>
 
       <p className="md-legenda">
-        Os links abrem sites externos. Nenhum pedido é enviado por este protótipo. Sua localização serve só para
-        achar a prefeitura e os CRAS da região: ela é consultada no OpenStreetMap e não fica salva no Meus Direitos.
+        Os links abrem sites externos. Nenhum pedido é enviado por este protótipo. A localização só é usada se você
+        escolher: ela é consultada no OpenStreetMap para achar a prefeitura e os CRAS da região e não fica salva no Meus
+        Direitos.
       </p>
 
       <Link to="/direitos" className="md-botao md-botao-secundario">
@@ -162,7 +223,7 @@ export default function CanaisOficiais() {
   );
 }
 
-function CardCanal({ titulo, texto, link, detalhe }) {
+function CardCanal({ titulo, texto, link, detalhe, pendente }) {
   const conteudo = (
     <>
       <h3 className="md-subtitulo">{titulo}</h3>
@@ -173,9 +234,9 @@ function CardCanal({ titulo, texto, link, detalhe }) {
 
   if (!link) {
     return (
-      <div className="md-card" aria-busy="true">
+      <div className="md-card md-canal-pendente">
         {conteudo}
-        <p className="md-legenda">Localizando…</p>
+        <p className="md-legenda">{pendente}</p>
       </div>
     );
   }
