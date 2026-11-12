@@ -1,41 +1,134 @@
 /*
  * Tema do Meus Direitos, a partir das variáveis do Figma (PROJETO-GS-2026).
- * O Bootstrap cuida do reset, da grade e dos utilitários (d-flex, gap-*, mb-*...);
- * aqui ficam as cores, a tipografia e os componentes com a cara do protótipo.
+ * Do Bootstrap usamos só o reset e os utilitários (d-flex, gap-*, mb-*...), importados em main.jsx;
+ * aqui ficam as cores, a tipografia, os componentes, o movimento e a acessibilidade.
  */
+
+/* ------------------------------------------------------------------ fonte (Inter, licença OFL, no próprio projeto) */
+
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('../assets/fontes/inter-400.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329,
+    U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('../assets/fontes/inter-700.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329,
+    U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
 
 :root {
   /* Cores (variáveis do Figma) */
   --md-verde: #075e4a;
+  --md-verde-escuro: #064c3c; /* hover do botão principal */
   --md-tinta: #142e2a;
   --md-apagado: #52645f;
   --md-fundo: #f5f7f2;
   --md-suave: #e8f0e8;
+  --md-suave-escuro: #dce8dc; /* hover dos botões claros */
   --md-branco: #ffffff;
   --md-linha: #d8e1d9;
+  --md-linha-suave: #e7ede7; /* divisores entre itens de uma lista */
+  --md-borda-campo: #7f908a; /* limite dos campos: 3,4:1 sobre branco (WCAG 1.4.11) */
+  --md-esqueleto: #e3e9e3;
   --md-erro: #b42318;
   --md-erro-fundo: #fdecea;
+
+  /* Status das denúncias (texto e fundo com contraste acima de 6:1) */
+  --md-status-aberta-texto: var(--md-tinta);
+  --md-status-aberta-fundo: #eef1ee;
+  --md-status-andamento-texto: #7a5200;
+  --md-status-andamento-fundo: #fff4d6;
+  --md-status-resolvida-texto: var(--md-verde);
+  --md-status-resolvida-fundo: var(--md-suave);
+
+  /* Foco: tinta sólida, 13:1 sobre o fundo, afastada 2px para aparecer também nos botões verdes */
+  --md-foco: var(--md-tinta);
 
   /* Medidas */
   --md-margem: 24px;
   --md-altura-navegacao: 88px;
+  --md-seguro-baixo: env(safe-area-inset-bottom, 0px);
+  --md-espaco-grupo: 32px;
+  --md-alvo-minimo: 44px;
 
-  /* Bootstrap usa estas variáveis em todos os componentes */
+  /* Movimento: curvas fortes e durações curtas (abaixo de 300 ms na interface) */
+  --md-ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --md-ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+  --md-dur-toque: 130ms;
+  --md-dur-cor: 150ms;
+  --md-dur-media: 200ms;
+  --md-dur-tela: 240ms;
+  --md-dur-celebracao: 320ms;
+  --md-dur-saida: 160ms;
+
+  /* Bootstrap usa estas variáveis no reset e nos utilitários */
   --bs-body-font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
   --bs-body-bg: var(--md-fundo);
   --bs-body-color: var(--md-tinta);
-  --bs-primary: var(--md-verde);
-  --bs-primary-rgb: 7, 94, 74;
   --bs-border-color: var(--md-linha);
   --bs-link-color: var(--md-verde);
   --bs-link-color-rgb: 7, 94, 74;
   --bs-link-hover-color: var(--md-tinta);
-  --bs-focus-ring-color: rgba(7, 94, 74, 0.25);
+  --bs-link-hover-color-rgb: 20, 46, 42;
+}
+
+/* O reset do Bootstrap liga a rolagem suave em tudo: as trocas de tela devem começar no topo na hora */
+:root {
+  scroll-behavior: auto;
 }
 
 body {
   background: var(--md-fundo);
   -webkit-font-smoothing: antialiased;
+}
+
+/* Sem o flash cinza do toque (cada controle tem o seu próprio estado :active) */
+a,
+button,
+label,
+summary,
+[role='button'] {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Controles: toque rápido sem zoom por toque duplo e sem selecionar o texto ao segurar */
+.md-botao,
+.md-acao,
+.md-acao-texto,
+.md-filtro,
+.md-fab,
+.md-navegacao-item,
+.md-voltar,
+.md-icone-campo {
+  touch-action: manipulation;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+.md-navegacao,
+.md-fab {
+  -webkit-touch-callout: none;
+}
+
+/* Foco visível e consistente em todos os elementos interativos */
+:focus-visible {
+  outline: 2px solid var(--md-foco);
+  outline-offset: 2px;
+}
+
+/* Títulos que recebem o foco ao trocar de tela não mostram contorno (não são clicáveis) */
+[tabindex='-1']:focus {
+  outline: none;
 }
 
 /* ------------------------------------------------------------------ estrutura */
@@ -57,12 +150,31 @@ body {
   gap: 20px;
 }
 
-/* Telas com a barra de navegação embaixo: o conteúdo não fica escondido atrás dela */
+/* Telas com a barra de navegação embaixo: o conteúdo não fica escondido atrás dela nem do FAB */
 .md-tela.md-com-navegacao {
-  padding-bottom: calc(var(--md-altura-navegacao) + 80px);
+  padding-bottom: calc(var(--md-altura-navegacao) + var(--md-seguro-baixo) + 80px);
+}
+
+/* Separação maior entre grupos (título + texto → formulário → ações): 20px do gap + 12px */
+.md-grupo {
+  margin-top: calc(var(--md-espaco-grupo) - 20px);
+}
+
+/* Painel lateral do computador (só em telas largas; ver o fim do arquivo) */
+.md-painel {
+  display: none;
 }
 
 /* ------------------------------------------------------------------ tipografia (estilos MD/* do Figma) */
+
+.md-titulo,
+.md-subtitulo,
+.md-corpo,
+.md-corpo-tinta,
+.md-legenda,
+.md-negrito {
+  overflow-wrap: anywhere; /* URL ou palavra longa não estouram o card */
+}
 
 .md-titulo {
   font-size: 28px;
@@ -87,6 +199,14 @@ body {
   margin: 0;
 }
 
+/* Texto principal de telas de detalhe: na cor do texto, não em cinza */
+.md-corpo-tinta {
+  font-size: 16px;
+  line-height: 1.5;
+  color: var(--md-tinta);
+  margin: 0;
+}
+
 .md-legenda {
   font-size: 13px;
   line-height: 1.45;
@@ -94,6 +214,7 @@ body {
   margin: 0;
 }
 
+/* Rótulo de contexto ("SUA CIDADE"): só um por tela, onde ele dá contexto real */
 .md-sobretitulo {
   font-size: 12px;
   font-weight: 700;
@@ -126,18 +247,18 @@ body {
   font-size: 16px;
   font-weight: 700;
   line-height: 1.2;
+  text-align: center;
   text-decoration: none;
   cursor: pointer;
-  transition: filter 0.15s ease;
+  transition:
+    transform var(--md-dur-toque) var(--md-ease-out),
+    background-color var(--md-dur-cor) ease,
+    color var(--md-dur-cor) ease;
 }
 
-.md-botao:hover {
-  filter: brightness(0.95);
-}
-
-.md-botao:focus-visible {
-  outline: 3px solid var(--bs-focus-ring-color);
-  outline-offset: 2px;
+/* Botões largos: escala pequena, senão o movimento chama atenção demais */
+.md-botao:active:not(:disabled) {
+  transform: scale(0.98);
 }
 
 .md-botao:disabled {
@@ -150,16 +271,8 @@ body {
   color: var(--md-branco);
 }
 
-.md-botao-primario:hover {
-  color: var(--md-branco);
-}
-
 .md-botao-secundario {
   background: var(--md-suave);
-  color: var(--md-verde);
-}
-
-.md-botao-secundario:hover {
   color: var(--md-verde);
 }
 
@@ -168,8 +281,45 @@ body {
   color: var(--md-branco);
 }
 
+/* Botões e links sobre fundo verde mantêm o texto branco no hover (o reset muda a cor dos links) */
+.md-botao-primario:hover,
 .md-botao-perigo:hover {
   color: var(--md-branco);
+}
+
+.md-botao-secundario:hover {
+  color: var(--md-verde);
+}
+
+/* Ação em texto (Editar, Excluir, Trocar, Remover foto, Usar um exemplo): alvo de 44px */
+.md-acao-texto {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: var(--md-alvo-minimo);
+  padding: 0 4px;
+  margin: 0 -4px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--md-verde);
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.2;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+  transition: color var(--md-dur-cor) ease;
+}
+
+.md-acao-texto:hover {
+  color: var(--md-tinta);
+}
+
+/* Iniciar uma exclusão: vermelho com lixeira (a confirmação final usa .md-botao-perigo) */
+.md-acao-texto.md-perigo,
+.md-acao-texto.md-perigo:hover {
+  color: var(--md-erro);
 }
 
 /* ------------------------------------------------------------------ cabeçalho com "Voltar" */
@@ -187,10 +337,13 @@ body {
   border: 0;
   background: transparent;
   border-radius: 12px;
+  transition:
+    transform var(--md-dur-toque) var(--md-ease-out),
+    background-color var(--md-dur-cor) ease;
 }
 
-.md-voltar:focus-visible {
-  outline: 3px solid var(--bs-focus-ring-color);
+.md-voltar:active {
+  transform: scale(0.94);
 }
 
 /* ------------------------------------------------------------------ campos */
@@ -209,33 +362,63 @@ body {
   margin: 0;
 }
 
+/* Base das entradas (substitui form-control e form-select do Bootstrap) */
+.form-control,
+.form-select {
+  display: block;
+  width: 100%;
+  font-family: inherit;
+  appearance: none;
+}
+
+.form-select {
+  padding-right: 40px;
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23142e2a' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: right 14px center;
+  background-size: 16px 12px;
+}
+
+textarea.form-control {
+  resize: vertical;
+}
+
 .md-entrada.form-control,
 .md-entrada.form-select {
   min-height: 52px;
   padding: 14px;
-  border: 1px solid var(--md-linha);
+  border: 1px solid var(--md-borda-campo);
   border-radius: 12px;
   background-color: var(--md-branco);
-  font-size: 16px;
+  font-size: 16px; /* 16px ou mais: o celular não dá zoom ao focar */
   line-height: 1.45;
   color: var(--md-tinta);
+  transition: border-color var(--md-dur-cor) ease;
+}
+
+.md-entrada.form-select {
+  padding-right: 40px;
 }
 
 .md-entrada.form-control::placeholder {
   color: var(--md-apagado);
-  opacity: 0.8;
+  opacity: 1;
 }
 
 .md-entrada.form-control:focus,
 .md-entrada.form-select:focus {
   border-color: var(--md-verde);
-  box-shadow: 0 0 0 3px var(--bs-focus-ring-color);
+  outline: 2px solid var(--md-verde);
+  outline-offset: 0;
 }
 
 .md-entrada.is-invalid {
   border-color: var(--md-erro);
-  background-image: none;
   padding-right: 14px;
+}
+
+.md-entrada.form-select.is-invalid {
+  padding-right: 40px;
 }
 
 /* Campo com ícone à direita (olho da senha, pin da cidade) */
@@ -244,23 +427,22 @@ body {
 }
 
 .md-entrada-com-icone .md-entrada.form-control {
-  padding-right: 48px;
+  padding-right: 52px;
 }
 
 .md-icone-campo {
   position: absolute;
   top: 50%;
-  right: 8px;
+  right: 4px;
   transform: translateY(-50%);
   display: inline-flex;
-  padding: 6px;
+  align-items: center;
+  justify-content: center;
+  width: var(--md-alvo-minimo);
+  height: var(--md-alvo-minimo);
   border: 0;
-  border-radius: 8px;
+  border-radius: 10px;
   background: transparent;
-}
-
-button.md-icone-campo:focus-visible {
-  outline: 3px solid var(--bs-focus-ring-color);
 }
 
 span.md-icone-campo {
@@ -298,7 +480,7 @@ span.md-icone-campo {
   color: var(--md-verde);
 }
 
-/* Caixa de informação com ícone (ex.: "No protótipo, usamos apenas dados fictícios.") */
+/* Caixa de informação com ícone (privacidade, avisos) */
 .md-informacao {
   display: flex;
   gap: 10px;
@@ -308,6 +490,40 @@ span.md-icone-campo {
   background: var(--md-suave);
 }
 
+/* Aviso temporário perto da ação, acima da navegação (entra e sai pela mesma borda) */
+.md-toast {
+  position: fixed;
+  left: 50%;
+  bottom: calc(var(--md-altura-navegacao) + var(--md-seguro-baixo) + 12px);
+  z-index: 20;
+  width: calc(100% - 2 * var(--md-margem));
+  max-width: calc(430px - 2 * var(--md-margem));
+  padding: 14px 16px;
+  border-radius: 14px;
+  background: var(--md-tinta);
+  color: var(--md-branco);
+  font-size: 14px;
+  line-height: 1.45;
+  transform: translate(-50%, 0);
+  opacity: 1;
+  transition:
+    transform var(--md-dur-tela) var(--md-ease-out),
+    opacity var(--md-dur-tela) var(--md-ease-out);
+}
+
+@starting-style {
+  .md-toast {
+    transform: translate(-50%, 100%);
+    opacity: 0;
+  }
+}
+
+.md-toast[data-saindo] {
+  transform: translate(-50%, 100%);
+  opacity: 0;
+  transition-duration: var(--md-dur-saida);
+}
+
 /* ------------------------------------------------------------------ progresso do cadastro e do questionário */
 
 .md-progresso {
@@ -315,15 +531,77 @@ span.md-icone-campo {
   gap: 6px;
 }
 
+/* A etapa ativa preenche da esquerda para a direita */
 .md-progresso-etapa {
+  position: relative;
   flex: 1;
   height: 5px;
   border-radius: 3px;
   background: var(--md-linha);
+  overflow: hidden;
 }
 
-.md-progresso-etapa.ativa {
+.md-progresso-etapa::after {
+  content: '';
+  position: absolute;
+  inset: 0;
   background: var(--md-verde);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform var(--md-dur-tela) var(--md-ease-out);
+}
+
+.md-progresso-etapa.ativa::after {
+  transform: scaleX(1);
+}
+
+/* ------------------------------------------------------------------ listas e carregamento (substituem peças do Bootstrap) */
+
+.list-unstyled {
+  padding-left: 0;
+  list-style: none;
+}
+
+.spinner-border {
+  display: inline-block;
+  width: 2rem;
+  height: 2rem;
+  vertical-align: -0.125em;
+  border: 0.25em solid currentcolor;
+  border-right-color: transparent;
+  border-radius: 50%;
+  animation: md-girar 0.75s linear infinite;
+}
+
+.spinner-border-sm {
+  width: 1rem;
+  height: 1rem;
+  border-width: 0.2em;
+}
+
+@keyframes md-girar {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Carregando só aparece depois de 300 ms: respostas rápidas não piscam um spinner */
+.md-carregando {
+  color: var(--md-verde);
+  animation: md-aparecer var(--md-dur-cor) var(--md-ease-out) 300ms both;
+}
+
+@keyframes md-aparecer {
+  from {
+    opacity: 0;
+  }
+}
+
+/* Esqueleto de carregamento: blocos chapados com a altura do conteúdo real (sem brilho animado) */
+.md-esqueleto {
+  display: block;
+  border-radius: 8px;
+  background: var(--md-esqueleto);
 }
 
 /* ------------------------------------------------------------------ cartões, selos, avatar */
@@ -338,16 +616,35 @@ span.md-icone-campo {
   gap: 12px;
 }
 
+/* Selos em texto normal (só a inicial maiúscula) */
 .md-selo {
   align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
   background: var(--md-suave);
   border-radius: 6px;
-  padding: 6px;
-  font-size: 12px;
+  padding: 4px 8px;
+  font-size: 13px;
   font-weight: 700;
-  line-height: 1.2;
+  line-height: 1.3;
   color: var(--md-verde);
-  text-transform: uppercase;
+}
+
+/* Status da denúncia: cada estado com o seu par de cores, sempre com texto */
+.md-selo-status-ABERTA {
+  background: var(--md-status-aberta-fundo);
+  color: var(--md-status-aberta-texto);
+}
+
+.md-selo-status-EM_ANDAMENTO {
+  background: var(--md-status-andamento-fundo);
+  color: var(--md-status-andamento-texto);
+}
+
+.md-selo-status-RESOLVIDA {
+  background: var(--md-status-resolvida-fundo);
+  color: var(--md-status-resolvida-texto);
 }
 
 .md-avatar {
@@ -366,57 +663,72 @@ span.md-icone-campo {
   text-decoration: none;
 }
 
+/* Avatar-link do topo do feed: 44px de alvo */
 .md-avatar-pequeno {
-  width: 36px;
-  height: 36px;
+  width: var(--md-alvo-minimo);
+  height: var(--md-alvo-minimo);
 }
 
-/* Botões de voto e contador de comentários */
+/* Votos e contador de comentários: ações de linha, sem fundo em repouso; o voto dado fica verde */
 .md-acao {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 6px;
-  min-width: 74px;
-  height: 48px;
-  padding: 10px 16px;
-  border: 0;
+  min-height: var(--md-alvo-minimo);
+  padding: 8px 12px;
+  border: 1px solid var(--md-linha);
   border-radius: 12px;
-  background: var(--md-suave);
-  color: var(--md-verde);
-  font-size: 13px;
-  line-height: 1.45;
+  background: transparent;
+  color: var(--md-tinta);
+  font-size: 14px;
+  line-height: 1.3;
+  font-variant-numeric: tabular-nums;
   text-decoration: none;
+  transition:
+    transform var(--md-dur-toque) var(--md-ease-out),
+    background-color var(--md-dur-cor) ease,
+    color var(--md-dur-cor) ease,
+    border-color var(--md-dur-cor) ease;
+}
+
+a.md-acao:hover {
+  color: var(--md-tinta);
 }
 
 button.md-acao {
   cursor: pointer;
 }
 
-.md-acao:focus-visible {
-  outline: 3px solid var(--bs-focus-ring-color);
+.md-acao:active:not(:disabled):not([aria-disabled='true']) {
+  transform: scale(0.96);
 }
 
-/* Abas do feed e opções de escolha */
+/* Abas do feed: texto com sublinhado na aba ativa */
 .md-filtro {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  height: 48px;
-  padding: 10px 16px;
+  min-height: 48px;
+  padding: 10px 12px;
   border: 0;
-  border-radius: 12px;
-  background: var(--md-suave);
-  color: var(--md-verde);
-  font-size: 13px;
-  line-height: 1.45;
+  border-bottom: 3px solid transparent;
+  border-radius: 0;
+  background: transparent;
+  color: var(--md-apagado);
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1.3;
   white-space: nowrap;
   cursor: pointer;
+  transition:
+    color var(--md-dur-cor) ease,
+    border-color var(--md-dur-cor) ease;
 }
 
 .md-filtro.ativo {
-  background: var(--md-verde);
-  color: var(--md-branco);
+  color: var(--md-tinta);
+  border-bottom-color: var(--md-verde);
 }
 
 /* ------------------------------------------------------------------ navegação principal e botão flutuante */
@@ -428,8 +740,8 @@ button.md-acao {
   transform: translateX(-50%);
   width: 100%;
   max-width: 430px;
-  height: var(--md-altura-navegacao);
-  padding: 12px;
+  min-height: calc(var(--md-altura-navegacao) + var(--md-seguro-baixo));
+  padding: 12px 12px calc(12px + var(--md-seguro-baixo));
   display: flex;
   justify-content: space-between;
   gap: 8px;
@@ -444,33 +756,38 @@ button.md-acao {
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: center;
   gap: 4px;
   padding: 6px;
   border-radius: 12px;
-  color: var(--md-verde);
+  color: var(--md-apagado);
   font-size: 13px;
-  line-height: 1.45;
+  line-height: 1.3;
+  text-align: center;
   text-decoration: none;
+  transition: background-color var(--md-dur-cor) ease;
 }
 
 .md-navegacao-item.active {
   background: var(--md-suave);
+  color: var(--md-verde);
+  font-weight: 700;
 }
 
-.md-navegacao-item:hover {
-  color: var(--md-verde);
+.md-navegacao-item:active {
   background: var(--md-suave);
 }
 
+/* FAB "Nova denúncia": chapado (sem sombra) e recolhido para o ícone enquanto a pessoa rola para baixo */
 .md-fab {
   position: fixed;
-  bottom: calc(var(--md-altura-navegacao) + 8px);
+  bottom: calc(var(--md-altura-navegacao) + var(--md-seguro-baixo) + 8px);
   right: max(var(--md-margem), calc(50% - 215px + var(--md-margem)));
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  height: 48px;
-  padding: 14px 20px;
+  height: 52px;
+  padding: 0 20px;
   border-radius: 28px;
   background: var(--md-verde);
   color: var(--md-branco);
@@ -478,13 +795,245 @@ button.md-acao {
   font-weight: 700;
   line-height: 1.2;
   text-decoration: none;
-  box-shadow: 0 6px 16px rgba(7, 94, 74, 0.25);
+  white-space: nowrap;
+  overflow: hidden;
   z-index: 11;
+  transition:
+    transform var(--md-dur-toque) var(--md-ease-out),
+    padding var(--md-dur-media) var(--md-ease-out),
+    background-color var(--md-dur-cor) ease;
 }
 
 .md-fab:hover {
   color: var(--md-branco);
-  filter: brightness(0.95);
+}
+
+.md-fab:active {
+  transform: scale(0.96);
+}
+
+.md-fab-texto {
+  transition: opacity var(--md-dur-cor) ease;
+}
+
+.md-fab.recolhido {
+  padding: 0 16px;
+  gap: 0;
+}
+
+.md-fab.recolhido .md-fab-texto {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* ------------------------------------------------------------------ entradas (etapas e confirmações) */
+
+/* Troca de etapa: avança pela direita, volta pela esquerda */
+.md-etapa {
+  display: flex;
+  flex-direction: column;
+  gap: inherit;
+  transition:
+    opacity var(--md-dur-media) var(--md-ease-out),
+    transform var(--md-dur-media) var(--md-ease-out);
+}
+
+@starting-style {
+  .md-etapa {
+    opacity: 0;
+    transform: translateX(12px);
+  }
+
+  .md-etapa[data-direcao='tras'] {
+    transform: translateX(-12px);
+  }
+}
+
+/* Telas de confirmação (denúncia publicada, comentário enviado, dados salvos): check e textos em cascata */
+.md-celebracao > * {
+  animation: md-subir 280ms var(--md-ease-out) both;
+}
+
+.md-celebracao > *:nth-child(2) {
+  animation-delay: 50ms;
+}
+
+.md-celebracao > *:nth-child(3) {
+  animation-delay: 100ms;
+}
+
+.md-celebracao > *:nth-child(4) {
+  animation-delay: 150ms;
+}
+
+.md-celebracao > *:nth-child(n + 5) {
+  animation-delay: 200ms;
+}
+
+.md-celebracao .md-check {
+  animation: md-check var(--md-dur-celebracao) var(--md-ease-out) both;
+}
+
+@keyframes md-subir {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+}
+
+@keyframes md-check {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+}
+
+/* Fotos entram com um fade curto ao carregar (a altura já é reservada) */
+.md-foto {
+  opacity: 0;
+  transition: opacity var(--md-dur-media) ease;
+}
+
+.md-foto[data-carregada] {
+  opacity: 1;
+}
+
+/* ------------------------------------------------------------------ hover só em quem tem mouse (no celular ele fica preso) */
+
+@media (hover: hover) and (pointer: fine) {
+  .md-botao-primario:hover {
+    background: var(--md-verde-escuro);
+  }
+
+  .md-botao-secundario:hover {
+    background: var(--md-suave-escuro);
+  }
+
+  .md-botao-perigo:hover {
+    background: #9b1d14;
+  }
+
+  .md-voltar:hover {
+    background: var(--md-suave);
+  }
+
+  .md-acao:not(:disabled):not([aria-disabled='true']):hover {
+    background: var(--md-suave);
+    border-color: var(--md-suave-escuro);
+  }
+
+  .md-filtro:not(.ativo):hover {
+    color: var(--md-tinta);
+  }
+
+  .md-navegacao-item:not(.active):hover {
+    background: var(--md-fundo);
+    color: var(--md-verde);
+  }
+
+  .md-fab:hover {
+    background: var(--md-verde-escuro);
+  }
+}
+
+/* ------------------------------------------------------------------ computador e tablet: o app como uma folha */
+
+@media (min-width: 768px) {
+  body {
+    background: var(--md-suave);
+  }
+
+  .md-app {
+    margin: 24px auto;
+    min-height: calc(100vh - 48px);
+    min-height: calc(100dvh - 48px);
+    border: 1px solid var(--md-linha);
+    border-radius: 28px;
+    overflow: clip;
+  }
+
+  /* A navegação fica dentro da folha, presa ao pé da janela enquanto se rola */
+  .md-navegacao {
+    position: sticky;
+    left: auto;
+    transform: none;
+    max-width: none;
+  }
+
+  .md-tela.md-com-navegacao {
+    padding-bottom: 96px;
+  }
+
+  .md-fab {
+    bottom: calc(var(--md-altura-navegacao) + 16px);
+  }
+}
+
+/* Telas largas: painel de apresentação do projeto ao lado do app */
+@media (min-width: 1100px) {
+  .md-moldura {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 430px minmax(0, 1fr);
+    gap: 48px;
+    align-items: start;
+  }
+
+  .md-moldura > .md-app {
+    grid-column: 2;
+    width: 430px;
+  }
+
+  .md-painel {
+    grid-column: 1;
+    justify-self: end;
+    position: sticky;
+    top: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    max-width: 360px;
+    margin-top: 24px;
+  }
+
+  .md-fab {
+    right: calc(50% - 215px + var(--md-margem));
+  }
+}
+
+/* ------------------------------------------------------------------ menos movimento, quando a pessoa pede */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
+    animation-delay: 0ms !important;
+    transition-property: opacity, color, background-color, border-color !important;
+    scroll-behavior: auto !important;
+  }
+
+  /* O spinner continua girando (é informação, não enfeite), mais devagar */
+  .spinner-border {
+    animation-duration: 1.5s !important;
+    animation-iteration-count: infinite !important;
+  }
+
+  .md-carregando {
+    animation: none;
+  }
+
+  .md-botao:active,
+  .md-acao:active,
+  .md-fab:active,
+  .md-voltar:active {
+    transform: none;
+  }
+
+  .md-progresso-etapa::after {
+    transition: none;
+  }
 }
 
 /* ------------------------------------------------------------------ utilitários */
