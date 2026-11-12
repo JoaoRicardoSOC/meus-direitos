@@ -152,7 +152,7 @@ factory   (ConnectionFactory → Oracle)
    filtros `CorsFilter` e `CabecalhosSegurancaFilter` acrescentam os cabeçalhos a toda resposta, inclusive às de erro.
 
 Rotas públicas que mostram algo a mais para quem está logado (o próprio voto, `meu` nos comentários, a cidade dos
-relatórios) usam `AutenticacaoService.idOpcional`, que só confere o token e nunca responde 401.
+relatórios) usam `AutenticacaoService.idOpcional`, que confere o token e se a conta ainda existe e nunca responde 401: token inválido, vencido ou de conta excluída conta como visitante.
 
 **Tratamento de erros.** Toda falha vira o mesmo JSON (`status`, `erro`, `mensagem`, `campos`, `caminho`, `timestamp`), nunca uma página HTML ou um stack trace. As rotas não têm try/catch: as exceções sobem até um dos quatro `ExceptionMapper`s.
 
@@ -252,7 +252,7 @@ Outras decisões:
 - Não há perfis de usuário: a administração do catálogo de direitos usa uma chave fixa (`X-Chave-Admin`).
 - O pool de conexões é simples: tamanho fixo, sem métricas nem tempo máximo de vida da conexão. Uma conexão
   esquecida aberta (sem `close()`) ocupa a vaga para sempre; por isso todo acesso passa por `Transacao`.
-- Comentário oculto por reportes não tem revisão humana nem recurso: só volta se os reportes forem apagados no banco.
+- Comentário oculto por reportes não tem revisão humana nem recurso: só volta se os reportes forem apagados no banco. Enquanto oculto, não pode ser editado nem reportado de novo (404); o autor ainda pode excluí-lo.
 - A cidade é comparada por texto, ignorando acentos, maiúsculas e espaços repetidos ("Sao Paulo" = "São Paulo"). O próximo passo seria uma tabela de municípios do IBGE.
 - Não há upload de imagem: a denúncia guarda o caminho de uma das fotos de demonstração do front (`img/demo/...`).
 - Uma requisição `GET` com corpo é recusada pelo servidor Grizzly com 400 sem JSON, antes de chegar à API. Navegadores não enviam corpo em `GET`.

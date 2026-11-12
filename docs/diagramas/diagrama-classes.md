@@ -252,6 +252,7 @@ classDiagram
     class AutenticacaoService {
         -LimiteTentativasLogin LIMITE$
         -String HASH_FICTICIO$
+        -Predicate~Long~ usuarioExiste
         +entrar(LoginRequest req) UsuarioResponse
         +idDoUsuarioLogado(String cabecalho) Long
         +idOpcional(String cabecalho) Long
@@ -346,6 +347,7 @@ classDiagram
     }
     class ComentarioDao {
         <<interface>>
+        +buscarVisivelPorId(Long id) Comentario
         +listarPorDenuncia(Long idDenuncia) List~Comentario~
         +excluirPorDenuncia(Long idDenuncia) void
         +excluirDoUsuario(Long idUsuario) void
@@ -448,8 +450,8 @@ classDiagram
 ```
 
 Como ler:
-- **Autenticação.** Toda rota 🔒 chama `AutenticacaoService.idDoUsuarioLogado(Authorization)`: tira o `Bearer`, valida o token no `TokenUtil` (HMAC-SHA256 com `AppConfig.tokenSegredo()`, validade de 7 dias) e confere se o usuário ainda existe. Rotas públicas usam `idOpcional`, que nunca lança erro. O login passa antes pelo `LimiteTentativasLogin` (5 falhas seguidas no mesmo e-mail bloqueiam por 15 minutos, HTTP 429) e devolve o `UsuarioResponse` com `comToken(...)`.
-- **Moderação.** `ComentarioService` recusa texto com termo ofensivo (`FiltroTermosOfensivos`, 400 em `texto`) e grava reportes pelo `ReporteComentarioDao`. Os DAOs que listam e contam comentários usam `ReporteComentarioDaoJdbc.naoOculto(...)`, a condição SQL "menos de 3 reportes". Ao excluir comentário, denúncia ou conta, os reportes ligados são apagados antes, na mesma transação.
+- **Autenticação.** Toda rota 🔒 chama `AutenticacaoService.idDoUsuarioLogado(Authorization)`: tira o `Bearer`, valida o token no `TokenUtil` (HMAC-SHA256 com `AppConfig.tokenSegredo()`, validade de 7 dias) e confere se o usuário ainda existe. Rotas públicas usam `idOpcional`, que nunca lança erro (token inválido ou de conta excluída vira visitante). O login passa antes pelo `LimiteTentativasLogin` (5 falhas seguidas no mesmo e-mail bloqueiam por 15 minutos, HTTP 429) e devolve o `UsuarioResponse` com `comToken(...)`.
+- **Moderação.** `ComentarioService` recusa texto com termo ofensivo (`FiltroTermosOfensivos`, 400 em `texto`) e grava reportes pelo `ReporteComentarioDao`. Os DAOs que listam e contam comentários usam `ReporteComentarioDaoJdbc.naoOculto(...)`, a condição SQL "menos de 3 reportes"; editar e reportar buscam o comentário com `buscarVisivelPorId`, que aplica a mesma condição (oculto = 404). Ao excluir comentário, denúncia ou conta, os reportes ligados são apagados antes, na mesma transação.
 - **Consentimento.** `PerfilRequest.temDadoSensivel()` diz se veio algum dado sensível; nesse caso `PerfilService.validar` exige `consentimento == true` (400 no campo `consentimento`).
 - **Conexões.** `Transacao` pede a conexão à `ConnectionFactory`, que a empresta do `PoolConexoes` (até `MD_DB_POOL` conexões, padrão 5). O `close()` da conexão emprestada a devolve ao pool.
 - **Filtros de resposta.** `CorsFilter` e `CabecalhosSegurancaFilter` implementam `ContainerResponseFilter` e agem em toda resposta. O segundo põe `Cache-Control: no-store`, exceto quando a rota já definiu o seu, como as listas fixas do `MetadadosResource` (`public, max-age=86400`).
