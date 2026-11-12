@@ -32,6 +32,7 @@ Ela grava e lê os dados de um banco **Oracle** via **JDBC**.
 | `simulacao.ativa` | `MD_SIMULACAO_ATIVA` | não | `true` |
 | `simulacao.chave` | `MD_SIMULACAO_CHAVE` | não | sem chave, as rotas `/api/simulacao/*` ficam desligadas |
 | `admin.chave` | `MD_ADMIN_CHAVE` | não | sem chave, o catálogo de direitos fica somente leitura |
+| `token.segredo` | `MD_TOKEN_SEGREDO` | recomendada | sem segredo (ou com menos de 32 caracteres), a API gera um aleatório ao subir: as sessões caem a cada reinício |
 
 - A variável de ambiente tem prioridade sobre o arquivo.
 - O `db.properties` está no `.gitignore`: **a senha do banco nunca vai para o repositório.**
@@ -123,6 +124,9 @@ Alguns recursos vêm da **própria especificação JAX-RS ou do JDK**, sem nenhu
 | Recurso | Para quê | Por que é permitido |
 |---|---|---|
 | `ContainerResponseFilter` (`CorsFilter`) | CORS: o React em `localhost:5173` chama a API em `:8080` | Faz parte da especificação JAX-RS já usada no projeto |
+| `ContainerResponseFilter` (`CabecalhosSegurancaFilter`) | Cabeçalhos de segurança e `Cache-Control` em toda resposta | Especificação JAX-RS |
+| `javax.crypto.Mac` (HMAC-SHA256) + `Base64` | Token de sessão assinado, sem biblioteca de JWT | JDK |
+| `ConcurrentHashMap` | Limite de tentativas de login em memória, sem tabela nova | JDK |
 | `ExceptionMapper` | Tratamento de erro centralizado, em vez de try/catch repetido em cada rota | Especificação JAX-RS |
 | `javax.crypto` PBKDF2 + `SecureRandom` | A senha nunca é gravada em texto puro (hash com sal, 120 mil iterações) | JDK |
 | `java.util.Properties` + `System.getenv` | Tirar a senha do Oracle do código e do git | JDK |
@@ -130,17 +134,23 @@ Alguns recursos vêm da **própria especificação JAX-RS ou do JDK**, sem nenhu
 | `addBatch` / `executeBatch` | Gravar o conteúdo de demonstração de uma cidade nova em ~1–2 s (antes ~7,5 s) | A mesma API JDBC do `PreparedStatement` |
 
 Outras decisões:
-- **Identificação por cabeçalho `X-Usuario-Id`.** O login devolve o usuário, e o front envia o id nas rotas 🔒. É simples de demonstrar e de testar no Insomnia (ver limitações).
+- **Token de sessão assinado.** O login (`POST /auth/login`) e o cadastro (`POST /usuarios`) devolvem o usuário com o campo `token`, e o front o envia nas rotas 🔒 em `Authorization: Bearer <token>`. Formato: `base64url(id + "." + expiraEm) + "." + base64url(HMAC-SHA256(segredo, parte1))`, válido por **7 dias**. A assinatura é conferida em tempo constante e, em toda rota 🔒, a API confere também se o usuário ainda existe (conta excluída = 401). Sem o segredo (`token.segredo`), ninguém consegue trocar o id nem estender a validade. No Insomnia: faça o login, copie o `token` e use *Auth → Bearer Token*.
+- **Limite de tentativas de login.** Depois de **5 falhas seguidas** no mesmo e-mail, o login desse e-mail fica bloqueado por **15 minutos** (HTTP **429**, "Muitas tentativas de login. Tente de novo em N minutos."). Um login certo zera o contador. Vale também para e-mails sem conta, e a resposta de senha errada continua genérica ("E-mail ou senha inválidos.") e com o mesmo tempo de resposta (hash fictício). Os contadores ficam em memória e as entradas vencidas são removidas periodicamente.
+- **Imagens só de demonstração.** `imagemUrl` aceita apenas `img/demo/<nome>.jpg|jpeg|png|webp` (sem subpastas nem `..`, até 300 caracteres). Endereços externos (`https://...`) são recusados: uma imagem de outro site faria o navegador de quem vê a denúncia acessar um servidor de terceiros.
+- **Cabeçalhos de segurança.** Toda resposta traz `X-Content-Type-Options: nosniff`, `Referrer-Policy: no-referrer`, `X-Frame-Options: DENY` e `Cache-Control: no-store` (dados pessoais não ficam em cache). As listas fixas (`/categorias`, `/status-denuncia`, `/racas-cor`, `/deficiencias`, `/percursos-escolares`) são a exceção: `Cache-Control: public, max-age=86400`.
+- **Consentimento no questionário.** `PUT /usuarios/perfil` só grava dados sensíveis (data de nascimento, raça/cor, deficiência, percurso escolar, baixa renda) com `consentimento: true`; sem ele, 400 no campo `consentimento`.
+- **IPv4 e IPv6 em loopback.** Com `server.uri` em `localhost`/`127.0.0.1`, a API também escuta em `::1` na mesma porta. No Windows, navegadores e o Node tentam `::1` primeiro e esperariam ~2 s até cair para o IPv4. Se a máquina não tiver IPv6, a API só avisa no console.
 - **Conexão por operação** com try-with-resources: nenhuma conexão fica aberta entre requisições.
 - **"Cidade viva".** Na primeira conta de uma cidade, a API cria moradores e denúncias de exemplo (marcados como `simulado`), para que o avaliador veja votos, comentários e resolução funcionando. Esses moradores não fazem login, não aparecem nas listas de usuários e podem ser removidos com `DELETE /api/simulacao`.
 
 ## 6. Limitações conhecidas
 
-- A identificação por `X-Usuario-Id` não é assinada: quem souber o id pode se passar pelo usuário. O próximo passo seria um token assinado (JWT) ou uma sessão.
+- O token de sessão não pode ser revogado antes de vencer (7 dias): sair no front apaga o token do navegador, mas uma cópia continuaria válida. A exclusão da conta invalida o token na hora (a API confere se o usuário existe). O próximo passo seria uma lista de sessões no banco.
+- O limite de tentativas de login fica em memória: zera ao reiniciar a API e não seria compartilhado entre várias instâncias.
 - Não há perfis de usuário: a administração do catálogo de direitos usa uma chave fixa (`X-Chave-Admin`).
 - A API abre uma conexão por requisição, sem pool. É suficiente para o MVP.
 - A cidade é comparada por texto, ignorando acentos, maiúsculas e espaços repetidos ("Sao Paulo" = "São Paulo"). O próximo passo seria uma tabela de municípios do IBGE.
-- Não há upload de imagem: a denúncia guarda o caminho de uma imagem do front ou um endereço `https://`.
+- Não há upload de imagem: a denúncia guarda o caminho de uma das fotos de demonstração do front (`img/demo/...`).
 - Uma requisição `GET` com corpo é recusada pelo servidor Grizzly com 400 sem JSON, antes de chegar à API. Navegadores não enviam corpo em `GET`.
 
 ## 7. Uso de IA generativa (back-end)
