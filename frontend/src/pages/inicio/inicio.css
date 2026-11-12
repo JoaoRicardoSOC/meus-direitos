@@ -1,0 +1,38 @@
+/* 01 · Boas-vindas */
+.md-marca {
+  margin-bottom: 45px;
+}
+
+.md-marca-nome {
+  color: var(--md-verde);
+}
+
+.md-ilustracao {
+  background: var(--md-verde);
+  border-radius: 28px;
+  height: 200px;
+  overflow: hidden;
+}
+
+.md-ilustracao img {
+  display: block;
+  width: 100%;
+  height: 200px;
+}
+
+/* 02–05 · Cadastro e 06 · Entrar: espaço do Figma entre o cabeçalho e o conteúdo */
+.md-espaco-cabecalho {
+  height: 15px;
+}
+
+.md-espaco-entrar {
+  height: 50px;
+}
+
+.md-espaco-titulo {
+  height: 12px;
+}
+
+.md-espaco-botao {
+  height: 16px;
+}
