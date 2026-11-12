@@ -59,7 +59,8 @@ public class ComentarioService {
         validar(req);
         return Transacao.executar(con -> {
             ComentarioDao dao = new ComentarioDaoJdbc(con);
-            Comentario comentario = dao.buscarPorId(idComentario);
+            // Oculto por reportes = 404: some da conversa e também não pode ser reescrito
+            Comentario comentario = dao.buscarVisivelPorId(idComentario);
             exigirAutor(comentario, idUsuario);
             comentario.setTexto(req.texto());
             dao.atualizar(comentario);
@@ -70,6 +71,7 @@ public class ComentarioService {
     public void excluir(Long idUsuario, Long idComentario) {
         Transacao.executarSemRetorno(con -> {
             ComentarioDao dao = new ComentarioDaoJdbc(con);
+            // Busca mesmo oculto: o autor pode apagar o próprio comentário que foi ocultado
             exigirAutor(dao.buscarPorId(idComentario), idUsuario);
             new ReporteComentarioDaoJdbc(con).excluirPorComentario(idComentario);
             dao.excluir(idComentario);
@@ -83,7 +85,8 @@ public class ComentarioService {
      */
     public void reportar(Long idUsuario, Long idComentario) {
         Transacao.executarSemRetorno(con -> {
-            Comentario comentario = new ComentarioDaoJdbc(con).buscarPorId(idComentario); // 404 se não existir
+            // 404 se não existir ou se já estiver oculto (não há o que reportar)
+            Comentario comentario = new ComentarioDaoJdbc(con).buscarVisivelPorId(idComentario);
             if (comentario.isAutor(idUsuario)) {
                 throw new RegraNegocioException("Você não pode denunciar o próprio comentário.");
             }

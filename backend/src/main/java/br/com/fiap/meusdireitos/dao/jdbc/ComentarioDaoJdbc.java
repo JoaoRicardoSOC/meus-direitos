@@ -27,6 +27,8 @@ public class ComentarioDaoJdbc implements ComentarioDao {
             "INSERT INTO tb_comentario (cd_comentario, cd_denuncia, cd_usuario, ds_comentario, dt_criacao) "
                     + "VALUES (seq_comentario.NEXTVAL, ?, ?, ?, ?)";
     private static final String SQL_BUSCAR_POR_ID = SELECT + "WHERE c.cd_comentario = ?";
+    private static final String SQL_BUSCAR_VISIVEL_POR_ID =
+            SQL_BUSCAR_POR_ID + " AND " + ReporteComentarioDaoJdbc.naoOculto("c.cd_comentario");
     private static final String SQL_LISTAR = SELECT + "ORDER BY c.dt_criacao, c.cd_comentario";
     private static final String SQL_LISTAR_POR_DENUNCIA =
             SELECT + "WHERE c.cd_denuncia = ? AND " + ReporteComentarioDaoJdbc.naoOculto("c.cd_comentario")
@@ -81,7 +83,16 @@ public class ComentarioDaoJdbc implements ComentarioDao {
 
     @Override
     public Comentario buscarPorId(Long id) throws SQLException {
-        try (PreparedStatement stmt = conexao.prepareStatement(SQL_BUSCAR_POR_ID)) {
+        return buscarUm(SQL_BUSCAR_POR_ID, id);
+    }
+
+    @Override
+    public Comentario buscarVisivelPorId(Long id) throws SQLException {
+        return buscarUm(SQL_BUSCAR_VISIVEL_POR_ID, id);
+    }
+
+    private Comentario buscarUm(String sql, Long id) throws SQLException {
+        try (PreparedStatement stmt = conexao.prepareStatement(sql)) {
             stmt.setLong(1, id);
             try (ResultSet rs = stmt.executeQuery()) {
                 if (!rs.next()) {

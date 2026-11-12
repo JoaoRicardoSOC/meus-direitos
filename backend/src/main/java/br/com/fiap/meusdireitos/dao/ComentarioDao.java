@@ -10,6 +10,13 @@ import java.util.List;
  */
 public interface ComentarioDao extends CrudDao<Comentario> {
 
+    /**
+     * Busca um comentário que ainda aparece na conversa (não foi ocultado por reportes).
+     *
+     * @throws br.com.fiap.meusdireitos.exception.EntidadeNaoEncontradaException se não existir ou estiver oculto
+     */
+    Comentario buscarVisivelPorId(Long id) throws SQLException;
+
     /** @return comentários da denúncia, do mais antigo para o mais novo */
     List<Comentario> listarPorDenuncia(Long idDenuncia) throws SQLException;
 

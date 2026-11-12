@@ -9,6 +9,7 @@ import br.com.fiap.meusdireitos.dao.jdbc.RelatorioDaoJdbc;
 import br.com.fiap.meusdireitos.dao.jdbc.ReporteComentarioDaoJdbc;
 import br.com.fiap.meusdireitos.dao.jdbc.UsuarioDaoJdbc;
 import br.com.fiap.meusdireitos.dao.jdbc.VotoDenunciaDaoJdbc;
+import br.com.fiap.meusdireitos.exception.EntidadeNaoEncontradaException;
 import br.com.fiap.meusdireitos.factory.ConnectionFactory;
 import br.com.fiap.meusdireitos.model.Comentario;
 import br.com.fiap.meusdireitos.model.Denuncia;
@@ -35,6 +36,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
@@ -166,6 +168,10 @@ class DaosIntegracaoTest {
         assertEquals(1, visiveis.size());
         assertFalse(visiveis.stream().anyMatch(c -> c.getId().equals(comentario.getId())));
         assertEquals(1, denuncias.buscarDetalhada(denuncia.getId(), null).getComentarios());
+
+        // oculto também para editar e reportar (busca de visíveis), mas o autor ainda o encontra para excluir
+        assertThrows(EntidadeNaoEncontradaException.class, () -> comentarios.buscarVisivelPorId(comentario.getId()));
+        assertEquals(comentario.getId(), comentarios.buscarPorId(comentario.getId()).getId());
 
         // excluir o comentário exige apagar os reportes antes (sem ON DELETE CASCADE)
         reportes.excluirPorComentario(comentario.getId());
