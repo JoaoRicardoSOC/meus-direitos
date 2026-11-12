@@ -2,6 +2,7 @@ import { forwardRef, useEffect, useRef, useState } from 'react';
 import Campo from '../../components/Campo.jsx';
 import Mensagem from '../../components/Mensagem.jsx';
 import { api } from '../../services/api.js';
+import { useSessao } from '../../contexts/SessaoContext.jsx';
 import { haQuantoTempo, plural } from '../../utils/formatos.js';
 import { tamanho } from '../../utils/validacao.js';
 import { focarPrimeiroErro } from '../../utils/foco.js';
@@ -23,7 +24,8 @@ function Contador({ texto }) {
 
 /**
  * Card "Conversa do bairro · N" da tela 10: lista de comentários (do mais antigo ao mais novo)
- * e o formulário "Seu comentário". Quem escreveu (`meu: true`) pode editar e excluir.
+ * e o formulário "Seu comentário". Quem escreveu (`meu: true`) pode editar e excluir; quem está logado
+ * pode denunciar os comentários dos outros (POST /comentarios/{id}/reporte).
  */
 const ConversaBairro = forwardRef(function ConversaBairro(
   { idDenuncia, comentarios, erroLista, aoEnviar, aoEditar, aoExcluir },
@@ -35,6 +37,13 @@ const ConversaBairro = forwardRef(function ConversaBairro(
   const [enviando, setEnviando] = useState(false);
   const formulario = useRef(null);
   const titulo = useRef(null);
+  const { logado } = useSessao();
+  /** Comentários já denunciados nesta tela: o aviso continua mesmo se a lista for recarregada. */
+  const [denunciados, setDenunciados] = useState(() => new Set());
+
+  function denunciado(idComentario) {
+    setDenunciados((atual) => new Set(atual).add(idComentario));
+  }
 
   async function enviar(e) {
     e.preventDefault();
@@ -86,7 +95,15 @@ const ConversaBairro = forwardRef(function ConversaBairro(
       {comentarios.length > 0 && (
         <ul className="list-unstyled m-0 d-flex flex-column gap-3">
           {comentarios.map((comentario) => (
-            <Comentario key={comentario.id} comentario={comentario} aoEditar={aoEditar} aoExcluir={excluido} />
+            <Comentario
+              key={comentario.id}
+              comentario={comentario}
+              podeDenunciar={logado && comentario.meu === false}
+              denunciado={denunciados.has(comentario.id)}
+              aoEditar={aoEditar}
+              aoExcluir={excluido}
+              aoDenunciar={denunciado}
+            />
           ))}
         </ul>
       )}
@@ -120,9 +137,12 @@ const ConversaBairro = forwardRef(function ConversaBairro(
 
 export default ConversaBairro;
 
-/** Um comentário: autor e "há X · editado · exemplo" numa linha, texto e, se for meu, editar/excluir. */
-function Comentario({ comentario, aoEditar, aoExcluir }) {
-  const [modo, setModo] = useState('ver'); // 'ver' | 'editar' | 'excluir'
+/**
+ * Um comentário: autor e "há X · editado · exemplo" numa linha, texto e, se for meu, editar/excluir;
+ * se for de outra pessoa (e houver login), denunciar.
+ */
+function Comentario({ comentario, podeDenunciar, denunciado, aoEditar, aoExcluir, aoDenunciar }) {
+  const [modo, setModo] = useState('ver'); // 'ver' | 'editar' | 'excluir' | 'denunciar'
   const [texto, setTexto] = useState(comentario.texto);
   const [erroTexto, setErroTexto] = useState('');
   const [erro, setErro] = useState('');
@@ -131,10 +151,14 @@ function Comentario({ comentario, aoEditar, aoExcluir }) {
   const cancelarExclusao = useRef(null);
   const botaoEditar = useRef(null);
   const botaoExcluir = useRef(null);
+  const botaoDenunciar = useRef(null);
+  const cancelarDenuncia = useRef(null);
+  const avisoDenuncia = useRef(null);
   const devolverFoco = useRef(null); // ação que abriu o modo atual, para o foco voltar a ela
 
   useEffect(() => {
     if (modo === 'excluir') cancelarExclusao.current?.focus();
+    if (modo === 'denunciar') cancelarDenuncia.current?.focus();
     if (modo === 'ver' && devolverFoco.current) {
       devolverFoco.current.current?.focus();
       devolverFoco.current = null;
@@ -149,7 +173,7 @@ function Comentario({ comentario, aoEditar, aoExcluir }) {
   }
 
   function voltar() {
-    devolverFoco.current = modo === 'editar' ? botaoEditar : botaoExcluir;
+    devolverFoco.current = { editar: botaoEditar, excluir: botaoExcluir, denunciar: botaoDenunciar }[modo];
     setErro('');
     setModo('ver');
   }
@@ -191,6 +215,22 @@ function Comentario({ comentario, aoEditar, aoExcluir }) {
       aoExcluir(comentario.id);
     } catch (falha) {
       setErro(falha.message);
+      setOcupado(false);
+    }
+  }
+
+  async function denunciar() {
+    setOcupado(true);
+    setErro('');
+    try {
+      await api(`/comentarios/${comentario.id}/reporte`, { metodo: 'POST' });
+      aoDenunciar(comentario.id);
+      setModo('ver');
+      // os botões somem: o foco vai para o aviso que ficou no lugar deles
+      requestAnimationFrame(() => avisoDenuncia.current?.focus({ preventScroll: true }));
+    } catch (falha) {
+      setErro(falha.message);
+    } finally {
       setOcupado(false);
     }
   }
@@ -248,6 +288,42 @@ function Comentario({ comentario, aoEditar, aoExcluir }) {
             <img src={iconeLixeira} alt="" width="18" height="18" />
             Excluir
           </button>
+        </div>
+      )}
+
+      {podeDenunciar && modo === 'ver' && denunciado && (
+        <p ref={avisoDenuncia} tabIndex={-1} className="md-legenda md-comentario-denunciado" role="status">
+          Comentário denunciado. Obrigado por avisar.
+        </p>
+      )}
+
+      {podeDenunciar && modo === 'ver' && !denunciado && (
+        <div className="d-flex">
+          <button
+            type="button"
+            ref={botaoDenunciar}
+            className="md-acao-texto md-comentario-denunciar"
+            onClick={() => abrir('denunciar')}
+            aria-label={`Denunciar comentário de ${comentario.autor.nome}`}
+          >
+            Denunciar
+          </button>
+        </div>
+      )}
+
+      {modo === 'denunciar' && (
+        <div className="d-flex flex-column gap-2" role="group" aria-labelledby={`denunciar-${comentario.id}`}>
+          <p id={`denunciar-${comentario.id}`} className="md-legenda">
+            Denunciar este comentário como ofensivo ou inadequado?
+          </p>
+          <div className="d-flex gap-2">
+            <button type="button" className="md-botao md-botao-primario" onClick={denunciar} disabled={ocupado}>
+              {ocupado ? 'Denunciando…' : 'Denunciar'}
+            </button>
+            <button type="button" ref={cancelarDenuncia} className="md-botao md-botao-secundario" onClick={voltar} disabled={ocupado}>
+              Cancelar
+            </button>
+          </div>
         </div>
       )}
 

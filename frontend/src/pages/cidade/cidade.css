@@ -155,3 +155,14 @@
 .md-progresso-resolucao .md-progresso-etapa {
   height: 6px;
 }
+
+/* Denunciar o comentário de outra pessoa: ação discreta (cinza), alvo de 44 px de .md-acao-texto */
+.md-acao-texto.md-comentario-denunciar {
+  color: var(--md-apagado);
+  font-weight: 400;
+}
+
+/* Aviso que fica no lugar do "Denunciar" depois de confirmar */
+.md-comentario-denunciado {
+  margin: 0;
+}
