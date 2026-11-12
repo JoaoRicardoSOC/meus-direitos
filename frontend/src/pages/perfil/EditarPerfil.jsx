@@ -7,8 +7,8 @@ import CampoCidade from '../../components/CampoCidade.jsx';
 import Mensagem from '../../components/Mensagem.jsx';
 import { api } from '../../services/api.js';
 import { useSessao } from '../../contexts/SessaoContext.jsx';
-import { cidadeUf } from '../../utils/formatos.js';
 import { validar, validarCampos } from '../../utils/validacao.js';
+import iconeCheck from '../../assets/icones/check.svg';
 import './perfil.css';
 
 const REGRAS = {
@@ -74,7 +74,7 @@ export default function EditarPerfil() {
     }
   }
 
-  if (salvo) return <DadosSalvos usuario={salvo} />;
+  if (salvo) return <DadosSalvos />;
 
   return (
     <Tela titulo="Editar meus dados">
@@ -115,28 +115,21 @@ export default function EditarPerfil() {
   );
 }
 
-/** 21 · Perfil / Dados salvos: confirmação depois do PUT, com os dados que ficaram gravados. */
-function DadosSalvos({ usuario }) {
+/**
+ * 21 · Perfil / Dados salvos: confirmação depois do PUT (os dados novos já estão na sessão
+ * e aparecem no perfil). "Voltar ao perfil" e a seta levam para /perfil.
+ */
+function DadosSalvos() {
   return (
-    <Tela titulo="Dados salvos">
-      <Cabecalho titulo="Editar meus dados" voltarPara="/perfil" />
-      <div role="status" className="d-flex flex-column gap-3">
-        <p className="md-sobretitulo">Dados salvos</p>
-        <h2 className="md-titulo">Tudo certo!</h2>
-        <p className="md-corpo">Suas informações foram atualizadas.</p>
+    <Tela titulo="Dados atualizados" comNavegacao>
+      <Cabecalho titulo="Meu perfil" voltarPara="/perfil" />
+      <div className="md-espaco-confirmacao" aria-hidden="true" />
+      <img src={iconeCheck} alt="" width="48" height="48" />
+      <div role="status" className="md-confirmacao-textos">
+        <p className="md-sobretitulo">Tudo certo</p>
+        <h2 className="md-titulo">Dados atualizados</h2>
+        <p className="md-corpo">Suas alterações foram salvas na demonstração.</p>
       </div>
-
-      <section className="md-card" aria-label="Dados atualizados">
-        <dl className="md-dados-conta">
-          <dt>Nome</dt>
-          <dd>{usuario.nome}</dd>
-          <dt>E-mail</dt>
-          <dd>{usuario.email}</dd>
-          <dt>Cidade</dt>
-          <dd>{cidadeUf(usuario.cidade, usuario.uf)}</dd>
-        </dl>
-      </section>
-
       <Link to="/perfil" className="md-botao md-botao-primario">
         Voltar ao perfil
       </Link>

@@ -78,3 +78,16 @@
   margin: 0;
   padding-left: 20px;
 }
+
+/* 21 · Dados salvos: espaço de 80 px entre o cabeçalho e o check, como no Figma */
+.md-espaco-confirmacao {
+  height: 80px;
+  flex-shrink: 0;
+}
+
+/* Textos da confirmação agrupados para o leitor de tela, com o mesmo gap de 20 px da tela */
+.md-confirmacao-textos {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
