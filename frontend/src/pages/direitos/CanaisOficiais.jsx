@@ -9,6 +9,7 @@ import {
   PORTAL_GOV_BR, buscaDaPrefeitura, buscaDeCras, cidadePorNome, cidadePorPosicao, gravarCache, lerCache,
   obterPosicao, portalDaPrefeitura,
 } from './localizacao.js';
+import iconeSetaDireita from '../../assets/icones/seta-direita.svg';
 import './direitos.css';
 
 /** De onde buscar os canais: posição atual do aparelho ou cidade do cadastro. */
@@ -122,61 +123,72 @@ export default function CanaisOficiais() {
   const cidadeCadastro = cidadeUf(usuario?.cidade, usuario?.uf);
   const localidade = canais ? cidadeUf(canais.cidade, canais.uf) : '';
   const buscando = modo && !canais;
+  const motivo = canais?.motivo
+    ? `${MOTIVO_SEM_LOCALIZACAO[canais.motivo] ?? MOTIVO_SEM_LOCALIZACAO.indisponivel} `
+    : '';
 
   return (
     <Tela titulo="Canais de consulta" comNavegacao>
       <Cabecalho titulo="Canais de consulta" voltarPara="/direitos" />
 
-      <p className="md-sobretitulo">Próximo passo</p>
-      <h2 className="md-titulo">Confirme na fonte oficial.</h2>
-      <p className="md-corpo">Escolha um canal para pesquisar os critérios.</p>
+      <p className="md-corpo">Confirme os critérios na fonte oficial. Escolha um canal para pesquisar.</p>
 
-      <section className="md-card md-canais-origem" aria-labelledby="canais-origem-titulo" aria-live="polite">
-        {!modo && (
-          <>
-            <h3 id="canais-origem-titulo" className="md-negrito">
-              Onde buscar a prefeitura e o CRAS?
-            </h3>
-            <p className="md-legenda">
-              Com a localização atual, mostramos os canais de onde você está agora.
-            </p>
+      <section className="md-card md-canais-origem" aria-labelledby="canais-origem-titulo">
+        <h2 id="canais-origem-titulo" className="md-subtitulo">
+          Onde buscar a prefeitura e o CRAS?
+        </h2>
+
+        {/* Os três estados ocupam a mesma célula: o card mantém a altura da escolha e os cards de baixo não pulam */}
+        <div className="md-canais-estados">
+          <div className="md-canais-estado" inert={Boolean(modo)} data-oculto={modo ? '' : undefined}>
+            <p className="md-legenda">Com a localização atual, mostramos os canais de onde você está agora.</p>
             <button type="button" className="md-botao md-botao-primario" onClick={() => escolher(MODO.POSICAO)}>
               Usar minha localização atual
             </button>
-            <button type="button" className="md-botao md-botao-secundario" onClick={() => escolher(MODO.CADASTRO)}>
-              Usar a cidade do cadastro{cidadeCadastro ? ` (${cidadeCadastro})` : ''}
-            </button>
-          </>
-        )}
-
-        {buscando && (
-          <>
-            <h3 id="canais-origem-titulo" className="md-oculto-visualmente">Buscando os canais</h3>
-            <Carregando
-              texto={modo === MODO.POSICAO ? 'Pegando sua localização…' : 'Procurando os canais da sua cidade…'}
-            />
-          </>
-        )}
-
-        {canais && (
-          <div className="d-flex flex-column gap-2">
-            <h3 id="canais-origem-titulo" className="md-oculto-visualmente">Origem dos canais</h3>
-            {canais.origem === MODO.POSICAO && (
-              <p className="md-legenda">
-                Você está em <strong>{localidade}</strong>. Os canais abaixo são desta região.
-              </p>
-            )}
-            {canais.origem === MODO.CADASTRO && (
-              <p className="md-legenda">
-                {canais.motivo && `${MOTIVO_SEM_LOCALIZACAO[canais.motivo] ?? MOTIVO_SEM_LOCALIZACAO.indisponivel} `}
-                Canais da cidade do seu cadastro: <strong>{localidade}</strong>.
-              </p>
-            )}
-            <button type="button" className="md-link-botao align-self-start" onClick={() => escolher(null)}>
-              Trocar
-            </button>
+            <div className="d-flex flex-column gap-1">
+              <button
+                type="button"
+                className="md-botao md-botao-secundario"
+                onClick={() => escolher(MODO.CADASTRO)}
+                aria-describedby={cidadeCadastro ? 'canais-cidade-cadastro' : undefined}
+              >
+                Usar a cidade do cadastro
+              </button>
+              {cidadeCadastro && (
+                <p id="canais-cidade-cadastro" className="md-legenda text-center">
+                  {cidadeCadastro}
+                </p>
+              )}
+            </div>
           </div>
-        )}
+
+          {buscando && (
+            <div className="md-canais-estado">
+              <Carregando
+                texto={modo === MODO.POSICAO ? 'Pegando sua localização…' : 'Procurando os canais da sua cidade…'}
+              />
+            </div>
+          )}
+
+          <div className="md-canais-estado">
+            {/* Só o resultado é anunciado, não a seção inteira */}
+            <p className="md-corpo-tinta" role="status">
+              {canais && (canais.origem === MODO.POSICAO ? `Canais de ${localidade}` : `Canais de ${localidade}, a cidade do seu cadastro`)}
+            </p>
+            {canais && (
+              <>
+                <p className="md-legenda">
+                  {canais.origem === MODO.POSICAO
+                    ? 'Pela sua localização atual. Os canais abaixo são desta região.'
+                    : `${motivo}Os canais abaixo são da cidade do cadastro.`}
+                </p>
+                <button type="button" className="md-acao-texto align-self-start" onClick={() => escolher(null)}>
+                  Trocar<span className="md-oculto-visualmente"> onde buscar</span>
+                </button>
+              </>
+            )}
+          </div>
+        </div>
       </section>
 
       <ul className="md-direito-canais list-unstyled m-0">
@@ -223,28 +235,27 @@ export default function CanaisOficiais() {
   );
 }
 
+/** Card de um canal: link externo com seta, ou, antes da escolha, um card apagado e sem ação. */
 function CardCanal({ titulo, texto, link, detalhe, pendente }) {
-  const conteudo = (
-    <>
-      <h3 className="md-subtitulo">{titulo}</h3>
-      <p className="md-corpo">{texto}</p>
-      {detalhe && <p className="md-legenda md-direito-destaque">{detalhe}</p>}
-    </>
-  );
-
   if (!link) {
     return (
       <div className="md-card md-canal-pendente">
-        {conteudo}
+        <h3 className="md-negrito">{titulo}</h3>
+        <p className="md-corpo">{texto}</p>
         <p className="md-legenda">{pendente}</p>
       </div>
     );
   }
 
   return (
-    <a href={link} target="_blank" rel="noopener noreferrer" className="md-card md-direito-card">
-      {conteudo}
-      <span className="md-oculto-visualmente">(abre em nova aba)</span>
+    <a href={link} target="_blank" rel="noopener noreferrer" className="md-card md-direito-card md-canal-link">
+      <span className="md-canal-conteudo">
+        <h3 className="md-negrito">{titulo}</h3>
+        <span className="md-corpo">{texto}</span>
+        {detalhe && <span className="md-legenda md-direito-destaque">{detalhe}</span>}
+        <span className="md-oculto-visualmente">(abre em nova aba)</span>
+      </span>
+      <img src={iconeSetaDireita} alt="" width="20" height="20" className="md-canal-seta" />
     </a>
   );
 }
