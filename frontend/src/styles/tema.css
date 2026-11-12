@@ -1,0 +1,502 @@
+/*
+ * Tema do Meus Direitos, a partir das variáveis do Figma (PROJETO-GS-2026).
+ * O Bootstrap cuida do reset, da grade e dos utilitários (d-flex, gap-*, mb-*...);
+ * aqui ficam as cores, a tipografia e os componentes com a cara do protótipo.
+ */
+
+:root {
+  /* Cores (variáveis do Figma) */
+  --md-verde: #075e4a;
+  --md-tinta: #142e2a;
+  --md-apagado: #52645f;
+  --md-fundo: #f5f7f2;
+  --md-suave: #e8f0e8;
+  --md-branco: #ffffff;
+  --md-linha: #d8e1d9;
+  --md-erro: #b42318;
+  --md-erro-fundo: #fdecea;
+
+  /* Medidas */
+  --md-margem: 24px;
+  --md-altura-navegacao: 88px;
+
+  /* Bootstrap usa estas variáveis em todos os componentes */
+  --bs-body-font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --bs-body-bg: var(--md-fundo);
+  --bs-body-color: var(--md-tinta);
+  --bs-primary: var(--md-verde);
+  --bs-primary-rgb: 7, 94, 74;
+  --bs-border-color: var(--md-linha);
+  --bs-link-color: var(--md-verde);
+  --bs-link-color-rgb: 7, 94, 74;
+  --bs-link-hover-color: var(--md-tinta);
+  --bs-focus-ring-color: rgba(7, 94, 74, 0.25);
+}
+
+body {
+  background: var(--md-fundo);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ------------------------------------------------------------------ estrutura */
+
+/* Coluna de celular centralizada: o protótipo é mobile (390 px) */
+.md-app {
+  max-width: 430px;
+  min-height: 100vh;
+  min-height: 100dvh;
+  margin: 0 auto;
+  position: relative;
+  background: var(--md-fundo);
+}
+
+.md-tela {
+  padding: var(--md-margem);
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* Telas com a barra de navegação embaixo: o conteúdo não fica escondido atrás dela */
+.md-tela.md-com-navegacao {
+  padding-bottom: calc(var(--md-altura-navegacao) + 80px);
+}
+
+/* ------------------------------------------------------------------ tipografia (estilos MD/* do Figma) */
+
+.md-titulo {
+  font-size: 28px;
+  font-weight: 700;
+  line-height: 1.2;
+  color: var(--md-tinta);
+  margin: 0;
+}
+
+.md-subtitulo {
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 1.2;
+  color: var(--md-tinta);
+  margin: 0;
+}
+
+.md-corpo {
+  font-size: 16px;
+  line-height: 1.45;
+  color: var(--md-apagado);
+  margin: 0;
+}
+
+.md-legenda {
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--md-apagado);
+  margin: 0;
+}
+
+.md-sobretitulo {
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.2;
+  color: var(--md-verde);
+  text-transform: uppercase;
+  margin: 0;
+}
+
+.md-negrito {
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 1.2;
+  color: var(--md-tinta);
+  margin: 0;
+}
+
+/* ------------------------------------------------------------------ botões */
+
+.md-botao {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  min-height: 52px;
+  padding: 0 16px;
+  border: 0;
+  border-radius: 14px;
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 1.2;
+  text-decoration: none;
+  cursor: pointer;
+  transition: filter 0.15s ease;
+}
+
+.md-botao:hover {
+  filter: brightness(0.95);
+}
+
+.md-botao:focus-visible {
+  outline: 3px solid var(--bs-focus-ring-color);
+  outline-offset: 2px;
+}
+
+.md-botao:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.md-botao-primario {
+  background: var(--md-verde);
+  color: var(--md-branco);
+}
+
+.md-botao-primario:hover {
+  color: var(--md-branco);
+}
+
+.md-botao-secundario {
+  background: var(--md-suave);
+  color: var(--md-verde);
+}
+
+.md-botao-secundario:hover {
+  color: var(--md-verde);
+}
+
+.md-botao-perigo {
+  background: var(--md-erro);
+  color: var(--md-branco);
+}
+
+.md-botao-perigo:hover {
+  color: var(--md-branco);
+}
+
+/* ------------------------------------------------------------------ cabeçalho com "Voltar" */
+
+.md-cabecalho {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.md-voltar {
+  display: inline-flex;
+  padding: 10px;
+  margin-left: -10px;
+  border: 0;
+  background: transparent;
+  border-radius: 12px;
+}
+
+.md-voltar:focus-visible {
+  outline: 3px solid var(--bs-focus-ring-color);
+}
+
+/* ------------------------------------------------------------------ campos */
+
+.md-campo {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.md-campo-rotulo {
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 1.2;
+  color: var(--md-tinta);
+  margin: 0;
+}
+
+.md-entrada.form-control,
+.md-entrada.form-select {
+  min-height: 52px;
+  padding: 14px;
+  border: 1px solid var(--md-linha);
+  border-radius: 12px;
+  background-color: var(--md-branco);
+  font-size: 16px;
+  line-height: 1.45;
+  color: var(--md-tinta);
+}
+
+.md-entrada.form-control::placeholder {
+  color: var(--md-apagado);
+  opacity: 0.8;
+}
+
+.md-entrada.form-control:focus,
+.md-entrada.form-select:focus {
+  border-color: var(--md-verde);
+  box-shadow: 0 0 0 3px var(--bs-focus-ring-color);
+}
+
+.md-entrada.is-invalid {
+  border-color: var(--md-erro);
+  background-image: none;
+  padding-right: 14px;
+}
+
+/* Campo com ícone à direita (olho da senha, pin da cidade) */
+.md-entrada-com-icone {
+  position: relative;
+}
+
+.md-entrada-com-icone .md-entrada.form-control {
+  padding-right: 48px;
+}
+
+.md-icone-campo {
+  position: absolute;
+  top: 50%;
+  right: 8px;
+  transform: translateY(-50%);
+  display: inline-flex;
+  padding: 6px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+}
+
+button.md-icone-campo:focus-visible {
+  outline: 3px solid var(--bs-focus-ring-color);
+}
+
+span.md-icone-campo {
+  pointer-events: none;
+}
+
+.md-campo-uf.form-select {
+  width: 96px;
+  flex-shrink: 0;
+}
+
+.md-erro-campo {
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--md-erro);
+  margin: 0;
+}
+
+/* Mensagem geral de erro ou aviso no topo do formulário */
+.md-alerta {
+  border-radius: 12px;
+  padding: 12px 14px;
+  font-size: 14px;
+  line-height: 1.45;
+  margin: 0;
+}
+
+.md-alerta-erro {
+  background: var(--md-erro-fundo);
+  color: var(--md-erro);
+}
+
+.md-alerta-info {
+  background: var(--md-suave);
+  color: var(--md-verde);
+}
+
+/* Caixa de informação com ícone (ex.: "No protótipo, usamos apenas dados fictícios.") */
+.md-informacao {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  padding: 12px;
+  border-radius: 12px;
+  background: var(--md-suave);
+}
+
+/* ------------------------------------------------------------------ progresso do cadastro e do questionário */
+
+.md-progresso {
+  display: flex;
+  gap: 6px;
+}
+
+.md-progresso-etapa {
+  flex: 1;
+  height: 5px;
+  border-radius: 3px;
+  background: var(--md-linha);
+}
+
+.md-progresso-etapa.ativa {
+  background: var(--md-verde);
+}
+
+/* ------------------------------------------------------------------ cartões, selos, avatar */
+
+.md-card {
+  background: var(--md-branco);
+  border: 1px solid var(--md-linha);
+  border-radius: 18px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.md-selo {
+  align-self: flex-start;
+  background: var(--md-suave);
+  border-radius: 6px;
+  padding: 6px;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.2;
+  color: var(--md-verde);
+  text-transform: uppercase;
+}
+
+.md-avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--md-suave);
+  color: var(--md-verde);
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 1.2;
+  text-decoration: none;
+}
+
+.md-avatar-pequeno {
+  width: 36px;
+  height: 36px;
+}
+
+/* Botões de voto e contador de comentários */
+.md-acao {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-width: 74px;
+  height: 48px;
+  padding: 10px 16px;
+  border: 0;
+  border-radius: 12px;
+  background: var(--md-suave);
+  color: var(--md-verde);
+  font-size: 13px;
+  line-height: 1.45;
+  text-decoration: none;
+}
+
+button.md-acao {
+  cursor: pointer;
+}
+
+.md-acao:focus-visible {
+  outline: 3px solid var(--bs-focus-ring-color);
+}
+
+/* Abas do feed e opções de escolha */
+.md-filtro {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 48px;
+  padding: 10px 16px;
+  border: 0;
+  border-radius: 12px;
+  background: var(--md-suave);
+  color: var(--md-verde);
+  font-size: 13px;
+  line-height: 1.45;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.md-filtro.ativo {
+  background: var(--md-verde);
+  color: var(--md-branco);
+}
+
+/* ------------------------------------------------------------------ navegação principal e botão flutuante */
+
+.md-navegacao {
+  position: fixed;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  max-width: 430px;
+  height: var(--md-altura-navegacao);
+  padding: 12px;
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  background: var(--md-branco);
+  border-top: 1px solid var(--md-linha);
+  z-index: 10;
+}
+
+.md-navegacao-item {
+  flex: 1;
+  max-width: 116px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 6px;
+  border-radius: 12px;
+  color: var(--md-verde);
+  font-size: 13px;
+  line-height: 1.45;
+  text-decoration: none;
+}
+
+.md-navegacao-item.active {
+  background: var(--md-suave);
+}
+
+.md-navegacao-item:hover {
+  color: var(--md-verde);
+  background: var(--md-suave);
+}
+
+.md-fab {
+  position: fixed;
+  bottom: calc(var(--md-altura-navegacao) + 8px);
+  right: max(var(--md-margem), calc(50% - 215px + var(--md-margem)));
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 48px;
+  padding: 14px 20px;
+  border-radius: 28px;
+  background: var(--md-verde);
+  color: var(--md-branco);
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 1.2;
+  text-decoration: none;
+  box-shadow: 0 6px 16px rgba(7, 94, 74, 0.25);
+  z-index: 11;
+}
+
+.md-fab:hover {
+  color: var(--md-branco);
+  filter: brightness(0.95);
+}
+
+/* ------------------------------------------------------------------ utilitários */
+
+.md-oculto-visualmente {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
