@@ -199,7 +199,7 @@ Todo erro vem neste formato:
 | 405 | Método HTTP errado para a rota (ex.: `DELETE` onde só existe `GET`) | Erro de programação: confira a seção 8 |
 | 409 | E-mail já cadastrado, título repetido | Mostra `mensagem` no campo correspondente |
 | 415 | Corpo enviado sem `Content-Type: application/json` | Erro de programação: o cliente da seção 5 já envia o cabeçalho |
-| 422 | Regra do negócio (votar na própria denúncia, mudança de status inválida) | Mostra `mensagem` (toast/alerta) |
+| 422 | Regra do negócio (votar na própria denúncia, mudança de status inválida, reportar o próprio comentário) | Mostra `mensagem` (toast/alerta) |
 | 429 | Login bloqueado depois de 5 tentativas erradas seguidas no mesmo e-mail (15 minutos) | Mostra `mensagem` sem apagar o que foi digitado |
 | 503 | Banco de dados fora do ar | "Serviço indisponível, tente novamente" |
 | 500 | Erro inesperado | Mensagem genérica |
@@ -471,12 +471,15 @@ Quando mostrar o botão "Já foi resolvido": usuário logado, **não** é o auto
 | POST 🔒 | `/denuncias/{id}/comentarios` | `{ "texto": "Também notei esse problema." }` (2–500 caracteres) → 201 |
 | PUT 🔒 | `/comentarios/{id}` | Editar o próprio comentário (403 se for de outra pessoa) |
 | DELETE 🔒 | `/comentarios/{id}` | Excluir o próprio comentário → 204 |
+| POST 🔒 | `/comentarios/{id}/reporte` | Reportar comentário ofensivo de outra pessoa, sem corpo → 204 (reportar de novo também dá 204 e não conta duas vezes). Próprio comentário → 422; inexistente → 404 |
 
 ```json
 { "id": 55, "idDenuncia": 1, "texto": "Também notei esse problema.",
   "autor": { "id": 7, "nome": "Mariana Oliveira", "simulado": false }, "meu": true,
   "criadoEm": "2026-11-11T01:29:49", "editadoEm": "2026-11-11T01:35:02" }
 ```
+
+**Moderação:** texto com palavrão ou ofensa comum (criar ou editar) → 400 no campo `texto` ("Revise o texto: ele contém termos ofensivos."). Comentário com **3 reportes** de pessoas diferentes some da lista para todos (inclusive para o autor) e deixa de contar em `denuncia.comentarios` e nos relatórios.
 
 `editadoEm` só aparece se o comentário foi editado (mostre "editado"). O contador do card vem em `denuncia.comentarios`.
 
@@ -665,3 +668,4 @@ Ajustes em relação ao Figma, combinados com o grupo. **Todos foram atendidos n
 | 12/11/2026 | Mudar de cidade no perfil prepara a "cidade viva" da cidade nova; `GET /usuarios/{id}` responde 404 para morador de exemplo; o pulso de atividade não roda em dobro com acessos simultâneos. |
 | 12/11/2026 | Front-end concluído e testado de ponta a ponta contra a API e o Oracle (inclusive com o `index.html` aberto por `file://`). Todos os pedidos da seção 11 atendidos. Sem mudança de contrato. |
 | 12/11/2026 | **Mudança de contrato (segurança):** `X-Usuario-Id` substituído por token assinado (`Authorization: Bearer`, 7 dias), devolvido no cadastro e no login; login bloqueado por 15 min após 5 erros (429); `imagemUrl` só aceita fotos `img/demo/`; questionário exige `consentimento` quando há dado preenchido; cabeçalhos `nosniff`, `no-referrer`, `DENY` e `Cache-Control`. |
+| 12/11/2026 | Moderação: `POST /comentarios/{id}/reporte` (3 reportes ocultam o comentário) e filtro de termos ofensivos (400 em `texto`). Desempenho: pool de conexões, índices de cidade e API escutando também em IPv6 (`localhost` sem atraso no Windows). |
