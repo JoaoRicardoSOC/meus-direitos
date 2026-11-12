@@ -463,7 +463,7 @@ Quando mostrar o botão "Já foi resolvido": usuário logado, **não** é o auto
 
 ```json
 { "id": 55, "idDenuncia": 1, "texto": "Também notei esse problema.",
-  "autor": { "id": 7, "nome": "Mariana Oliveira" }, "meu": true,
+  "autor": { "id": 7, "nome": "Mariana Oliveira", "simulado": false }, "meu": true,
   "criadoEm": "2026-11-11T01:29:49", "editadoEm": "2026-11-11T01:35:02" }
 ```
 
@@ -567,7 +567,7 @@ Para o sistema nunca parecer vazio — inclusive quando o avaliador se cadastrar
   "endereco": "Avenida Brasil, 900", "bairro": "Jardim América",
   "cidade": "São Paulo", "uf": "SP",
   "imagemUrl": "img/demo/asfalto-1.jpg",
-  "autor": { "id": 3, "nome": "Ana Martins" },
+  "autor": { "id": 3, "nome": "Ana Martins", "simulado": false },
   "placar": { "upvotes": 2, "downvotes": 0, "saldo": 2, "meuVoto": "UP" },
   "comentarios": 0,
   "resolucao": { "confirmacoes": 0, "necessarias": 3, "euConfirmei": false },
@@ -596,7 +596,7 @@ Para o sistema nunca parecer vazio — inclusive quando o avaliador se cadastrar
 | `UsuarioResponse` | `id, nome, email, cidade, uf, criadoEm, perfilPreenchido, cidadePreparada?` (só no cadastro) |
 | `AutorResponse` (em denúncias e comentários) | `id, nome, simulado` |
 | `PlacarResponse` | `upvotes, downvotes, saldo, meuVoto?` |
-| `ComentarioResponse` | `id, idDenuncia, texto, autor {id, nome}, meu, criadoEm, editadoEm?` |
+| `ComentarioResponse` | `id, idDenuncia, texto, autor {id, nome, simulado}, meu, criadoEm, editadoEm?` |
 | `DireitoResumoResponse` | `id, titulo, resumo, icone` |
 | `PerfilCompletoResponse` | `perfil {...}, tags [{codigo, descricao}], direitos [DireitoResumoResponse]` |
 | `OpcaoResponse` (enums) | `codigo, descricao` |
