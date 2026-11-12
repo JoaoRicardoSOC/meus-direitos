@@ -74,8 +74,10 @@ export default function DetalheDireito() {
               <ol className="md-direito-passos">
                 {passos.map((passo) => (
                   <li key={passo.ordem}>
-                    <span className="md-negrito">
-                      {String(passo.ordem).padStart(2, '0')} {passo.titulo}
+                    <span className="md-negrito md-direito-destaque">
+                      {String(passo.ordem).padStart(2, '0')}
+                      {'  '}
+                      {passo.titulo}
                     </span>
                     {passo.texto && <span className="md-corpo">{passo.texto}</span>}
                   </li>
@@ -98,7 +100,7 @@ export default function DetalheDireito() {
           )}
 
           {direito.linkOficial && (
-            <a href={direito.linkOficial} target="_blank" rel="noopener noreferrer" className="md-negrito md-direito-link">
+            <a href={direito.linkOficial} target="_blank" rel="noopener noreferrer" className="md-negrito md-direito-destaque">
               Ver a fonte oficial deste tema
               <span className="md-oculto-visualmente"> (abre em nova aba)</span>
             </a>
