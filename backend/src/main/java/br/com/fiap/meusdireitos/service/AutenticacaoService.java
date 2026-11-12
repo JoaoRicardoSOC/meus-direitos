@@ -11,6 +11,8 @@ import br.com.fiap.meusdireitos.service.validacao.Validador;
 import br.com.fiap.meusdireitos.util.SenhaUtil;
 import br.com.fiap.meusdireitos.util.TokenUtil;
 
+import java.util.function.Predicate;
+
 /**
  * Login e identificação do usuário nas rotas que exigem conta.
  * <p>
@@ -32,6 +34,18 @@ public class AutenticacaoService {
 
     /** Compartilhado por todas as instâncias (cada resource cria a sua). */
     private static final LimiteTentativasLogin LIMITE = new LimiteTentativasLogin();
+
+    /** Confere se o id do token ainda tem conta (a conta pode ter sido excluída depois do login). */
+    private final Predicate<Long> usuarioExiste;
+
+    public AutenticacaoService() {
+        this(id -> Transacao.consultar(con -> new UsuarioDaoJdbc(con).existe(id)));
+    }
+
+    /** Para testes: troca a consulta ao banco por outra verificação. */
+    AutenticacaoService(Predicate<Long> usuarioExiste) {
+        this.usuarioExiste = usuarioExiste;
+    }
 
     /**
      * Confere e-mail e senha e devolve a conta com o token de sessão.
@@ -69,14 +83,15 @@ public class AutenticacaoService {
 
     /**
      * Para rotas públicas que mostram algo a mais a quem está logado (ex.: o próprio voto).
-     * Não consulta o banco: basta o token ser válido.
+     * Token ausente, inválido, vencido ou de uma conta já excluída conta como visitante, sem erro.
      *
      * @param cabecalho valor do cabeçalho Authorization (pode ser nulo)
-     * @return id de um token válido, ou null se ausente ou inválido (nunca lança exceção)
+     * @return id de um usuário existente com token válido, ou null
      */
     public Long idOpcional(String cabecalho) {
         String token = extrairBearer(cabecalho);
-        return token == null ? null : TokenUtil.validar(token);
+        Long id = token == null ? null : TokenUtil.validar(token);
+        return id != null && usuarioExiste.test(id) ? id : null;
     }
 
     /**
@@ -96,8 +111,7 @@ public class AutenticacaoService {
         if (id == null) {
             throw new NaoAutenticadoException(MSG_SESSAO_INVALIDA);
         }
-        boolean existe = Transacao.consultar(con -> new UsuarioDaoJdbc(con).existe(id));
-        if (!existe) {
+        if (!usuarioExiste.test(id)) {
             throw new NaoAutenticadoException(MSG_SESSAO_INVALIDA);
         }
         return id;

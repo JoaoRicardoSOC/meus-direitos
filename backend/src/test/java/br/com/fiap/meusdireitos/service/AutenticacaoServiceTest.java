@@ -8,10 +8,12 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-/** Só os caminhos que não consultam o banco (cabeçalho ausente ou token inválido). */
+/** Sem banco: a existência do usuário é simulada (só o id 13 foi "excluído"). */
 class AutenticacaoServiceTest {
 
-    private final AutenticacaoService service = new AutenticacaoService();
+    private static final long CONTA_EXCLUIDA = 13L;
+
+    private final AutenticacaoService service = new AutenticacaoService(id -> id != CONTA_EXCLUIDA);
 
     @Test
     void extraiOTokenDoCabecalhoBearer() {
@@ -34,6 +36,19 @@ class AutenticacaoServiceTest {
         assertNull(service.idOpcional(null));
         assertNull(service.idOpcional("42"));
         assertNull(service.idOpcional("Bearer token-falso"));
+    }
+
+    @Test
+    void idOpcionalTrataTokenDeContaExcluidaComoVisitante() {
+        assertNull(service.idOpcional("Bearer " + TokenUtil.gerar(CONTA_EXCLUIDA)));
+    }
+
+    @Test
+    void tokenDeContaExcluidaEncerraASessao() {
+        NaoAutenticadoException e = assertThrows(NaoAutenticadoException.class,
+                () -> service.idDoUsuarioLogado("Bearer " + TokenUtil.gerar(CONTA_EXCLUIDA)));
+        assertEquals("Sua sessão não é mais válida. Entre novamente.", e.getMessage());
+        assertEquals(9L, service.idDoUsuarioLogado("Bearer " + TokenUtil.gerar(9L)));
     }
 
     @Test
