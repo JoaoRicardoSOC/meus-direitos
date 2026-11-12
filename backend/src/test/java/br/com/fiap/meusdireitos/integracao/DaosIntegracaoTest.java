@@ -63,7 +63,8 @@ class DaosIntegracaoTest {
         assumeTrue("true".equalsIgnoreCase(System.getenv("MD_INTEGRACAO")),
                 "Testes de integração desligados (defina MD_INTEGRACAO=true para rodar contra o Oracle)");
         sufixo = UUID.randomUUID().toString().replace("-", "").substring(0, 10).toUpperCase();
-        cidadeComAcento = "São  Integração " + sufixo;
+        // Gravada como o UsuarioService grava (espaços já normalizados); a busca vem com espaços e sem acento
+        cidadeComAcento = "São Integração " + sufixo;
         cidadeSemAcento = "sao integracao " + sufixo.toLowerCase();
         conexao = ConnectionFactory.getConnection();
         conexao.setAutoCommit(false);
