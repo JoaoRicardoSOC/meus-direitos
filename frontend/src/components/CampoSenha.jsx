@@ -1,5 +1,6 @@
 import { useId, useState } from 'react';
 import iconeOlho from '../assets/icones/olho.svg';
+import iconeOlhoRiscado from '../assets/icones/olho-riscado.svg';
 
 /** Campo de senha com o ícone de olho para mostrar ou esconder o texto (componente "Campo / Senha"). */
 export default function CampoSenha({ rotulo = 'Senha', erro, ajuda, className = '', ...props }) {
@@ -30,7 +31,7 @@ export default function CampoSenha({ rotulo = 'Senha', erro, ajuda, className = 
           aria-label={visivel ? 'Esconder senha' : 'Mostrar senha'}
           aria-pressed={visivel}
         >
-          <img src={iconeOlho} alt="" width="20" height="20" />
+          <img src={visivel ? iconeOlhoRiscado : iconeOlho} alt="" width="20" height="20" />
         </button>
       </div>
       {ajuda && !erro && (
@@ -39,7 +40,7 @@ export default function CampoSenha({ rotulo = 'Senha', erro, ajuda, className = 
         </p>
       )}
       {erro && (
-        <p id={idErro} className="md-erro-campo" role="alert">
+        <p id={idErro} className="md-erro-campo">
           {erro}
         </p>
       )}
