@@ -1,11 +1,12 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useId, useRef, useState } from 'react';
 import { Link, useLocation, useParams } from 'react-router-dom';
 import Tela from '../../components/Tela.jsx';
 import Cabecalho from '../../components/Cabecalho.jsx';
 import CardDenuncia from '../../components/CardDenuncia.jsx';
-import Mensagem, { Carregando } from '../../components/Mensagem.jsx';
+import Mensagem, { Carregando, Toast } from '../../components/Mensagem.jsx';
 import { api } from '../../services/api.js';
 import { comportamentoDeRolagem } from '../../utils/foco.js';
+import { cidadeUf } from '../../utils/formatos.js';
 import ConversaBairro from './ConversaBairro.jsx';
 import ComentarioEnviado from './ComentarioEnviado.jsx';
 import ResolucaoComunidade from './ResolucaoComunidade.jsx';
@@ -128,6 +129,7 @@ export default function DetalheDenuncia() {
             completo
             aoMudarPlacar={(placar) => setDenuncia((d) => ({ ...d, placar }))}
           />
+          <Compartilhar denuncia={denuncia} />
           {/* logo depois do card: é a ação que só este app tem; a conversa vem depois */}
           <ResolucaoComunidade denuncia={denuncia} aoAtualizar={setDenuncia} />
           <ConversaBairro
@@ -142,5 +144,79 @@ export default function DetalheDenuncia() {
         </div>
       )}
     </Tela>
+  );
+}
+
+/**
+ * "Compartilhar": o menu do sistema (navigator.share) quando existe; senão copia o link e avisa
+ * "Link copiado."; sem nenhum dos dois, mostra o link num campo somente leitura, já selecionado.
+ * O link é o endereço atual (com o HashRouter, ele abre esta mesma denúncia; pede login).
+ */
+function Compartilhar({ denuncia }) {
+  const idCampo = useId();
+  const campo = useRef(null);
+  const [linkVisivel, setLinkVisivel] = useState('');
+  const [aviso, setAviso] = useState({ texto: '', chave: 0 });
+
+  useEffect(() => {
+    if (linkVisivel) {
+      campo.current?.focus();
+      campo.current?.select();
+    }
+  }, [linkVisivel]);
+
+  async function compartilhar() {
+    const url = window.location.href;
+    if (typeof navigator.share === 'function') {
+      try {
+        await navigator.share({
+          title: denuncia.titulo,
+          text: `${denuncia.titulo} · ${cidadeUf(denuncia.cidade, denuncia.uf)} · Meus Direitos`,
+          url,
+        });
+        return;
+      } catch (erro) {
+        if (erro?.name === 'AbortError') return; // a pessoa fechou o menu: nada a fazer
+        // outro erro (ex.: sem permissão neste contexto): tenta copiar
+      }
+    }
+    if (navigator.clipboard?.writeText) {
+      try {
+        await navigator.clipboard.writeText(url);
+        setAviso({ texto: 'Link copiado.', chave: Date.now() });
+        return;
+      } catch {
+        // área de transferência bloqueada (ex.: página aberta por file://): mostra o link
+      }
+    }
+    setLinkVisivel(url);
+  }
+
+  return (
+    <div className="d-flex flex-column gap-2">
+      <button type="button" className="md-acao-texto align-self-start" onClick={compartilhar}>
+        Compartilhar
+      </button>
+      {linkVisivel && (
+        <div className="md-campo">
+          <label htmlFor={idCampo} className="md-campo-rotulo">
+            Link da denúncia
+          </label>
+          <input
+            ref={campo}
+            id={idCampo}
+            className="form-control md-entrada"
+            value={linkVisivel}
+            readOnly
+            onFocus={(e) => e.target.select()}
+            aria-describedby={`${idCampo}-ajuda`}
+          />
+          <p id={`${idCampo}-ajuda`} className="md-legenda">
+            Copie o link e envie para quem quiser.
+          </p>
+        </div>
+      )}
+      <Toast texto={aviso.texto} chave={aviso.chave} aoFechar={() => setAviso((a) => ({ ...a, texto: '' }))} />
+    </div>
   );
 }
