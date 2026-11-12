@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import Tela from '../../components/Tela.jsx';
 import Cabecalho from '../../components/Cabecalho.jsx';
@@ -7,6 +7,7 @@ import Mensagem from '../../components/Mensagem.jsx';
 import { api } from '../../services/api.js';
 import { useSessao } from '../../contexts/SessaoContext.jsx';
 import { obrigatorio } from '../../utils/validacao.js';
+import { focarPrimeiroErro } from '../../utils/foco.js';
 import './perfil.css';
 
 /**
@@ -20,13 +21,18 @@ export default function ExcluirConta() {
   const [erro, setErro] = useState('');
   const [mensagem, setMensagem] = useState('');
   const [enviando, setEnviando] = useState(false);
+  const formRef = useRef(null);
 
   async function excluir(e) {
     e.preventDefault();
     setMensagem('');
     const encontrado = obrigatorio(senha, 'Digite sua senha para confirmar.');
     setErro(encontrado);
-    if (encontrado) return;
+    if (encontrado) {
+      setMensagem('Confira o campo destacado.');
+      focarPrimeiroErro(formRef.current);
+      return;
+    }
 
     setEnviando(true);
     try {
@@ -37,6 +43,7 @@ export default function ExcluirConta() {
       const campo = falha.porCampo().senha;
       setErro(campo ?? '');
       if (!campo) setMensagem(falha.message);
+      else focarPrimeiroErro(formRef.current);
       setEnviando(false);
     }
   }
@@ -44,35 +51,39 @@ export default function ExcluirConta() {
   return (
     <Tela titulo="Excluir minha conta">
       <Cabecalho titulo="Excluir minha conta" voltarPara="/perfil" />
-      <h2 className="md-titulo">Tem certeza?</h2>
-      <p className="md-corpo">A exclusão não tem volta. Serão apagados:</p>
-      <ul className="md-corpo md-lista-exclusao">
-        <li>sua conta e as respostas do questionário de Meus Direitos;</li>
-        <li>suas denúncias e, junto com elas, os votos, comentários e confirmações que estavam nelas;</li>
-        <li>os votos, comentários e confirmações que você fez em denúncias de outras pessoas.</li>
-      </ul>
+      <div className="d-flex flex-column gap-2">
+        <h2 className="md-titulo">Tem certeza?</h2>
+        <p className="md-corpo">A exclusão não tem volta. Serão apagados:</p>
+        <ul className="md-corpo md-lista-exclusao">
+          <li>sua conta e as respostas do questionário de Meus Direitos;</li>
+          <li>suas denúncias e, junto com elas, os votos, comentários e confirmações que estavam nelas;</li>
+          <li>os votos, comentários e confirmações que você fez em denúncias de outras pessoas.</li>
+        </ul>
+      </div>
 
-      <form className="d-flex flex-column gap-3" onSubmit={excluir} noValidate>
+      <form ref={formRef} className="md-grupo d-flex flex-column gap-3" onSubmit={excluir} noValidate>
+        <Mensagem>{mensagem}</Mensagem>
         <CampoSenha
           rotulo="Digite sua senha para confirmar"
           value={senha}
           onChange={(e) => {
             setSenha(e.target.value);
             setErro('');
+            setMensagem('');
           }}
           erro={erro}
           autoComplete="current-password"
           maxLength={64}
         />
 
-        <Mensagem>{mensagem}</Mensagem>
-
-        <button type="submit" className="md-botao md-botao-perigo" disabled={enviando}>
-          {enviando ? 'Excluindo…' : 'Excluir minha conta'}
-        </button>
-        <Link to="/perfil" className="md-botao md-botao-secundario">
-          Cancelar
-        </Link>
+        <div className="md-grupo d-flex flex-column gap-3">
+          <button type="submit" className="md-botao md-botao-perigo" disabled={enviando}>
+            {enviando ? 'Excluindo…' : 'Excluir minha conta'}
+          </button>
+          <Link to="/perfil" className="md-botao md-botao-secundario">
+            Cancelar
+          </Link>
+        </div>
       </form>
     </Tela>
   );
