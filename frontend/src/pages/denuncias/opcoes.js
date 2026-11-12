@@ -3,6 +3,7 @@
  * fotos de demonstração (tela 15) e o exemplo do botão "Preencher exemplo" (tela 12).
  */
 import iconePin from '../../assets/icones/pin.svg';
+import iconeLampada from '../../assets/icones/lampada.svg';
 import iconePessoa from '../../assets/icones/pessoa.svg';
 import iconeEscudo from '../../assets/icones/shield.svg';
 import iconeCasa from '../../assets/icones/casa.svg';
@@ -18,9 +19,10 @@ export const CATEGORIAS_PADRAO = [
   { codigo: 'OUTROS', descricao: 'Outros' },
 ];
 
-/** Ícone de cada categoria na tela 14 (o "Ícone/bulb" da Iluminação não pôde ser baixado do Figma). */
+/** Ícone de cada categoria na tela 14. */
 export const ICONE_CATEGORIA = {
   ASFALTO: iconePin,
+  ILUMINACAO: iconeLampada,
   CALCADA_ACESSIBILIDADE: iconePessoa,
   SEGURANCA: iconeEscudo,
   LIMPEZA_URBANA: iconeCasa,

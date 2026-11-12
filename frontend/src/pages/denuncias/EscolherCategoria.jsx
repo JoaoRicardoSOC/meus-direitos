@@ -7,12 +7,12 @@ import { ICONE_CATEGORIA } from './opcoes.js';
  */
 export default function EscolherCategoria({ categorias, selecionada, aoEscolher, aoVoltar }) {
   return (
-    <Tela titulo="Tipo de problema" gap={12}>
+    <Tela titulo="Tipo de problema">
       <Cabecalho titulo="Tipo de problema" aoVoltar={aoVoltar} />
       <h2 className="md-titulo">Qual é a categoria?</h2>
       <p className="md-corpo">Escolha a opção que melhor descreve o relato.</p>
 
-      <ul className="md-lista-limpa d-flex flex-column gap-2">
+      <ul className="md-lista-limpa d-flex flex-column" style={{ gap: 20 }}>
         {categorias.map((categoria) => {
           const ativo = categoria.codigo === selecionada;
           const icone = ICONE_CATEGORIA[categoria.codigo];
