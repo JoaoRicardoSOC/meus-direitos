@@ -276,9 +276,9 @@ Regras: nome 3–100; e-mail válido (até 120, guardado em minúsculas); **senh
 | Método | Rota | Descrição |
 |---|---|---|
 | GET 🔒 | `/usuarios/me` | Conta do usuário logado (`UsuarioResponse`) |
-| PUT 🔒 | `/usuarios/me` | `{ "nome", "email", "cidade", "uf" }` → `UsuarioResponse`. E-mail de outra conta → 409 |
+| PUT 🔒 | `/usuarios/me` | `{ "nome", "email", "cidade", "uf" }` → `UsuarioResponse`. E-mail de outra conta → 409. Se a cidade mudou, a API prepara a "cidade viva" da cidade nova (1 a 2 s a mais) e a resposta traz `cidadePreparada` |
 | GET | `/usuarios` | Lista pública `[{ "id", "nome", "cidade", "uf" }]` |
-| GET | `/usuarios/{id}` | `{ "id", "nome", "cidade", "uf", "totalDenuncias" }` |
+| GET | `/usuarios/{id}` | `{ "id", "nome", "cidade", "uf", "totalDenuncias" }`. Morador de exemplo → 404 |
 
 `perfilPreenchido` indica se o usuário já respondeu o questionário de "Meus Direitos".
 
@@ -524,7 +524,8 @@ Para o sistema nunca parecer vazio — inclusive quando o avaliador se cadastrar
 
 - **Primeira pessoa de uma cidade:** a API cria **12 moradores de exemplo** e **12 denúncias** com votos, comentários e confirmações dos últimos dias. Tem de tudo: crateras muito votadas, calçadas com poucos votos (mas que sobem no "Para você" de idosos e PCD), denúncias resolvidas, uma em andamento e **uma com "2 de 3 moradores confirmaram"** — esperando a 3ª confirmação.
 - **Atividade contínua:** ao abrir o feed, se passaram 10 minutos desde a última atividade da cidade, surgem 1 a 3 novidades (votos, comentários, às vezes uma denúncia nova).
-- Moradores de exemplo **não aparecem** em `GET /usuarios`, **não fazem login** e **nunca** votam/comentam em denúncias de pessoas reais.
+- Moradores de exemplo **não aparecem** em `GET /usuarios` nem em `GET /usuarios/{id}`, **não fazem login** e **nunca** votam/comentam em denúncias de pessoas reais.
+- Quem **muda de cidade** no perfil (`PUT /usuarios/me`) também recebe o conteúdo de exemplo da cidade nova, se ela ainda não tiver.
 
 **O que o front precisa fazer:**
 
@@ -595,7 +596,7 @@ Para o sistema nunca parecer vazio — inclusive quando o avaliador se cadastrar
 
 | Objeto | Campos |
 |---|---|
-| `UsuarioResponse` | `id, nome, email, cidade, uf, criadoEm, perfilPreenchido, cidadePreparada?` (só no cadastro) |
+| `UsuarioResponse` | `id, nome, email, cidade, uf, criadoEm, perfilPreenchido, cidadePreparada?` (no cadastro e quando a cidade muda em `PUT /usuarios/me`) |
 | `AutorResponse` (em denúncias e comentários) | `id, nome, simulado` |
 | `PlacarResponse` | `upvotes, downvotes, saldo, meuVoto?` |
 | `ComentarioResponse` | `id, idDenuncia, texto, autor {id, nome, simulado}, meu, criadoEm, editadoEm?` |
@@ -652,4 +653,5 @@ Ajustes em relação ao Figma, combinados com o grupo. **Todos foram atendidos n
 | 11/11/2026 | Robustez: `imagemUrl` validada, `busca` até 100 caracteres, escrita no catálogo de direitos exige `X-Chave-Admin`. |
 | 11/11/2026 | Cidade comparada sem acento, maiúsculas e espaços repetidos em feed, busca, relatórios e confirmação ("Sao Paulo" = "São Paulo"). Coleção do Insomnia em `docs/insomnia/`. |
 | 12/11/2026 | `database/script.sql` com as tabelas e o catálogo inicial de 5 temas de direitos, iguais ao schema do Oracle da FIAP; o script só cria o que falta e não apaga nada. Erros 405 e 415 na tabela da seção 6. Sem mudança de contrato. |
+| 12/11/2026 | Mudar de cidade no perfil prepara a "cidade viva" da cidade nova; `GET /usuarios/{id}` responde 404 para morador de exemplo; o pulso de atividade não roda em dobro com acessos simultâneos. |
 | 12/11/2026 | Front-end concluído e testado de ponta a ponta contra a API e o Oracle (inclusive com o `index.html` aberto por `file://`). Todos os pedidos da seção 11 atendidos. Sem mudança de contrato. |
