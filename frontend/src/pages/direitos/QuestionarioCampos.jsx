@@ -191,3 +191,35 @@ export function PerguntaSimNao({ rotulo, valor, erro, aoMudar }) {
     </fieldset>
   );
 }
+
+/**
+ * Consentimento para salvar as respostas (dados sensíveis): caixa de seleção real, com o texto como
+ * rótulo clicável e área de toque de pelo menos 44 px. O erro fica logo abaixo, ligado à caixa.
+ */
+export function CaixaConsentimento({ marcada, erro, aoMudar }) {
+  const id = useId();
+  return (
+    <div className="md-campo">
+      <label htmlFor={id} className="md-questionario-consentimento">
+        <input
+          id={id}
+          type="checkbox"
+          className="md-questionario-consentimento-caixa"
+          checked={marcada}
+          onChange={(e) => aoMudar(e.target.checked)}
+          aria-invalid={erro ? true : undefined}
+          aria-describedby={erro ? `${id}-erro` : undefined}
+        />
+        <span className="md-corpo">
+          Concordo em compartilhar estas respostas para receber orientações sobre possíveis direitos. Posso
+          apagá-las quando quiser.
+        </span>
+      </label>
+      {erro && (
+        <p id={`${id}-erro`} className="md-erro-campo">
+          {erro}
+        </p>
+      )}
+    </div>
+  );
+}

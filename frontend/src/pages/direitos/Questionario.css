@@ -135,3 +135,37 @@
     border-color: var(--md-verde);
   }
 }
+
+/* Consentimento antes de salvar: o rótulo inteiro é a área de toque (mínimo 44 px) */
+.md-questionario-consentimento {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  min-height: 44px;
+  padding: 10px 0;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.md-questionario-consentimento .md-corpo {
+  margin: 0;
+}
+
+.md-questionario-consentimento-caixa {
+  flex-shrink: 0;
+  width: 24px;
+  height: 24px;
+  margin: 0;
+  accent-color: var(--md-verde);
+  cursor: pointer;
+}
+
+.md-questionario-consentimento-caixa:focus-visible {
+  outline: 2px solid var(--md-foco);
+  outline-offset: 2px;
+}
+
+.md-questionario-consentimento-caixa[aria-invalid='true'] {
+  outline: 2px solid var(--md-erro);
+  outline-offset: 2px;
+}

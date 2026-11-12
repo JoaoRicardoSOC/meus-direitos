@@ -7,7 +7,7 @@ import Mensagem, { Carregando } from '../../components/Mensagem.jsx';
 import { api } from '../../services/api.js';
 import { lerUsuario } from '../../services/sessao.js';
 import { focarPrimeiroErro, irParaOTopo } from '../../utils/foco.js';
-import { CampoData, CampoEscolha, ListaOpcoes, PerguntaSimNao } from './QuestionarioCampos.jsx';
+import { CaixaConsentimento, CampoData, CampoEscolha, ListaOpcoes, PerguntaSimNao } from './QuestionarioCampos.jsx';
 import iconeInfo from '../../assets/icones/info.svg';
 import './Questionario.css';
 
@@ -17,7 +17,7 @@ const TOTAL_ETAPAS = 3;
 const CAMPOS_DA_ETAPA = {
   1: ['dataNascimento', 'racaCor'],
   2: ['deficiencia', 'percursoEscolar'],
-  3: ['baixaRenda'],
+  3: ['baixaRenda', 'consentimento'],
 };
 
 const DATA_VAZIA = { dia: '', mes: '', ano: '' };
@@ -127,6 +127,14 @@ function respostasDoPerfil(perfil) {
   };
 }
 
+/** Há algum dado sensível respondido? Só então o consentimento é obrigatório para salvar. */
+function temResposta(valores) {
+  const { nascimento, racaCor, deficiencia, percursoEscolar, baixaRenda } = valores;
+  return Boolean(dataIso(nascimento)) || [racaCor, deficiencia, percursoEscolar, baixaRenda].some((v) => v !== null);
+}
+
+const ERRO_CONSENTIMENTO = 'Para salvar estes dados, confirme que concorda em compartilhá-los para receber orientações.';
+
 function descricao(opcoes, codigo) {
   return opcoes.find((opcao) => opcao.codigo === codigo)?.descricao ?? null;
 }
@@ -169,6 +177,8 @@ export default function Questionario() {
   const [erros, setErros] = useState({});
   const [mensagem, setMensagem] = useState('');
   const [enviando, setEnviando] = useState(false);
+  /** Consentimento para salvar os dados sensíveis (não vai para o rascunho: é dado a cada envio). */
+  const [consentimento, setConsentimento] = useState(false);
 
   // Direção da entrada do conteúdo: avançar (ou abrir lista) entra pela direita; voltar, pela esquerda
   const posicao = etapa * 2 + (lista ? 1 : 0);
@@ -270,6 +280,15 @@ export default function Questionario() {
     });
   }
 
+  function mudarConsentimento(marcada) {
+    setConsentimento(marcada);
+    setErros((atual) => {
+      const copia = { ...atual };
+      delete copia.consentimento;
+      return copia;
+    });
+  }
+
   function abrirLista(campo) {
     setMensagem('');
     irPara(etapa, URL_DA_LISTA[campo]);
@@ -337,12 +356,17 @@ export default function Questionario() {
       mostrarErros({ dataNascimento: erroData }, 'Revise a data de nascimento na etapa 1 antes de enviar.');
       return;
     }
+    // Com alguma resposta, só salva com o consentimento; se tudo foi pulado, não precisa
+    if (temResposta(valores) && !consentimento) {
+      mostrarErros({ consentimento: ERRO_CONSENTIMENTO }, 'Confirme o consentimento para salvar suas respostas.');
+      return;
+    }
     setEnviando(true);
     try {
       const { nascimento, ...resto } = valores;
       const perfilCompleto = await api('/usuarios/perfil', {
         metodo: 'PUT',
-        corpo: { ...resto, dataNascimento: dataIso(nascimento) || null },
+        corpo: { ...resto, dataNascimento: dataIso(nascimento) || null, consentimento },
       });
       apagarRascunho();
       sairDoQuestionario(perfilCompleto);
@@ -531,6 +555,9 @@ export default function Questionario() {
 
           <div className="md-questionario-bloco md-questionario-acoes md-grupo">
             <Mensagem>{mensagem}</Mensagem>
+            {ultimaEtapa && (
+              <CaixaConsentimento marcada={consentimento} erro={erros.consentimento} aoMudar={mudarConsentimento} />
+            )}
             <button type="submit" className="md-botao md-botao-primario" disabled={enviando}>
               {!ultimaEtapa ? 'Continuar' : enviando ? 'Buscando possibilidades…' : 'Ver possibilidades'}
             </button>
