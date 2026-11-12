@@ -7,7 +7,7 @@ import iconeLampada from '../../assets/icones/lampada.svg';
 import iconePessoa from '../../assets/icones/pessoa.svg';
 import iconeEscudo from '../../assets/icones/shield.svg';
 import iconeCasa from '../../assets/icones/casa.svg';
-import iconeMais from '../../assets/icones/plus.svg';
+import iconeMais from '../../assets/icones/mais.svg';
 
 /** Categorias da API (docs/api.md, 8.1). Usadas só se GET /categorias falhar. */
 export const CATEGORIAS_PADRAO = [
