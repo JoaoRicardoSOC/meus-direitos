@@ -35,7 +35,7 @@ Plataforma colaborativa que une **zeladoria urbana** e **informação sobre dire
 
 1. **Banco de dados:** execute `database/script.sql` no Oracle (SQL Developer).
 2. **Back-end:** siga [`backend/README.md`](backend/README.md): copie `db.properties.example` para `db.properties`, preencha usuário e senha do Oracle e rode `mvn clean compile exec:java` na pasta `backend/`. A API sobe em `http://localhost:8080/api`.
-3. **Front-end:** em desenvolvimento na pasta `frontend/`; as instruções de execução ficarão em `frontend/README.md`. Enquanto isso, a API pode ser testada com a coleção do Insomnia (ver abaixo).
+3. **Front-end:** com a API rodando, abra **`frontend/dist/index.html`** direto no navegador (duplo clique). Para isso, inclua `null` nas origens do CORS do back-end (`cors.origens=http://localhost:5173,null` no `backend/db.properties`), porque o navegador envia a origem `null` para páginas abertas do disco. Para desenvolver, use `npm install` e `npm run dev` na pasta `frontend/` (detalhes em [`frontend/README.md`](frontend/README.md)).
 
 ## Documentação
 
@@ -44,6 +44,7 @@ Plataforma colaborativa que une **zeladoria urbana** e **informação sobre dire
 | [`docs/api.md`](docs/api.md) | Contrato da API REST: rotas, corpos, respostas, erros e guia de integração do front-end |
 | [`docs/insomnia/meus-direitos.insomnia.json`](docs/insomnia/meus-direitos.insomnia.json) | Coleção do Insomnia com todas as rotas e uma pasta de erros tratados (importe em *Import → From File*) |
 | [`backend/README.md`](backend/README.md) | Arquitetura, decisões técnicas e limitações do back-end |
+| [`frontend/README.md`](frontend/README.md) | Execução, entrega por `file://`, organização, decisões de acessibilidade e créditos das imagens do front-end |
 | [`docs/diagramas/diagrama-classes.md`](docs/diagramas/diagrama-classes.md) | Diagrama de classes do back-end (domínio, camadas e erros) |
 | [`docs/diagramas/diagrama-er.md`](docs/diagramas/diagrama-er.md) | Modelo de dados (diagrama ER) e regras garantidas pelo banco |
 | [`database/script.sql`](database/script.sql) | Criação das tabelas no Oracle e carga inicial do catálogo de direitos |
