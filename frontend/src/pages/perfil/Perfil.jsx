@@ -5,7 +5,8 @@ import Mensagem, { Carregando } from '../../components/Mensagem.jsx';
 import { api } from '../../services/api.js';
 import { useSessao } from '../../contexts/SessaoContext.jsx';
 import { cidadeUf, iniciais } from '../../utils/formatos.js';
-import iconeSeta from '../../assets/icones/arrow.svg';
+import iconeSeta from '../../assets/icones/seta-direita.svg';
+import iconeLixeira from '../../assets/icones/lixeira.svg';
 import './perfil.css';
 
 /**
@@ -46,25 +47,32 @@ export default function Perfil() {
 
   return (
     <Tela titulo="Meu perfil" comNavegacao>
-      <p className="md-sobretitulo">Minha conta</p>
-      <h1 className="md-titulo">Meu perfil</h1>
+      <h1 className="md-titulo" tabIndex={-1} data-foco-tela>
+        Meu perfil
+      </h1>
       <p className="md-corpo">Seus dados, do seu jeito.</p>
 
       <Mensagem tipo="info">{aviso}</Mensagem>
       {carregando && <Carregando texto="Atualizando seus dados…" />}
-      <Mensagem>{erro && `Não foi possível atualizar seus dados agora. ${erro}`}</Mensagem>
+      <Mensagem>
+        {erro && (
+          <>
+            Não foi possível atualizar seus dados agora.
+            <br />
+            {erro}
+          </>
+        )}
+      </Mensagem>
 
       <span className="md-avatar md-avatar-perfil" aria-hidden="true">
         {iniciais(usuario.nome)}
       </span>
       <h2 className="md-subtitulo">{usuario.nome}</h2>
-      {/* O Figma diz "MORADORA"; a API não sabe o gênero, então usamos a forma neutra */}
-      <span className="md-selo">Morador(a) · {usuario.cidade}</span>
+      {/* O Figma diz "MORADORA"; a API não sabe o gênero, então o texto é neutro */}
+      <p className="md-corpo">Mora em {cidadeUf(usuario.cidade, usuario.uf)}</p>
 
       <section className="md-card" aria-label="Dados da conta">
         <dl className="md-dados-conta">
-          <dt>Nome</dt>
-          <dd>{usuario.nome}</dd>
           <dt>E-mail</dt>
           <dd>{usuario.email}</dd>
           <dt>Cidade</dt>
@@ -94,7 +102,8 @@ function OpcaoConta({ para, rotulo, perigo = false }) {
   return (
     <li>
       <Link to={para} className={`md-opcao-conta ${perigo ? 'md-opcao-conta-perigo' : ''}`}>
-        {rotulo}
+        {perigo && <img src={iconeLixeira} alt="" width="20" height="20" />}
+        <span className="md-opcao-conta-rotulo">{rotulo}</span>
         <img src={iconeSeta} alt="" width="20" height="20" />
       </Link>
     </li>
