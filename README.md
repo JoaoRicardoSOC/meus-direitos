@@ -47,6 +47,7 @@ Plataforma colaborativa que une **zeladoria urbana** e **informação sobre dire
 | [`frontend/README.md`](frontend/README.md) | Execução, entrega por `file://`, organização, decisões de acessibilidade e créditos das imagens do front-end |
 | [`docs/diagramas/diagrama-classes.md`](docs/diagramas/diagrama-classes.md) | Diagrama de classes do back-end (domínio, camadas e erros) |
 | [`docs/diagramas/diagrama-er.md`](docs/diagramas/diagrama-er.md) | Modelo de dados (diagrama ER) e regras garantidas pelo banco |
+| [`docs/diagramas/diagrama-frontend.md`](docs/diagramas/diagrama-frontend.md) | Telas, rotas e camadas do front-end |
 | [`database/script.sql`](database/script.sql) | Criação das tabelas no Oracle e carga inicial do catálogo de direitos |
 
 ## Integrantes
