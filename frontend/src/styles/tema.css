@@ -670,14 +670,14 @@ span.md-icone-campo {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
+  gap: 4px;
   min-height: var(--md-alvo-minimo);
-  padding: 8px 12px;
+  padding: 8px 10px;
   border: 1px solid var(--md-linha);
   border-radius: 12px;
   background: transparent;
   color: var(--md-tinta);
-  font-size: 14px;
+  font-size: 13px; /* como no Figma: "Apoiar 128", "Discordar 12" e comentários cabem numa linha */
   line-height: 1.3;
   font-variant-numeric: tabular-nums;
   text-decoration: none;
