@@ -215,8 +215,8 @@ classDiagram
         +excluir(Long idUsuario, Long id) void
     }
     class FeedService {
-        +BONUS_RELEVANCIA = 10
-        +PENALIDADE_RESOLVIDA = 15
+        ~BONUS_RELEVANCIA = 10
+        ~PENALIDADE_RESOLVIDA = 15
         +feed(Long idUsuario, String ordem, String pagina, String tamanho) PaginaResponse
     }
     class Validador {
