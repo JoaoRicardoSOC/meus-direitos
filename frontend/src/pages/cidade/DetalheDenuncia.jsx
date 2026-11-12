@@ -5,6 +5,7 @@ import Cabecalho from '../../components/Cabecalho.jsx';
 import CardDenuncia from '../../components/CardDenuncia.jsx';
 import Mensagem, { Carregando } from '../../components/Mensagem.jsx';
 import { api } from '../../services/api.js';
+import { comportamentoDeRolagem } from '../../utils/foco.js';
 import ConversaBairro from './ConversaBairro.jsx';
 import ComentarioEnviado from './ComentarioEnviado.jsx';
 import ResolucaoComunidade from './ResolucaoComunidade.jsx';
@@ -61,7 +62,7 @@ export default function DetalheDenuncia() {
   useEffect(() => {
     if (!pronto) return;
     if (!querConversa && pedidoRolagem === 0) return;
-    conversa.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    conversa.current?.scrollIntoView({ behavior: comportamentoDeRolagem(), block: 'start' });
   }, [pronto, querConversa, local.key, pedidoRolagem]);
 
   function aoEnviarComentario(novo) {
@@ -127,6 +128,7 @@ export default function DetalheDenuncia() {
             completo
             aoMudarPlacar={(placar) => setDenuncia((d) => ({ ...d, placar }))}
           />
+          {/* logo depois do card: é a ação que só este app tem; a conversa vem depois */}
           <ResolucaoComunidade denuncia={denuncia} aoAtualizar={setDenuncia} />
           <ConversaBairro
             ref={conversa}
