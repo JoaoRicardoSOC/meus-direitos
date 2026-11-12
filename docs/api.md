@@ -191,7 +191,9 @@ Todo erro vem neste formato:
 | 401 | Sem login, `X-Usuario-Id` inválido, e-mail/senha incorretos | Volta para "Entrar" (no login, mostra a mensagem) |
 | 403 | Ação de outra pessoa (ex.: editar denúncia alheia) | Mostra `mensagem` |
 | 404 | Recurso não existe; **em `GET /usuarios/perfil` significa "ainda não respondeu o questionário"** | Tela de vazio / questionário |
+| 405 | Método HTTP errado para a rota (ex.: `DELETE` onde só existe `GET`) | Erro de programação: confira a seção 8 |
 | 409 | E-mail já cadastrado, título repetido | Mostra `mensagem` no campo correspondente |
+| 415 | Corpo enviado sem `Content-Type: application/json` | Erro de programação: o cliente da seção 5 já envia o cabeçalho |
 | 422 | Regra do negócio (votar na própria denúncia, mudança de status inválida) | Mostra `mensagem` (toast/alerta) |
 | 503 | Banco de dados fora do ar | "Serviço indisponível, tente novamente" |
 | 500 | Erro inesperado | Mensagem genérica |
