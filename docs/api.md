@@ -94,7 +94,7 @@ A API usa **token**: o cadastro e o login devolvem o usuário com o campo `token
 ```
 
 - O token **vale 7 dias**. Token ausente → **401** "Faça login para continuar."; inválido, vencido ou de conta excluída → **401** "Sua sessão não é mais válida. Entre novamente." (a pessoa entra de novo).
-- Nas rotas **públicas** que aceitam o token (detalhe da denúncia, busca, comentários, relatórios), um token inválido é só ignorado: a resposta vem como para um visitante, sem 401.
+- Nas rotas **públicas** que aceitam o token (detalhe da denúncia, busca, comentários, relatórios), um token inválido, vencido ou de uma conta já excluída é só ignorado: a resposta vem como para um visitante, sem 401.
 - Só o cadastro e o login devolvem `token`. `GET` e `PUT /usuarios/me` devolvem o usuário **sem** token: ao atualizar o usuário guardado, mantenha o token que já estava salvo.
 - Guarde também o objeto do usuário (nome, cidade) — separado do token — se quiser exibi-lo sem chamar `/usuarios/me` toda hora.
 - O login pode responder **429** depois de muitas tentativas seguidas ("Muitas tentativas de login. Tente de novo em N minutos."): mostre a mensagem e não apague o que a pessoa digitou.
@@ -473,9 +473,9 @@ Quando mostrar o botão "Já foi resolvido": usuário logado, **não** é o auto
 |---|---|---|
 | GET | `/denuncias/{id}/comentarios` | Lista do mais antigo ao mais novo (`ComentarioResponse[]`). Com o token, cada item indica `meu`. Denúncia inexistente → 404 |
 | POST 🔒 | `/denuncias/{id}/comentarios` | `{ "texto": "Também notei esse problema." }` (2–500 caracteres) → 201 (`ComentarioResponse`) |
-| PUT 🔒 | `/comentarios/{id}` | Mesmo corpo do POST → 200 (`ComentarioResponse`, com `editadoEm`). Só o próprio comentário (403 se for de outra pessoa) |
+| PUT 🔒 | `/comentarios/{id}` | Mesmo corpo do POST → 200 (`ComentarioResponse`, com `editadoEm`). Só o próprio comentário (403 se for de outra pessoa). Comentário oculto por reportes → 404 |
 | DELETE 🔒 | `/comentarios/{id}` | Excluir o próprio comentário → 204 |
-| POST 🔒 | `/comentarios/{id}/reporte` | Reportar comentário ofensivo de outra pessoa, sem corpo → 204 (reportar de novo também dá 204 e não conta duas vezes). Próprio comentário → 422; inexistente → 404 |
+| POST 🔒 | `/comentarios/{id}/reporte` | Reportar comentário ofensivo de outra pessoa, sem corpo → 204 (reportar de novo também dá 204 e não conta duas vezes). Próprio comentário → 422; inexistente ou já oculto → 404 |
 
 ```json
 { "id": 55, "idDenuncia": 1, "texto": "Também notei esse problema.",
@@ -483,13 +483,13 @@ Quando mostrar o botão "Já foi resolvido": usuário logado, **não** é o auto
   "criadoEm": "2026-11-11T01:29:49", "editadoEm": "2026-11-11T01:35:02" }
 ```
 
-**Moderação:** texto com palavrão ou ofensa comum (criar ou editar) → 400 no campo `texto` ("Revise o texto: ele contém termos ofensivos."). Comentário com **3 reportes** de pessoas diferentes some da lista para todos (inclusive para o autor) e deixa de contar em `denuncia.comentarios` e nos relatórios.
+**Moderação:** texto com palavrão ou ofensa comum (criar ou editar) → 400 no campo `texto` ("Revise o texto: ele contém termos ofensivos."). Comentário com **3 reportes** de pessoas diferentes some da lista para todos (inclusive para o autor) e deixa de contar em `denuncia.comentarios` e nos relatórios. Depois disso, editar ou reportar esse comentário responde **404**; o autor ainda pode excluí-lo.
 
 `editadoEm` só aparece se o comentário foi editado (mostre "editado"). O contador do card vem em `denuncia.comentarios`.
 
 ### 8.9 Relatórios da cidade
 
-Rotas **públicas**. A cidade vem de `?cidade=&uf=` (envie **os dois**); se faltar um deles, a API usa a cidade do usuário logado (pelo token). Sem cidade e sem login → **400** nos campos `cidade` e `uf`.
+Rotas **públicas**. A cidade vem de `?cidade=&uf=` (envie **os dois**). Só um deles → **400** no campo que faltou. Sem nenhum dos dois, a API usa a cidade do usuário logado (pelo token); sem cidade e sem login → **400** nos campos `cidade` e `uf`.
 
 | Método | Rota | Para quê |
 |---|---|---|
@@ -690,3 +690,4 @@ Ajustes em relação ao Figma, combinados com o grupo. **Todos foram atendidos n
 | 12/11/2026 | **Mudança de contrato (segurança):** `X-Usuario-Id` substituído por token assinado (`Authorization: Bearer`, 7 dias), devolvido no cadastro e no login; login bloqueado por 15 min após 5 erros (429); `imagemUrl` só aceita fotos `img/demo/`; questionário exige `consentimento` quando há dado preenchido; cabeçalhos `nosniff`, `no-referrer`, `DENY` e `Cache-Control`. |
 | 12/11/2026 | Moderação: `POST /comentarios/{id}/reporte` (3 reportes ocultam o comentário) e filtro de termos ofensivos (400 em `texto`). Desempenho: pool de conexões, índices de cidade e API escutando também em IPv6 (`localhost` sem atraso no Windows). |
 | 12/11/2026 | Documentação revisada contra o código. **Sem mudança de contrato:** todas as rotas, métodos, 🔒 e campos dos DTOs conferem. Completado o que faltava no guia: 404 no `DELETE /usuarios/perfil` sem questionário; relatórios usam a cidade do token quando falta `cidade` **ou** `uf`; transição `EM_ANDAMENTO → ABERTA` (já aceita pela API) incluída na seção 8.7; exclusões de denúncia e de conta apagam também os reportes; limites de `pagina`, `minimo` e `limite`; mensagens de 401; token inválido ignorado nas rotas públicas; ordem alfabética das chaves no JSON; tabela das rotas `/simulacao/*`; objetos `UsuarioPublicoResponse`, `PerfilResponse`, `DireitoResponse`, `ResolucaoResponse`, `HealthResponse` e `ErroResponse` na seção 9; moderação e segurança na seção 1. |
+| 12/11/2026 | **Correções de contrato:** comentário oculto por 3 reportes responde 404 ao ser editado (`PUT /comentarios/{id}`) ou reportado de novo (o autor ainda pode excluí-lo); relatórios com só `cidade` ou só `uf` respondem 400 no campo que faltou (antes, o valor era ignorado e a API usava a cidade do login); token de conta excluída é tratado como visitante também nas rotas públicas. No app, "Apagar minhas respostas" em Meus Direitos usa `DELETE /usuarios/perfil`. |
