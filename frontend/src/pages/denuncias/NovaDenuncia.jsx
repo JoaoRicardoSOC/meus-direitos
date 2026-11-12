@@ -209,7 +209,7 @@ export default function NovaDenuncia() {
       <h2 className="md-titulo">O que precisa de atenção?</h2>
       <p className="md-corpo">Conte o que está acontecendo no seu bairro.</p>
 
-      <form className="d-flex flex-column gap-3" onSubmit={enviar} noValidate>
+      <form className="d-flex flex-column" style={{ gap: 12 }} onSubmit={enviar} noValidate>
         <Campo
           rotulo="Título do problema"
           value={valores.titulo}
@@ -222,7 +222,7 @@ export default function NovaDenuncia() {
         <Campo
           rotulo="Descrição"
           tipo="textarea"
-          rows={3}
+          rows={2}
           value={valores.descricao}
           onChange={(e) => mudar({ descricao: e.target.value })}
           erro={erros.descricao}
