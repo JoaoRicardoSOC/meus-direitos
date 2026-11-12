@@ -55,12 +55,12 @@ export default function CampoCidade({ cidade, uf, aoMudar, erros = {}, rotulo = 
         </select>
       </div>
       {erroCidade && (
-        <p id={`${id}-erro-cidade`} className="md-erro-campo" role="alert">
+        <p id={`${id}-erro-cidade`} className="md-erro-campo">
           {erroCidade}
         </p>
       )}
       {erroUf && (
-        <p id={`${id}-erro-uf`} className="md-erro-campo" role="alert">
+        <p id={`${id}-erro-uf`} className="md-erro-campo">
           {erroUf}
         </p>
       )}

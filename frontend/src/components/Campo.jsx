@@ -43,7 +43,7 @@ export default function Campo({ rotulo, erro, ajuda, tipo = 'input', children, c
         </p>
       )}
       {erro && (
-        <p id={idErro} className="md-erro-campo" role="alert">
+        <p id={idErro} className="md-erro-campo">
           {erro}
         </p>
       )}
