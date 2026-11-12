@@ -33,9 +33,11 @@
 | Feed da cidade: **Para você**, **Recentes**, **Mais votados** | ✅ Pronto |
 | Votos (↑ / ↓) com placar atualizado | ✅ Pronto |
 | Conversa do bairro (comentários) | ✅ Pronto |
+| Moderação: filtro de termos ofensivos e reporte de comentário (3 reportes ocultam) | ✅ Pronto |
 | Resolver denúncia: autor marca **ou** 3 moradores confirmam | ✅ Pronto |
 | Relatórios: "Números da cidade", por categoria, por bairro, mais engajadas | ✅ Pronto |
 | Trocar senha / excluir conta | ✅ Pronto |
+| Segurança: token de sessão (`Authorization: Bearer`, 7 dias), bloqueio do login após 5 erros (429), consentimento no questionário, cabeçalhos de segurança | ✅ Pronto |
 | "Cidade viva": conteúdo de exemplo automático em cidades novas, atividade simulada, selo "Exemplo" | ✅ Pronto |
 
 ---
@@ -72,6 +74,7 @@ cors.origens=http://localhost:5173,http://localhost:5174
 | **Datas** | ISO-8601: data `"1958-03-12"`; data e hora `"2026-11-11T17:13:00"` (horário local, sem fuso) |
 | **Valores de lista (enums)** | Enviados como código em MAIÚSCULAS: `"CALCADA_ACESSIBILIDADE"`. Nas respostas vêm como `{"codigo": "...", "descricao": "Calçada e acessibilidade"}` — **mostre a `descricao`, envie o `codigo`**. |
 | **Campos nulos** | ⚠️ **Não aparecem no JSON.** Ex.: `placar.meuVoto` só existe se a pessoa votou. Sempre trate a ausência: `denuncia.placar.meuVoto ?? null`. |
+| **Ordem dos campos** | Não é garantida: o JSON-B responde as chaves em ordem alfabética (os exemplos deste guia seguem a ordem dos records Java). Leia sempre pelo nome. |
 | **IDs** | Números inteiros |
 | **Rotas com 🔒** | Exigem o cabeçalho `Authorization: Bearer <token>` (ver seção 4) |
 | **Cache** | Listas fixas da seção 8.1 vêm com `Cache-Control: public, max-age=86400`; as demais respostas, com `no-store` |
@@ -90,7 +93,8 @@ A API usa **token**: o cadastro e o login devolvem o usuário com o campo `token
 5. Resposta 401 em qualquer rota  →  apague o token e mande para a tela "Entrar"
 ```
 
-- O token **vale 7 dias**. Token ausente, inválido ou vencido → **401** (a pessoa entra de novo).
+- O token **vale 7 dias**. Token ausente → **401** "Faça login para continuar."; inválido, vencido ou de conta excluída → **401** "Sua sessão não é mais válida. Entre novamente." (a pessoa entra de novo).
+- Nas rotas **públicas** que aceitam o token (detalhe da denúncia, busca, comentários, relatórios), um token inválido é só ignorado: a resposta vem como para um visitante, sem 401.
 - Só o cadastro e o login devolvem `token`. `GET` e `PUT /usuarios/me` devolvem o usuário **sem** token: ao atualizar o usuário guardado, mantenha o token que já estava salvo.
 - Guarde também o objeto do usuário (nome, cidade) — separado do token — se quiser exibi-lo sem chamar `/usuarios/me` toda hora.
 - O login pode responder **429** depois de muitas tentativas seguidas ("Muitas tentativas de login. Tente de novo em N minutos."): mostre a mensagem e não apague o que a pessoa digitou.
@@ -194,12 +198,12 @@ Todo erro vem neste formato:
 |---|---|---|
 | 400 | Campo inválido, JSON mal formado, valor de lista inexistente | Mostra `mensagem` e cada item de `campos` ao lado do input |
 | 401 | Sem login, token inválido ou vencido, e-mail/senha incorretos | Volta para "Entrar" (no login, mostra a mensagem) |
-| 403 | Ação de outra pessoa (ex.: editar denúncia alheia) | Mostra `mensagem` |
-| 404 | Recurso não existe; **em `GET /usuarios/perfil` significa "ainda não respondeu o questionário"** | Tela de vazio / questionário |
+| 403 | Ação de outra pessoa (ex.: editar denúncia alheia), confirmar a resolução de denúncia de outra cidade, escrever no catálogo sem `X-Chave-Admin` | Mostra `mensagem` |
+| 404 | Recurso não existe; **em `GET /usuarios/perfil` significa "ainda não respondeu o questionário"** (o `DELETE` responde o mesmo) | Tela de vazio / questionário |
 | 405 | Método HTTP errado para a rota (ex.: `DELETE` onde só existe `GET`) | Erro de programação: confira a seção 8 |
 | 409 | E-mail já cadastrado, título repetido | Mostra `mensagem` no campo correspondente |
 | 415 | Corpo enviado sem `Content-Type: application/json` | Erro de programação: o cliente da seção 5 já envia o cabeçalho |
-| 422 | Regra do negócio (votar na própria denúncia, mudança de status inválida, reportar o próprio comentário) | Mostra `mensagem` (toast/alerta) |
+| 422 | Regra do negócio (votar na própria denúncia, mudança de status inválida, autor confirmando a própria denúncia, denúncia já resolvida, reportar o próprio comentário) | Mostra `mensagem` (toast/alerta) |
 | 429 | Login bloqueado depois de 5 tentativas erradas seguidas no mesmo e-mail (15 minutos) | Mostra `mensagem` sem apagar o que foi digitado |
 | 503 | Banco de dados fora do ar | "Serviço indisponível, tente novamente" |
 | 500 | Erro inesperado | Mensagem genérica |
@@ -278,7 +282,7 @@ Regras: nome 3–100; e-mail válido (até 120, guardado em minúsculas); **senh
 { "email": "mariana@exemplo.com", "senha": "senha1234" }
 ```
 
-**200** → `UsuarioResponse` com `token` (como no cadastro). E-mail ou senha errados → **401** `"E-mail ou senha inválidos."` Depois de **5 erros seguidos** no mesmo e-mail → **429** por 15 minutos ("Muitas tentativas de login. Tente de novo em N minutos."); um login certo zera a contagem.
+**200** → `UsuarioResponse` com `token` (como no cadastro). E-mail ou senha vazios → **400** nos campos. E-mail ou senha errados → **401** `"E-mail ou senha inválidos."` Depois de **5 erros seguidos** no mesmo e-mail → **429** por 15 minutos ("Muitas tentativas de login. Tente de novo em N minutos."); um login certo zera a contagem.
 
 | Método | Rota | Descrição |
 |---|---|---|
@@ -312,7 +316,7 @@ Regras: nome 3–100; e-mail válido (até 120, guardado em minúsculas); **senh
 
 - **204** → conta excluída. Apague o token e o usuário do `localStorage` e volte para a tela inicial.
 - Senha errada → **400** no campo `senha` ("Senha incorreta.").
-- **O que é apagado** (não tem volta): a conta, o questionário, as denúncias da pessoa e, junto com elas, votos, comentários e confirmações que estavam nelas, além dos votos, comentários e confirmações que a pessoa fez em denúncias de outros.
+- **O que é apagado** (não tem volta): a conta, o questionário, as denúncias da pessoa e, junto com elas, votos, comentários e confirmações que estavam nelas, além dos votos, comentários, confirmações e reportes que a pessoa fez em denúncias de outros (e os reportes recebidos pelos comentários dela).
 - É `POST` (e não `DELETE`) porque a senha vai no corpo.
 - Sugestão de tela: confirmação "Excluir minha conta" com campo de senha (não há tela no Figma).
 
@@ -352,7 +356,7 @@ Resposta **200** (`PerfilCompletoResponse`):
 | Método | Rota | Descrição |
 |---|---|---|
 | GET 🔒 | `/usuarios/perfil` | Mesmo corpo do PUT. **404 = ainda não respondeu** → mostrar tela 22 |
-| DELETE 🔒 | `/usuarios/perfil` | Apaga as respostas (dados sensíveis) → 204 |
+| DELETE 🔒 | `/usuarios/perfil` | Apaga as respostas (dados sensíveis) → 204. Sem questionário respondido → 404 |
 
 ### 8.4 Direitos
 
@@ -361,7 +365,7 @@ Resposta **200** (`PerfilCompletoResponse`):
 | GET 🔒 | `/direitos/meus` | Cards dos temas aplicáveis ao usuário (`DireitoResumoResponse[]`). Sem questionário → `[]` |
 | GET | `/direitos` | Catálogo completo. Filtro opcional: `?tag=IDOSO` |
 | GET | `/direitos/{id}` | Tema completo (`DireitoResponse`, telas 29–31) |
-| POST / PUT / DELETE | `/direitos`, `/direitos/{id}` | Cadastro do catálogo (uso administrativo; o front não precisa). Exige o cabeçalho `X-Chave-Admin`; sem ele → **403** |
+| POST / PUT / DELETE | `/direitos`, `/direitos/{id}` | Cadastro do catálogo (uso administrativo; o front não precisa). Exige o cabeçalho `X-Chave-Admin` igual a `admin.chave`; sem ele, com chave errada ou sem chave configurada na API → **403**. POST → 201 (`DireitoResponse`); PUT → 200; DELETE → 204. Título repetido → 409 |
 
 `DireitoResponse` (tela de detalhe):
 
@@ -399,14 +403,14 @@ Valores de `icone`: `TRANSPORTE`, `PRIORIDADE`, `MUNICIPIO`, `EDUCACAO`, `SAUDE`
 | Método | Rota | Descrição |
 |---|---|---|
 | GET 🔒 | `/denuncias/feed?ordem=&pagina=&tamanho=` | **Feed da cidade do usuário** (`PaginaResponse`). `ordem`: `PARA_VOCE` (padrão), `RECENTES`, `MAIS_VOTADOS` |
-| GET | `/denuncias?cidade=&uf=&categoria=&status=&busca=&pagina=&tamanho=` | Listagem pública com filtros opcionais, da mais recente para a mais antiga. `busca` até 100 caracteres |
+| GET | `/denuncias?cidade=&uf=&categoria=&status=&busca=&pagina=&tamanho=` | Listagem pública com filtros opcionais, da mais recente para a mais antiga (`PaginaResponse`). `cidade` é comparada sem acento e sem maiúsculas; `categoria`/`status` inválidos → 400 com os valores aceitos; `busca` até 100 caracteres |
 | GET 🔒 | `/denuncias/minhas` | Denúncias do usuário (lista simples, sem paginação) |
 | GET | `/denuncias/{id}` | Detalhe. Se enviar o token, vem `meuVoto` e `euConfirmei` |
 | PUT 🔒 | `/denuncias/{id}` | Mesmo corpo do POST. **Só o autor** (403) |
 | PATCH 🔒 | `/denuncias/{id}/status` | `{ "status": "RESOLVIDA" }`. **Só o autor**. Ver 8.7 |
-| DELETE 🔒 | `/denuncias/{id}` | **Só o autor**. Apaga votos, comentários e confirmações junto → 204 |
+| DELETE 🔒 | `/denuncias/{id}` | **Só o autor**. Apaga votos, comentários (e os reportes deles) e confirmações junto → 204 |
 
-**Paginação:** `pagina` começa em 1; `tamanho` padrão 10, máximo 50. Use `temProxima` para o botão "Carregar mais".
+**Paginação:** `pagina` começa em 1 (máximo 10000); `tamanho` padrão 10, máximo 50. Fora disso → 400. Use `temProxima` para o botão "Carregar mais".
 
 #### O feed e as abas
 
@@ -440,7 +444,7 @@ Dois caminhos:
 
 1. **O autor marca como resolvida** (tela 17, botão "Marcar como resolvida"):
    `PATCH /denuncias/{id}/status` com `{ "status": "RESOLVIDA" }`.
-   Transições aceitas: `ABERTA → EM_ANDAMENTO`, `ABERTA/EM_ANDAMENTO → RESOLVIDA`, `RESOLVIDA → ABERTA` (botão "Reabrir"). Outras → **422**.
+   Transições aceitas: `ABERTA → EM_ANDAMENTO`, `ABERTA/EM_ANDAMENTO → RESOLVIDA`, `EM_ANDAMENTO → ABERTA`, `RESOLVIDA → ABERTA` (botão "Reabrir"). Outras (inclusive repetir o status atual) → **422**.
 2. **A comunidade confirma** (tela 10, botão "Já foi resolvido" para quem **não** é o autor):
    - `PUT /denuncias/{id}/confirmacao` → confirma; `DELETE` → retira a confirmação.
    - Resposta: a `DenunciaResponse` atualizada.
@@ -459,7 +463,7 @@ Toda denúncia traz o progresso:
 | Autor tenta confirmar | 422 (ele usa "Marcar como resolvida") |
 | Morador de **outra cidade** | 403 |
 | Denúncia já resolvida (confirmar ou retirar) | 422 |
-| Autor reabre a denúncia | as confirmações voltam a 0 |
+| Autor volta a denúncia para `ABERTA` (reabrir) | as confirmações voltam a 0 |
 
 Quando mostrar o botão "Já foi resolvido": usuário logado, **não** é o autor, mesma cidade da denúncia e `status.codigo !== 'RESOLVIDA'`. Se `euConfirmei` for `true`, o botão vira "Retirar confirmação".
 
@@ -467,9 +471,9 @@ Quando mostrar o botão "Já foi resolvido": usuário logado, **não** é o auto
 
 | Método | Rota | Descrição |
 |---|---|---|
-| GET | `/denuncias/{id}/comentarios` | Lista do mais antigo ao mais novo. Com o token, cada item indica `meu` |
-| POST 🔒 | `/denuncias/{id}/comentarios` | `{ "texto": "Também notei esse problema." }` (2–500 caracteres) → 201 |
-| PUT 🔒 | `/comentarios/{id}` | Editar o próprio comentário (403 se for de outra pessoa) |
+| GET | `/denuncias/{id}/comentarios` | Lista do mais antigo ao mais novo (`ComentarioResponse[]`). Com o token, cada item indica `meu`. Denúncia inexistente → 404 |
+| POST 🔒 | `/denuncias/{id}/comentarios` | `{ "texto": "Também notei esse problema." }` (2–500 caracteres) → 201 (`ComentarioResponse`) |
+| PUT 🔒 | `/comentarios/{id}` | Mesmo corpo do POST → 200 (`ComentarioResponse`, com `editadoEm`). Só o próprio comentário (403 se for de outra pessoa) |
 | DELETE 🔒 | `/comentarios/{id}` | Excluir o próprio comentário → 204 |
 | POST 🔒 | `/comentarios/{id}/reporte` | Reportar comentário ofensivo de outra pessoa, sem corpo → 204 (reportar de novo também dá 204 e não conta duas vezes). Próprio comentário → 422; inexistente → 404 |
 
@@ -485,14 +489,14 @@ Quando mostrar o botão "Já foi resolvido": usuário logado, **não** é o auto
 
 ### 8.9 Relatórios da cidade
 
-Rotas **públicas**. A cidade vem de `?cidade=&uf=`; se você **não** enviar, a API usa a cidade do usuário logado (pelo token). Sem nenhum dos dois → **400**.
+Rotas **públicas**. A cidade vem de `?cidade=&uf=` (envie **os dois**); se faltar um deles, a API usa a cidade do usuário logado (pelo token). Sem cidade e sem login → **400** nos campos `cidade` e `uf`.
 
 | Método | Rota | Para quê |
 |---|---|---|
 | GET | `/relatorios/resumo` | Bloco **"Números da cidade"** (sugestão: topo do feed ou tela de impacto) |
 | GET | `/relatorios/categorias` | Denúncias por categoria e situação (gráfico de barras) |
-| GET | `/relatorios/bairros?minimo=1` | Bairros com mais problemas; `minimo` = só bairros com pelo menos N denúncias |
-| GET | `/relatorios/engajamento?limite=5` | Denúncias com mais votos + comentários (`limite` 1–20) |
+| GET | `/relatorios/bairros?minimo=1` | Bairros com mais problemas; `minimo` = só bairros com pelo menos N denúncias (padrão 1, até 1000) |
+| GET | `/relatorios/engajamento?limite=5` | Denúncias com mais votos + comentários (`limite` 1–20, padrão 5) |
 
 `GET /relatorios/resumo`:
 
@@ -566,6 +570,16 @@ Para o sistema nunca parecer vazio — inclusive quando o avaliador se cadastrar
 
 > Para a equipe: existem rotas de preparo/reset da demonstração em `/api/simulacao/*`, protegidas por uma chave configurada no `db.properties` (`simulacao.chave`). **O front não usa essas rotas.**
 
+Rotas da equipe (cabeçalho `X-Chave-Simulacao` igual a `simulacao.chave`; sem chave configurada ou com chave errada → **404**, como se a rota não existisse):
+
+| Método | Rota | Corpo / parâmetros | Resposta |
+|---|---|---|---|
+| POST | `/simulacao/cidades` | `{ "cidade": "Campinas", "uf": "SP" }` | `{ "cidade", "uf", "semeadaAgora", "mensagem" }` |
+| GET | `/simulacao/cidades` | — | Cidades já preparadas (`cidadeChave`, `uf`, `cidade`, datas da semeadura e do último pulso, eventos) |
+| POST | `/simulacao/pulso` | `{ "cidade", "uf", "eventos": 3 }` (`eventos` 1–10, padrão 3) | `{ "eventosGerados": N }` |
+| GET | `/simulacao/sql?cidade=&uf=` | — | Texto (`text/plain`) com os INSERTs do conteúdo da cidade |
+| DELETE | `/simulacao` | — | `{ "moradoresSimuladosRemovidos": N }`; contas reais ficam intactas |
+
 ---
 
 ## 9. Objetos devolvidos pela API
@@ -609,11 +623,17 @@ Para o sistema nunca parecer vazio — inclusive quando o avaliador se cadastrar
 | Objeto | Campos |
 |---|---|
 | `UsuarioResponse` | `id, nome, email, cidade, uf, criadoEm, perfilPreenchido, cidadePreparada?` (no cadastro e quando a cidade muda em `PUT /usuarios/me`), `token?` (só no cadastro e no login) |
+| `UsuarioPublicoResponse` | `id, nome, cidade, uf, totalDenuncias?` (só em `GET /usuarios/{id}`) |
 | `AutorResponse` (em denúncias e comentários) | `id, nome, simulado` |
 | `PlacarResponse` | `upvotes, downvotes, saldo, meuVoto?` |
 | `ComentarioResponse` | `id, idDenuncia, texto, autor {id, nome, simulado}, meu, criadoEm, editadoEm?` |
 | `DireitoResumoResponse` | `id, titulo, resumo, icone` |
 | `PerfilCompletoResponse` | `perfil {...}, tags [{codigo, descricao}], direitos [DireitoResumoResponse]` |
+| `PerfilResponse` (o `perfil` acima) | `dataNascimento?, idade?, racaCor?, deficiencia?, percursoEscolar?, baixaRenda?, atualizadoEm` (opções como `OpcaoResponse`) |
+| `DireitoResponse` | `id, titulo, resumo, descricao, passos [{ordem, titulo, texto}], aviso?, baseLegal?, linkOficial?, icone, ordem, tags [OpcaoResponse]` |
+| `ResolucaoResponse` | `confirmacoes, necessarias, euConfirmei` |
+| `HealthResponse` | `status, banco, dataHora` |
+| `ErroResponse` | `status, erro, mensagem, campos [{campo, mensagem}], caminho, timestamp` (seção 6) |
 | `OpcaoResponse` (enums) | `codigo, descricao` |
 
 ---
@@ -669,3 +689,4 @@ Ajustes em relação ao Figma, combinados com o grupo. **Todos foram atendidos n
 | 12/11/2026 | Front-end concluído e testado de ponta a ponta contra a API e o Oracle (inclusive com o `index.html` aberto por `file://`). Todos os pedidos da seção 11 atendidos. Sem mudança de contrato. |
 | 12/11/2026 | **Mudança de contrato (segurança):** `X-Usuario-Id` substituído por token assinado (`Authorization: Bearer`, 7 dias), devolvido no cadastro e no login; login bloqueado por 15 min após 5 erros (429); `imagemUrl` só aceita fotos `img/demo/`; questionário exige `consentimento` quando há dado preenchido; cabeçalhos `nosniff`, `no-referrer`, `DENY` e `Cache-Control`. |
 | 12/11/2026 | Moderação: `POST /comentarios/{id}/reporte` (3 reportes ocultam o comentário) e filtro de termos ofensivos (400 em `texto`). Desempenho: pool de conexões, índices de cidade e API escutando também em IPv6 (`localhost` sem atraso no Windows). |
+| 12/11/2026 | Documentação revisada contra o código. **Sem mudança de contrato:** todas as rotas, métodos, 🔒 e campos dos DTOs conferem. Completado o que faltava no guia: 404 no `DELETE /usuarios/perfil` sem questionário; relatórios usam a cidade do token quando falta `cidade` **ou** `uf`; transição `EM_ANDAMENTO → ABERTA` (já aceita pela API) incluída na seção 8.7; exclusões de denúncia e de conta apagam também os reportes; limites de `pagina`, `minimo` e `limite`; mensagens de 401; token inválido ignorado nas rotas públicas; ordem alfabética das chaves no JSON; tabela das rotas `/simulacao/*`; objetos `UsuarioPublicoResponse`, `PerfilResponse`, `DireitoResponse`, `ResolucaoResponse`, `HealthResponse` e `ErroResponse` na seção 9; moderação e segurança na seção 1. |
