@@ -129,3 +129,14 @@ Todas vêm do Wikimedia Commons ou do Flickr, com licença que permite uso, incl
 | `outros-1.jpg` | Enorme raiz de uma árvore caida na praça - panoramio | Paulo Humberto | [CC BY-SA 3.0](https://creativecommons.org/licenses/by-sa/3.0) | [página (Wikimedia Commons)](https://commons.wikimedia.org/wiki/File:Enorme_raiz_de_uma_%C3%A1rvore_caida_na_pra%C3%A7a_-_panoramio.jpg) |
 | `outros-2.jpg` | Rua Marcílio Dias, em Porto Alegre, durante a enchente de maio de 2024 | Apesito.nomas | [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0) | [página (Wikimedia Commons)](https://commons.wikimedia.org/wiki/File:Rua_Marc%C3%ADlio_Dias,_em_Porto_Alegre,_durante_a_enchente_de_maio_de_2024.jpg) |
 | `outros-3.jpg` | A photo of a water leak on Camberwell Place 2022-10-08 9 | Thomas Booker (CoderThomasB) | [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0) | [página (Wikimedia Commons)](https://commons.wikimedia.org/wiki/File:A_photo_of_a_water_leak_on_Camberwell_Place_2022-10-08_9.jpg) |
+
+## 8. Uso de IA generativa (front-end)
+
+Usamos o **Claude (Anthropic)**, via **Claude Code**, como apoio no front-end para:
+- ler as telas do protótipo no Figma (pelo servidor MCP e pela API REST do Figma) e converter o design em componentes React;
+- gerar e revisar o código das telas, dos componentes e da integração com a API;
+- auditar a interface com três guias de qualidade (Impeccable, tasteskill e os princípios de interação de Emil Kowalski) e aplicar as correções de acessibilidade, movimento e desempenho;
+- buscar as fotos de demonstração em acervos abertos, conferindo licença e crédito de cada uma;
+- escrever os testes de ponta a ponta no navegador (contra a API e o Oracle reais) e esta documentação.
+
+O design é da equipe (protótipo da Marcela no Figma) e as mudanças em relação a ele foram aprovadas por ela. As decisões técnicas e as justificativas estão documentadas nesta página.
