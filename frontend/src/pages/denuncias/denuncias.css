@@ -9,7 +9,7 @@
   width: 100%;
   min-height: 52px;
   padding: 14px;
-  border: 1px solid var(--md-linha);
+  border: 1px solid var(--md-borda-campo);
   border-radius: 12px;
   background: var(--md-branco);
   font-size: 16px;
