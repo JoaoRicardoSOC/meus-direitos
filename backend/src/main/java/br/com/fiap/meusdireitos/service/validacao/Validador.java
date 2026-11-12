@@ -28,6 +28,10 @@ public class Validador {
 
     private static final Pattern EMAIL = Pattern.compile("^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$");
 
+    /** Foto de demonstração do front: img/demo/ + nome sem barras + extensão de imagem. */
+    private static final Pattern IMAGEM_DEMO =
+            Pattern.compile("img/demo/[A-Za-z0-9_.-]+\\.(?i:jpg|jpeg|png|webp)");
+
     private static final Set<String> UFS = Set.of(
             "AC", "AL", "AP", "AM", "BA", "CE", "DF", "ES", "GO", "MA", "MT", "MS", "MG", "PA",
             "PB", "PR", "PE", "PI", "RJ", "RN", "RS", "RO", "RR", "SC", "SP", "SE", "TO");
@@ -138,18 +142,18 @@ public class Validador {
     }
 
     /**
-     * Imagem: endereço http(s) ou caminho de arquivo do front (ex.: {@code img/demo/asfalto-1.jpg}).
-     * Recusa esquemas como {@code javascript:} e {@code data:}, e caminhos com "..". Ignora nulos e vazios.
+     * Imagem: só as fotos de demonstração do front, no formato {@code img/demo/<nome>.jpg|jpeg|png|webp}
+     * (ex.: {@code img/demo/asfalto-1.jpg}), com até 300 caracteres. Recusa endereços externos
+     * ({@code https://}, que fariam o navegador de quem vê a denúncia acessar um site de terceiros),
+     * esquemas como {@code javascript:} e {@code data:}, subpastas e "..". Ignora nulos e vazios.
      */
     public Validador imagem(String campo, String valor) {
         if (valor == null || valor.isBlank()) {
             return this;
         }
         String limpo = valor.trim();
-        boolean web = limpo.startsWith("https://") || limpo.startsWith("http://");
-        boolean caminho = limpo.matches("[A-Za-z0-9_./-]+") && !limpo.startsWith("//") && !limpo.contains("..");
-        boolean valido = limpo.length() <= 300 && !limpo.contains(" ") && (web || caminho);
-        return regra(valido, campo, "Informe um endereço https:// ou um caminho como img/demo/asfalto-1.jpg");
+        boolean valido = limpo.length() <= 300 && IMAGEM_DEMO.matcher(limpo).matches() && !limpo.contains("..");
+        return regra(valido, campo, "Escolha uma das fotos de demonstração.");
     }
 
     /** Data anterior a hoje. Ignora valores nulos. */

@@ -106,22 +106,29 @@ class ValidadorTest {
     }
 
     @Test
-    void imagemAceitaEnderecoWebECaminhoDoFront() {
+    void imagemAceitaSomenteFotosDeDemonstracao() {
         assertDoesNotThrow(() -> new Validador()
                 .imagem("imagemUrl", "img/demo/asfalto-1.jpg")
-                .imagem("imagemUrl", "https://exemplo.com/foto.png")
+                .imagem("imagemUrl", "img/demo/calcada-acessibilidade-2.jpeg")
+                .imagem("imagemUrl", "img/demo/praca_3.png")
+                .imagem("imagemUrl", " img/demo/onibus.webp ")
                 .imagem("imagemUrl", null)
                 .imagem("imagemUrl", "  ")
                 .lancarSeHouverErros());
     }
 
     @Test
-    void imagemRecusaEsquemasPerigososECaminhosForaDaPasta() {
-        for (String invalida : List.of("javascript:alert(1)", "data:image/png;base64,AAA", "../../etc/passwd",
-                "//outro-site.com/x.png", "img/demo/a b.jpg", "img/" + "a".repeat(300) + ".jpg")) {
+    void imagemRecusaEnderecosExternosEsquemasPerigososECaminhosForaDaPasta() {
+        for (String invalida : List.of("https://exemplo.com/foto.png", "http://exemplo.com/img/demo/a.jpg",
+                "javascript:alert(1)", "data:image/png;base64,AAA", "../../etc/passwd",
+                "//outro-site.com/x.png", "img/demo/a b.jpg", "img/demo/../segredo.jpg", "img/demo/..jpg",
+                "img/demo/sub/foto.jpg", "img/demo//foto.jpg", "/img/demo/foto.jpg", "img/outra/foto.jpg",
+                "img/demo/foto.gif", "img/demo/foto.svg", "img/demo/.jpg", "img/demo/foto.jpg?x=1",
+                "img/demo/" + "a".repeat(300) + ".jpg")) {
             ValidacaoException e = assertThrows(ValidacaoException.class,
                     () -> new Validador().imagem("imagemUrl", invalida).lancarSeHouverErros(), invalida);
             assertEquals("imagemUrl", e.getCampos().get(0).campo());
+            assertEquals("Escolha uma das fotos de demonstração.", e.getCampos().get(0).mensagem());
         }
     }
 }
