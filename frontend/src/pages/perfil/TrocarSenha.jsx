@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import Tela from '../../components/Tela.jsx';
 import Cabecalho from '../../components/Cabecalho.jsx';
@@ -6,6 +6,7 @@ import CampoSenha from '../../components/CampoSenha.jsx';
 import Mensagem from '../../components/Mensagem.jsx';
 import { api } from '../../services/api.js';
 import { obrigatorio, validar, validarCampos } from '../../utils/validacao.js';
+import { focarPrimeiroErro } from '../../utils/foco.js';
 
 const REGRAS = {
   senhaAtual: (v) => obrigatorio(v),
@@ -24,10 +25,12 @@ export default function TrocarSenha() {
   const [erros, setErros] = useState({});
   const [mensagem, setMensagem] = useState('');
   const [enviando, setEnviando] = useState(false);
+  const formRef = useRef(null);
 
   function mudar(campo, valor) {
     setValores((v) => ({ ...v, [campo]: valor }));
     setErros((atual) => ({ ...atual, [campo]: undefined }));
+    setMensagem('');
   }
 
   async function trocar(e) {
@@ -35,7 +38,11 @@ export default function TrocarSenha() {
     setMensagem('');
     const encontrados = validarCampos(valores, REGRAS);
     setErros(encontrados);
-    if (Object.keys(encontrados).length > 0) return;
+    if (Object.keys(encontrados).length > 0) {
+      setMensagem('Confira os campos destacados.');
+      focarPrimeiroErro(formRef.current);
+      return;
+    }
 
     setEnviando(true);
     try {
@@ -48,6 +55,7 @@ export default function TrocarSenha() {
       const porCampo = erro.porCampo();
       setErros(porCampo);
       if (!porCampo.senhaAtual && !porCampo.novaSenha) setMensagem(erro.message);
+      else focarPrimeiroErro(formRef.current);
       setEnviando(false);
     }
   }
@@ -55,10 +63,13 @@ export default function TrocarSenha() {
   return (
     <Tela titulo="Trocar senha">
       <Cabecalho titulo="Trocar senha" voltarPara="/perfil" />
-      <h2 className="md-titulo">Vamos trocar sua senha?</h2>
-      <p className="md-corpo">Use pelo menos 8 caracteres, com letras e números.</p>
+      <div className="d-flex flex-column gap-2">
+        <h2 className="md-titulo">Vamos trocar sua senha?</h2>
+        <p className="md-corpo">Use pelo menos 8 caracteres, com letras e números.</p>
+      </div>
 
-      <form className="d-flex flex-column gap-3" onSubmit={trocar} noValidate>
+      <form ref={formRef} className="md-grupo d-flex flex-column gap-3" onSubmit={trocar} noValidate>
+        <Mensagem>{mensagem}</Mensagem>
         <CampoSenha
           rotulo="Senha atual"
           value={valores.senhaAtual}
@@ -84,14 +95,14 @@ export default function TrocarSenha() {
           maxLength={64}
         />
 
-        <Mensagem>{mensagem}</Mensagem>
-
-        <button type="submit" className="md-botao md-botao-primario" disabled={enviando}>
-          {enviando ? 'Salvando…' : 'Salvar nova senha'}
-        </button>
-        <Link to="/perfil" className="md-botao md-botao-secundario">
-          Cancelar
-        </Link>
+        <div className="md-grupo d-flex flex-column gap-3">
+          <button type="submit" className="md-botao md-botao-primario" disabled={enviando}>
+            {enviando ? 'Salvando…' : 'Salvar nova senha'}
+          </button>
+          <Link to="/perfil" className="md-botao md-botao-secundario">
+            Cancelar
+          </Link>
+        </div>
       </form>
     </Tela>
   );
