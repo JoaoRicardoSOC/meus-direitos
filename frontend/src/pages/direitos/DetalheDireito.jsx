@@ -4,7 +4,7 @@ import Tela from '../../components/Tela.jsx';
 import Cabecalho from '../../components/Cabecalho.jsx';
 import Mensagem, { Carregando } from '../../components/Mensagem.jsx';
 import { api } from '../../services/api.js';
-import iconeCadeado from '../../assets/icones/cadeado.svg';
+import iconeInfo from '../../assets/icones/info.svg';
 import './direitos.css';
 
 /**
@@ -35,7 +35,7 @@ export default function DetalheDireito() {
 
   return (
     <Tela titulo={direito?.titulo ?? 'Direito'} comNavegacao>
-      <Cabecalho titulo="Meus Direitos" voltarPara="/direitos" />
+      <Cabecalho titulo={direito?.titulo ?? 'Meus Direitos'} voltarPara="/direitos" />
 
       {estado.carregando && <Carregando texto="Carregando o tema…" />}
 
@@ -62,23 +62,20 @@ export default function DetalheDireito() {
 
       {direito && (
         <>
-          <p className="md-sobretitulo">Possibilidade a verificar</p>
-          <h2 className="md-titulo">{direito.titulo}</h2>
-          {(direito.descricao ?? direito.resumo) && <p className="md-corpo">{direito.descricao ?? direito.resumo}</p>}
+          <p className="md-corpo">Uma possibilidade para você verificar.</p>
+          {(direito.descricao ?? direito.resumo) && (
+            <p className="md-corpo-tinta">{direito.descricao ?? direito.resumo}</p>
+          )}
 
           {passos.length > 0 && (
             <section className="md-card" aria-labelledby="titulo-passos">
-              <h3 id="titulo-passos" className="md-subtitulo">
+              <h2 id="titulo-passos" className="md-subtitulo">
                 Por onde começar
-              </h3>
+              </h2>
               <ol className="md-direito-passos">
                 {passos.map((passo) => (
                   <li key={passo.ordem}>
-                    <span className="md-negrito md-direito-destaque">
-                      {String(passo.ordem).padStart(2, '0')}
-                      {'  '}
-                      {passo.titulo}
-                    </span>
+                    <span className="md-negrito">{passo.titulo}</span>
                     {passo.texto && <span className="md-corpo">{passo.texto}</span>}
                   </li>
                 ))}
@@ -88,29 +85,29 @@ export default function DetalheDireito() {
 
           {direito.aviso && (
             <div className="md-informacao">
-              <img src={iconeCadeado} alt="" width="20" height="20" />
+              <img src={iconeInfo} alt="" width="20" height="20" />
               <p className="md-legenda">{direito.aviso}</p>
             </div>
           )}
 
-          {direito.baseLegal && (
-            <p className="md-legenda">
-              <strong>Base legal:</strong> {direito.baseLegal}
-            </p>
-          )}
-
-          {direito.linkOficial && (
-            <a href={direito.linkOficial} target="_blank" rel="noopener noreferrer" className="md-negrito md-direito-destaque">
-              Ver a fonte oficial deste tema
-              <span className="md-oculto-visualmente"> (abre em nova aba)</span>
-            </a>
+          {(direito.baseLegal || direito.linkOficial) && (
+            <div className="md-direito-meta">
+              {direito.baseLegal && (
+                <p className="md-legenda">
+                  <strong>Base legal:</strong> {direito.baseLegal}
+                </p>
+              )}
+              {direito.linkOficial && (
+                <a href={direito.linkOficial} target="_blank" rel="noopener noreferrer" className="md-acao-texto">
+                  Ver a fonte oficial deste tema
+                  <span className="md-oculto-visualmente"> (abre em nova aba)</span>
+                </a>
+              )}
+            </div>
           )}
 
           <Link to="/direitos/canais" className="md-botao md-botao-primario">
             Consultar canais oficiais
-          </Link>
-          <Link to="/direitos" className="md-botao md-botao-secundario">
-            Voltar aos direitos
           </Link>
         </>
       )}
