@@ -6,11 +6,37 @@ const CHAVE_ID = 'usuarioId';
 const CHAVE_USUARIO = 'usuario';
 const EVENTO = 'md:sessao';
 
+/**
+ * Cópia em memória: se o navegador bloquear o localStorage (navegação privada, site bloqueado),
+ * a sessão continua valendo enquanto a página estiver aberta.
+ */
+const memoria = new Map();
+
 function ler(chave) {
   try {
-    return localStorage.getItem(chave);
+    const salvo = localStorage.getItem(chave);
+    if (salvo !== null) return salvo;
   } catch {
-    return null; // navegação privada ou armazenamento bloqueado
+    // armazenamento bloqueado: usa a memória
+  }
+  return memoria.get(chave) ?? null;
+}
+
+function gravar(chave, valor) {
+  memoria.set(chave, valor);
+  try {
+    localStorage.setItem(chave, valor);
+  } catch {
+    // armazenamento bloqueado: fica só na memória
+  }
+}
+
+function apagar(chave) {
+  memoria.delete(chave);
+  try {
+    localStorage.removeItem(chave);
+  } catch {
+    // nada a fazer
   }
 }
 
@@ -30,23 +56,15 @@ export function lerUsuario() {
 
 /** Guarda o usuário devolvido por POST /usuarios, POST /auth/login ou PUT /usuarios/me. */
 export function iniciarSessao(usuario) {
-  try {
-    localStorage.setItem(CHAVE_ID, String(usuario.id));
-    localStorage.setItem(CHAVE_USUARIO, JSON.stringify(usuario));
-  } catch {
-    // sem armazenamento: a sessão vale só enquanto a página estiver aberta
-  }
+  gravar(CHAVE_ID, String(usuario.id));
+  gravar(CHAVE_USUARIO, JSON.stringify(usuario));
   window.dispatchEvent(new Event(EVENTO));
 }
 
 /** "Sair da conta", conta excluída ou resposta 401. */
 export function encerrarSessao() {
-  try {
-    localStorage.removeItem(CHAVE_ID);
-    localStorage.removeItem(CHAVE_USUARIO);
-  } catch {
-    // nada a fazer
-  }
+  apagar(CHAVE_ID);
+  apagar(CHAVE_USUARIO);
   window.dispatchEvent(new Event(EVENTO));
 }
 
