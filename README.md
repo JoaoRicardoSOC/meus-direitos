@@ -22,6 +22,7 @@ Plataforma colaborativa que une **zeladoria urbana** e **informação sobre dire
 | [`frontend/`](frontend/) | Interface web em React + Vite | Marcela, Bielecky |
 | [`database/`](database/) | `script.sql` (DDL + carga inicial) para Oracle | Vicentini |
 | [`docs/`](docs/) | Diagramas (classes e ER), coleção de requisições e contrato da API | Todos |
+| [`testes/`](testes/) | Teste de ponta a ponta da API (Node, sem dependências) | Todos |
 
 ## Tecnologias
 
@@ -34,8 +35,14 @@ Plataforma colaborativa que une **zeladoria urbana** e **informação sobre dire
 ## Como executar
 
 1. **Banco de dados:** execute `database/script.sql` no Oracle (SQL Developer).
-2. **Back-end:** siga [`backend/README.md`](backend/README.md): copie `db.properties.example` para `db.properties`, preencha usuário e senha do Oracle e rode `mvn clean compile exec:java` na pasta `backend/`. A API sobe em `http://localhost:8080/api`.
+2. **Back-end:** siga [`backend/README.md`](backend/README.md): copie `db.properties.example` para `db.properties`, preencha usuário e senha do Oracle (e um `token.segredo` longo e aleatório, para as sessões não caírem a cada reinício) e rode `mvn clean compile exec:java` na pasta `backend/`. A API sobe em `http://localhost:8080/api`.
 3. **Front-end:** com a API rodando, abra **`frontend/dist/index.html`** direto no navegador (duplo clique). Para isso, inclua `null` nas origens do CORS do back-end (`cors.origens=http://localhost:5173,null` no `backend/db.properties`), porque o navegador envia a origem `null` para páginas abertas do disco. Para desenvolver, use `npm install` e `npm run dev` na pasta `frontend/` (detalhes em [`frontend/README.md`](frontend/README.md)).
+
+## Testes
+
+- **Back-end:** `mvn test` na pasta `backend/` roda os testes de unidade, sem banco. Os testes de integração dos DAOs contra o Oracle rodam com `MD_INTEGRACAO=true` e desfazem tudo no fim (ver [`backend/README.md`](backend/README.md)).
+- **API de ponta a ponta:** com a API rodando, `node testes/api-ponta-a-ponta.mjs` percorre cadastro, token, feed, denúncia, voto, comentário, reporte, questionário, painel e o limite de login, e exclui as contas de teste no final.
+- **CI:** o GitHub Actions ([`.github/workflows/ci.yml`](.github/workflows/ci.yml)) roda os testes do back-end e o build do front-end a cada push.
 
 ## Documentação
 
