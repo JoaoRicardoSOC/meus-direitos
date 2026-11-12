@@ -1,4 +1,4 @@
-/* 07 · Feed: "SUA CIDADE" usa o estilo de sobretítulo, mas na cor apagada */
+/* 07 · Feed: "SUA CIDADE" (o único sobretítulo do app) na cor apagada */
 .md-sobretitulo-apagado {
   color: var(--md-apagado);
 }
@@ -8,6 +8,9 @@
   display: flex;
   gap: 8px;
   overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scroll-snap-type: x proximity;
+  scroll-padding-inline: var(--md-margem);
   scrollbar-width: none;
   margin: 0 calc(var(--md-margem) * -1);
   padding: 0 var(--md-margem);
@@ -19,18 +22,54 @@
 
 .md-abas .md-filtro {
   flex-shrink: 0;
+  scroll-snap-align: start;
 }
 
-.md-filtro:focus-visible {
-  outline: 3px solid var(--bs-focus-ring-color);
-  outline-offset: 2px;
+/* Troca de aba: a lista anterior fica esmaecida até a nova chegar */
+.md-feed-lista {
+  transition: opacity var(--md-dur-cor) ease;
 }
 
-/* "Números da cidade" (pedido 8 do guia): bloco discreto no topo do feed */
+.md-feed-lista[aria-busy='true'] {
+  opacity: 0.5;
+}
+
+/* Esqueleto do card do feed: mesmas medidas do card real */
+.md-esqueleto-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.md-esqueleto-foto {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  border-radius: 12px;
+}
+
+.md-esqueleto-acao {
+  width: 96px;
+  height: var(--md-alvo-minimo);
+  border-radius: 12px;
+}
+
+/* "Números da cidade" (pedido 8 do guia): uma faixa com três colunas separadas por divisores */
+.md-numeros-titulo {
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.3;
+  color: var(--md-tinta);
+  margin: 0;
+}
+
+.md-numeros-cidade {
+  gap: 8px;
+}
+
 .md-numeros {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 8px;
   margin: 0;
 }
 
@@ -38,24 +77,40 @@
   display: flex;
   flex-direction: column-reverse;
   gap: 2px;
-  padding: 8px 10px;
-  border-radius: 12px;
-  background: var(--md-suave);
+  padding: 0 12px;
+  min-width: 0;
+}
+
+.md-numero:first-child {
+  padding-left: 0;
+}
+
+.md-numero + .md-numero {
+  border-left: 1px solid var(--md-linha-suave);
 }
 
 .md-numero dd {
   margin: 0;
-  font-size: 20px;
+  font-size: 22px;
   font-weight: 700;
   line-height: 1.2;
-  color: var(--md-verde);
+  color: var(--md-tinta);
+  font-variant-numeric: tabular-nums;
 }
 
 .md-numero dt {
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 400;
   line-height: 1.45;
   color: var(--md-apagado);
+}
+
+/* Reserva a linha do número (22px × 1,2) enquanto o resumo carrega */
+.md-numero-esqueleto {
+  display: inline-block;
+  vertical-align: top;
+  width: 3.5ch;
+  height: 1.2em;
 }
 
 /* 10 · Conversa do bairro */
@@ -63,40 +118,37 @@
   scroll-margin-top: 16px;
 }
 
+.md-conversa-contagem {
+  font-size: 14px;
+  font-weight: 400;
+  color: var(--md-apagado);
+  white-space: nowrap;
+}
+
 .md-comentario + .md-comentario {
-  border-top: 1px solid var(--md-linha);
+  border-top: 1px solid var(--md-linha-suave);
   padding-top: 12px;
 }
 
-/* Ações pequenas do comentário ("Editar", "Excluir") */
-.md-link-acao {
-  display: inline-flex;
-  align-items: center;
-  min-height: 32px;
-  padding: 4px 8px;
-  margin-left: -8px;
-  border: 0;
-  border-radius: 8px;
-  background: transparent;
-  color: var(--md-verde);
-  font-size: 13px;
-  font-weight: 700;
+/* "Carla Souza · há 22 minutos · editado · exemplo" */
+.md-comentario-meta {
+  font-size: 14px;
   line-height: 1.45;
-  text-decoration: underline;
-  cursor: pointer;
+  color: var(--md-apagado);
+  margin: 0;
+  overflow-wrap: anywhere;
 }
 
-.md-link-acao:focus-visible {
-  outline: 3px solid var(--bs-focus-ring-color);
+.md-comentario-autor {
+  font-weight: 700;
+  color: var(--md-tinta);
 }
 
-.md-link-acao:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-
-.md-link-acao-perigo {
-  color: var(--md-erro);
+/* Contador "N/500" discreto, alinhado à direita embaixo da caixa de texto */
+.md-contador {
+  margin-top: 4px;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
 }
 
 /* Progresso da confirmação pela comunidade (seção 8.7) */
