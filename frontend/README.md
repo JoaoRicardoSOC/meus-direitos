@@ -59,7 +59,7 @@ Apenas o que está no conteúdo do curso:
 |---|---|
 | React + Vite | Componentes e build |
 | React Router (`HashRouter`) | Navegação entre as telas |
-| Bootstrap 5 | Reset, grade e utilitários (`d-flex`, `gap-*`, `form-control`…), com o tema do Figma por cima |
+| Bootstrap 5 | Só o reset e os utilitários de layout (`d-flex`, `gap-*`, `m-*`…); campos, botões e o resto vêm do tema do Figma |
 | `fetch` | Chamadas à API (sem axios) |
 
 ## 5. Organização
@@ -89,8 +89,11 @@ public/img/demo/        fotos de demonstração das denúncias (caminho enviado 
 - **Fiel ao Figma, com os ajustes combinados no guia da API** (seção 11 do `docs/api.md`): aba "Para você" no feed, cidade e UF separados, endereço e bairro separados, pergunta do CadÚnico no questionário, botões de resolução pela comunidade, "Números da cidade", trocar senha e excluir conta.
 - **Validação em JavaScript antes de chamar a API**, com as mesmas regras do back-end. Os erros que ainda vierem da API aparecem ao lado de cada campo.
 - **Sessão**: o login guarda o id do usuário no `localStorage` e o envia no cabeçalho `X-Usuario-Id`. Uma resposta 401 encerra a sessão e volta para "Entrar".
-- **Coluna de celular**: o protótipo é mobile (390 px). No computador, a interface aparece centralizada com até 430 px.
-- **Acessibilidade**: rótulos em todos os campos, erros anunciados (`role="alert"`), botões só com ícone com `aria-label` e foco visível.
+- **Coluna de celular**: o protótipo é mobile (390 px). A partir de 768 px o app aparece como uma folha de 430 px com moldura; a partir de 1100 px, com um painel de apresentação do projeto ao lado.
+- **Fonte Inter no próprio projeto** (`src/assets/fontes`, licença OFL): funciona offline e no `file://`, sem enviar o IP de quem usa a terceiros.
+- **Acessibilidade**: foco visível em tudo, a cada tela nova a página volta ao topo e o foco vai para o título, erros de formulário com um resumo único e foco no primeiro campo, alvos de toque de 44 px, contraste AA (inclusive bordas dos campos) e suporte a "reduzir movimento".
+- **Etapas na URL**: cadastro, nova denúncia e questionário guardam a etapa no endereço (`?passo=`), então o "voltar" do celular volta uma etapa; o que foi digitado fica salvo na sessão do navegador.
+- **Movimento**: retorno ao toque nos controles, voto que muda na hora (e volta atrás se a rede falhar), entrada das etapas e confirmações animadas, tudo abaixo de 300 ms.
 - **Canais oficiais (tela 32) pela localização**: antes de buscar, a pessoa escolhe entre a **localização atual** (o navegador pede permissão) e a **cidade do cadastro**. A escolha vale para a sessão e pode ser trocada na própria tela.
   - *Portal da Prefeitura*: as coordenadas viram cidade e UF no [Nominatim/OpenStreetMap](https://nominatim.org/), que muitas vezes já traz o site oficial do município. Sem ele, o site vem do [Wikidata](https://www.wikidata.org/) (propriedade "site oficial"); sem nenhum dos dois, abre uma busca por "Prefeitura de {cidade}".
   - *Portal Gov.br*: sempre `https://www.gov.br`.
