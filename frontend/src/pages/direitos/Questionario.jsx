@@ -47,7 +47,8 @@ const LISTAS = {
 };
 
 /** Respostas em andamento ficam na sessão da aba: reabrir o questionário retoma de onde parou. */
-function chaveRascunho() {
+/** Também usada por "Apagar minhas respostas": o rascunho guarda as mesmas respostas sensíveis. */
+export function chaveRascunho() {
   return `md-questionario-rascunho-${lerUsuario()?.id ?? 'anonimo'}`;
 }
 

@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import Tela from '../../components/Tela.jsx';
+import { Toast } from '../../components/Mensagem.jsx';
 import iconeEscudo from '../../assets/icones/escudo-destaque.svg';
 import iconeCadeado from '../../assets/icones/cadeado.svg';
 import './PrimeiroAcesso.css';
@@ -8,8 +9,9 @@ import './PrimeiroAcesso.css';
  * 22 · Direitos / Primeiro acesso.
  * Mostrada em "Meus Direitos" enquanto a pessoa não respondeu o questionário (GET /usuarios/perfil → 404).
  * É a raiz da aba: sem seta de voltar, com o título da aba como na tela de direitos.
+ * `aviso` (opcional) aparece num aviso temporário, ex.: depois de apagar as respostas.
  */
-export default function PrimeiroAcesso() {
+export default function PrimeiroAcesso({ aviso, aoFecharAviso }) {
   return (
     <Tela titulo="Meus Direitos" comNavegacao>
       <h1 className="md-titulo" tabIndex={-1} data-foco-tela>
@@ -47,6 +49,8 @@ export default function PrimeiroAcesso() {
           Agora não
         </Link>
       </div>
+
+      <Toast texto={aviso} chave={aviso} aoFechar={aoFecharAviso} />
     </Tela>
   );
 }

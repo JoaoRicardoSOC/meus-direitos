@@ -1,10 +1,11 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import Tela from '../../components/Tela.jsx';
 import Mensagem from '../../components/Mensagem.jsx';
 import { api } from '../../services/api.js';
 import { useSessao } from '../../contexts/SessaoContext.jsx';
 import PrimeiroAcesso from './PrimeiroAcesso.jsx';
+import { chaveRascunho } from './Questionario.jsx';
 import { iconeDoTema } from './iconesDireito.js';
 import iconeSetaDireita from '../../assets/icones/seta-direita.svg';
 import './direitos.css';
@@ -28,6 +29,7 @@ function frasePerfil(tags) {
 export default function MeusDireitos() {
   const { usuario } = useSessao();
   const [estado, setEstado] = useState({ carregando: true, erro: '', semPerfil: false, perfil: null });
+  const [aviso, setAviso] = useState('');
 
   const carregar = useCallback(async () => {
     setEstado({ carregando: true, erro: '', semPerfil: false, perfil: null });
@@ -44,7 +46,17 @@ export default function MeusDireitos() {
     carregar();
   }, [carregar]);
 
-  if (estado.semPerfil) return <PrimeiroAcesso />;
+  function respostasApagadas() {
+    try {
+      sessionStorage.removeItem(chaveRascunho());
+    } catch {
+      // sem armazenamento: não havia rascunho guardado
+    }
+    setAviso('Suas respostas foram apagadas.');
+    setEstado({ carregando: false, erro: '', semPerfil: true, perfil: null });
+  }
+
+  if (estado.semPerfil) return <PrimeiroAcesso aviso={aviso} aoFecharAviso={() => setAviso('')} />;
 
   if (estado.carregando) {
     return (
@@ -125,9 +137,90 @@ export default function MeusDireitos() {
             )}
             <p className="md-legenda">Esta lista orienta a pesquisa. Não confirma elegibilidade.</p>
           </div>
+
+          <ApagarRespostas aoApagar={respostasApagadas} />
         </>
       )}
     </Tela>
+  );
+}
+
+/**
+ * "Apagar minhas respostas" (DELETE /usuarios/perfil): cumpre o que a caixa de consentimento promete.
+ * Confirmação na própria tela, com o foco no "Cancelar", como em "Excluir" na conversa do bairro.
+ */
+function ApagarRespostas({ aoApagar }) {
+  const [confirmando, setConfirmando] = useState(false);
+  const [ocupado, setOcupado] = useState(false);
+  const [erro, setErro] = useState('');
+  const botaoApagar = useRef(null);
+  const botaoCancelar = useRef(null);
+  const abriu = useRef(false);
+
+  useEffect(() => {
+    if (confirmando) botaoCancelar.current?.focus();
+    else if (abriu.current) botaoApagar.current?.focus();
+  }, [confirmando]);
+
+  async function apagar() {
+    setOcupado(true);
+    setErro('');
+    try {
+      await api('/usuarios/perfil', { metodo: 'DELETE' });
+      aoApagar();
+    } catch (e) {
+      // 404: já não havia respostas, o resultado é o mesmo
+      if (e.status === 404) aoApagar();
+      else {
+        setErro(e.message);
+        setOcupado(false);
+      }
+    }
+  }
+
+  if (!confirmando) {
+    return (
+      <div className="md-direito-apagar">
+        <button
+          type="button"
+          ref={botaoApagar}
+          className="md-acao-texto md-perigo"
+          onClick={() => {
+            abriu.current = true;
+            setConfirmando(true);
+          }}
+        >
+          Apagar minhas respostas
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <section className="md-card md-direito-apagar-confirmacao" aria-labelledby="apagar-respostas-titulo">
+      <h2 id="apagar-respostas-titulo" className="md-subtitulo">
+        Apagar suas respostas?
+      </h2>
+      <p className="md-corpo">
+        Data de nascimento, raça/cor, deficiência, escolaridade e CadÚnico serão apagados. Os temas deixam de
+        aparecer até você responder de novo. Sua conta e suas denúncias continuam.
+      </p>
+      <Mensagem>{erro}</Mensagem>
+      <div className="d-flex flex-wrap gap-2">
+        <button type="button" className="md-botao md-botao-perigo" onClick={apagar} disabled={ocupado}>
+          {ocupado ? 'Apagando…' : 'Apagar respostas'}
+        </button>
+        <button
+          type="button"
+          ref={botaoCancelar}
+          className="md-botao md-botao-secundario"
+          onClick={() => setConfirmando(false)}
+          disabled={ocupado}
+        >
+          Cancelar
+        </button>
+      </div>
+    </section>
   );
 }
 

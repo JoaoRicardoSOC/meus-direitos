@@ -143,3 +143,15 @@
     border-color: var(--md-verde);
   }
 }
+
+/* "Apagar minhas respostas": ação discreta no fim da lista, separada dos temas */
+.md-direito-apagar {
+  padding-top: 8px;
+  border-top: 1px solid var(--md-linha-suave);
+}
+
+.md-direito-apagar-confirmacao {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
