@@ -16,10 +16,13 @@ export default function EscolherFoto({ categoria, atual, aoUsar, aoVoltar }) {
   );
 
   return (
-    <Tela titulo="Adicionar foto" gap={12}>
+    <Tela titulo="Adicionar foto">
       <Cabecalho titulo="Adicionar foto" aoVoltar={aoVoltar} />
       <p className="md-sobretitulo">Imagem de demonstração</p>
-      <h2 className="md-titulo">Uma foto ajuda a explicar.</h2>
+      <h2 className="md-titulo">
+        Uma foto ajuda
+        <br />a explicar.
+      </h2>
       <p className="md-corpo">Confira a imagem antes de anexar.</p>
 
       {escolhida ? (
