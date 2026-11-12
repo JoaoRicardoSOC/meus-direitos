@@ -91,11 +91,11 @@ public/img/demo/        fotos de demonstração das denúncias (caminho enviado 
 - **Sessão**: o login guarda o id do usuário no `localStorage` e o envia no cabeçalho `X-Usuario-Id`. Uma resposta 401 encerra a sessão e volta para "Entrar".
 - **Coluna de celular**: o protótipo é mobile (390 px). No computador, a interface aparece centralizada com até 430 px.
 - **Acessibilidade**: rótulos em todos os campos, erros anunciados (`role="alert"`), botões só com ícone com `aria-label` e foco visível.
-- **Canais oficiais (tela 32) pela localização**: ao abrir a tela, o navegador pede a localização da pessoa.
+- **Canais oficiais (tela 32) pela localização**: antes de buscar, a pessoa escolhe entre a **localização atual** (o navegador pede permissão) e a **cidade do cadastro**. A escolha vale para a sessão e pode ser trocada na própria tela.
   - *Portal da Prefeitura*: as coordenadas viram cidade e UF no [Nominatim/OpenStreetMap](https://nominatim.org/), que muitas vezes já traz o site oficial do município. Sem ele, o site vem do [Wikidata](https://www.wikidata.org/) (propriedade "site oficial"); sem nenhum dos dois, abre uma busca por "Prefeitura de {cidade}".
   - *Portal Gov.br*: sempre `https://www.gov.br`.
   - *Atendimento presencial*: abre o Google Maps buscando "CRAS" em volta da posição.
-  - Sem permissão ou sem localização, tudo usa a cidade do cadastro, e a tela oferece "Usar minha localização" para tentar de novo.
+  - Com a cidade do cadastro, ou se a localização for negada ou não vier, tudo usa a cidade do cadastro, e a tela explica o motivo.
   - A posição é enviada só ao OpenStreetMap (e, no link do CRAS, ao Google Maps, quando a pessoa clica); nada vai para a API do Meus Direitos. O resultado fica guardado na sessão do navegador para não repetir pedidos (a política do Nominatim é de no máximo 1 por segundo).
 
 ## 7. Créditos das imagens
