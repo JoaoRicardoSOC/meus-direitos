@@ -21,6 +21,7 @@ import br.com.fiap.meusdireitos.model.Usuario;
 import br.com.fiap.meusdireitos.service.simulacao.SimulacaoService;
 import br.com.fiap.meusdireitos.service.validacao.Validador;
 import br.com.fiap.meusdireitos.util.SenhaUtil;
+import br.com.fiap.meusdireitos.util.TextoUtil;
 
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -76,6 +77,8 @@ public class UsuarioService {
 
     /**
      * Atualiza nome, e-mail, cidade e UF da própria conta.
+     * Se a pessoa mudou de cidade, prepara a "cidade viva" da cidade nova (como no cadastro), para o
+     * feed não ficar vazio; a resposta traz {@code cidadePreparada} nesse caso.
      *
      * @throws ConflitoException se o novo e-mail pertencer a outra conta
      */
@@ -85,7 +88,8 @@ public class UsuarioService {
         validarDadosPessoais(validador, req.nome(), req.email(), req.cidade(), req.uf());
         validador.lancarSeHouverErros();
 
-        return Transacao.executar(con -> {
+        boolean[] mudouDeCidade = {false};
+        UsuarioResponse atualizado = Transacao.executar(con -> {
             UsuarioDao dao = new UsuarioDaoJdbc(con);
             Usuario usuario = dao.buscarPorId(idUsuario);
 
@@ -94,13 +98,22 @@ public class UsuarioService {
                 throw new ConflitoException(MSG_EMAIL_EM_USO);
             }
 
+            String cidadeAntes = TextoUtil.chaveCidade(usuario.getCidade()) + "|" + usuario.getUf();
             usuario.setNome(req.nome());
             usuario.setEmail(req.email());
             usuario.setCidade(req.cidade());
             usuario.setUf(req.uf());
+            mudouDeCidade[0] = !cidadeAntes.equals(TextoUtil.chaveCidade(usuario.getCidade()) + "|" + usuario.getUf());
             dao.atualizar(usuario);
             return UsuarioResponse.de(usuario, possuiPerfil(con, idUsuario));
         });
+        if (!mudouDeCidade[0]) {
+            return atualizado;
+        }
+        // Depois da atualização confirmada (outra transação): se falhar, a mudança de cidade vale mesmo assim
+        boolean cidadePreparada = new SimulacaoService().prepararCidade(atualizado.cidade(), atualizado.uf());
+        return new UsuarioResponse(atualizado.id(), atualizado.nome(), atualizado.email(), atualizado.cidade(),
+                atualizado.uf(), atualizado.criadoEm(), atualizado.perfilPreenchido(), cidadePreparada);
     }
 
     /** Lista pública de usuários (apenas nome, cidade e UF). */
