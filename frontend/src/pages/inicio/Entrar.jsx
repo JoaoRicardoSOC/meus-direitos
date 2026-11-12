@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import Tela from '../../components/Tela.jsx';
 import Cabecalho from '../../components/Cabecalho.jsx';
@@ -8,6 +8,7 @@ import Mensagem from '../../components/Mensagem.jsx';
 import { api } from '../../services/api.js';
 import { useSessao } from '../../contexts/SessaoContext.jsx';
 import { obrigatorio, validar, validarCampos } from '../../utils/validacao.js';
+import { focarPrimeiroErro } from '../../utils/foco.js';
 import './inicio.css';
 
 /** 06 · Entrar (POST /auth/login) */
@@ -19,6 +20,17 @@ export default function Entrar() {
   const [erros, setErros] = useState({});
   const [mensagem, setMensagem] = useState('');
   const [enviando, setEnviando] = useState(false);
+  const formulario = useRef(null);
+  const titulo = useRef(null);
+
+  // O título da tela é a pergunta, não o nome do app no cabeçalho: o foco vai para ele
+  // (dois quadros: depois do foco que o GerenciarRota põe no título do cabeçalho)
+  useEffect(() => {
+    const quadro = requestAnimationFrame(() => {
+      requestAnimationFrame(() => titulo.current?.focus({ preventScroll: true }));
+    });
+    return () => cancelAnimationFrame(quadro);
+  }, []);
 
   function mudar(campo) {
     return (e) => {
@@ -32,7 +44,11 @@ export default function Entrar() {
     setMensagem('');
     const encontrados = validarCampos(valores, { email: validar.email, senha: (v) => obrigatorio(v) });
     setErros(encontrados);
-    if (Object.keys(encontrados).length > 0) return;
+    if (Object.keys(encontrados).length > 0) {
+      setMensagem(Object.keys(encontrados).length > 1 ? 'Revise os campos destacados.' : 'Revise o campo destacado.');
+      focarPrimeiroErro(formulario.current);
+      return;
+    }
 
     setEnviando(true);
     try {
@@ -42,6 +58,7 @@ export default function Entrar() {
     } catch (erro) {
       setErros(erro.porCampo());
       setMensagem(erro.message);
+      focarPrimeiroErro(formulario.current);
     } finally {
       setEnviando(false);
     }
@@ -50,13 +67,13 @@ export default function Entrar() {
   return (
     <Tela titulo="Entrar">
       <Cabecalho titulo="Meus Direitos" voltarPara="/" />
-      <div className="md-espaco-entrar" />
 
-      <p className="md-sobretitulo">Bom ter você de volta</p>
-      <h2 className="md-titulo">Entre na sua conta</h2>
-      <p className="md-corpo">Acompanhe o que acontece na sua cidade.</p>
+      <h2 className="md-titulo md-grupo" ref={titulo} tabIndex={-1} data-foco-tela>
+        Entre na sua conta
+      </h2>
+      <p className="md-corpo">Bom ter você de volta. Acompanhe o que acontece na sua cidade.</p>
 
-      <form className="d-flex flex-column gap-3" onSubmit={enviar} noValidate>
+      <form ref={formulario} className="md-formulario-inicio md-grupo" onSubmit={enviar} noValidate>
         <Mensagem>{mensagem}</Mensagem>
         <Campo
           rotulo="E-mail"
@@ -65,7 +82,7 @@ export default function Entrar() {
           onChange={mudar('email')}
           erro={erros.email}
           autoComplete="email"
-          placeholder="mariana@exemplo.com"
+          placeholder="Ex.: maria@email.com"
         />
         <CampoSenha
           value={valores.senha}
@@ -73,7 +90,7 @@ export default function Entrar() {
           erro={erros.senha}
           autoComplete="current-password"
         />
-        <button type="submit" className="md-botao md-botao-primario mt-1" disabled={enviando}>
+        <button type="submit" className="md-botao md-botao-primario md-grupo" disabled={enviando}>
           {enviando ? 'Entrando…' : 'Entrar'}
         </button>
         <Link to="/cadastro" className="md-botao md-botao-secundario">
