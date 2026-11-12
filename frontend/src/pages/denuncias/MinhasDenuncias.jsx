@@ -1,13 +1,14 @@
-import { useCallback, useEffect, useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import Tela from '../../components/Tela.jsx';
 import Cabecalho from '../../components/Cabecalho.jsx';
 import CardDenuncia from '../../components/CardDenuncia.jsx';
-import Mensagem, { Carregando } from '../../components/Mensagem.jsx';
+import Mensagem, { Carregando, Toast } from '../../components/Mensagem.jsx';
 import { api } from '../../services/api.js';
+import { irParaOTopo } from '../../utils/foco.js';
 import ConfirmarExclusao from './ConfirmarExclusao.jsx';
 import iconeEditar from '../../assets/icones/editar.svg';
-import iconeExcluir from '../../assets/icones/excluir.svg';
+import iconeLixeira from '../../assets/icones/lixeira.svg';
 import './denuncias.css';
 
 function mensagemDeErro(erro) {
@@ -17,17 +18,27 @@ function mensagemDeErro(erro) {
 /**
  * 17 · Minha denúncia: lista do usuário (GET /denuncias/minhas) com as ações do autor —
  * Editar, Excluir (abre a 18 · Excluir denúncia) e Marcar como resolvida / Reabrir (docs/api.md, 8.7).
+ * O resultado de cada ação aparece num aviso temporário (Toast) perto da navegação.
  */
 export default function MinhasDenuncias() {
   const local = useLocation();
+  const navegar = useNavigate();
   const [denuncias, setDenuncias] = useState([]);
   const [carregando, setCarregando] = useState(true);
   const [erro, setErro] = useState('');
-  const [aviso, setAviso] = useState(local.state?.aviso ?? '');
+  const [aviso, setAviso] = useState(() => ({ texto: local.state?.aviso ?? '', chave: Date.now() }));
   const [ocupada, setOcupada] = useState(null); // id da denúncia com ação em andamento
   const [errosAcao, setErrosAcao] = useState({}); // { [id]: 'mensagem' }
   const [excluir, setExcluir] = useState(null); // denúncia na tela 18
   const [erroExclusao, setErroExclusao] = useState('');
+  const retorno = useRef(null); // { rolagem, id }: para voltar ao mesmo lugar ao manter a denúncia
+
+  const avisar = (texto) => setAviso({ texto, chave: Date.now() });
+
+  // O aviso vindo da edição ("Denúncia atualizada.") aparece uma vez só: sai do estado do histórico
+  useEffect(() => {
+    if (local.state?.aviso) navegar({ pathname: local.pathname, search: local.search }, { replace: true, state: null });
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const carregar = useCallback(async () => {
     setErro('');
@@ -45,21 +56,41 @@ export default function MinhasDenuncias() {
     carregar();
   }, [carregar]);
 
+  // Mantida a denúncia: a lista volta na mesma rolagem, com o foco no "Excluir" que abriu a 18
   useEffect(() => {
-    window.scrollTo(0, 0);
+    if (excluir || !retorno.current) return undefined;
+    const { rolagem, id } = retorno.current;
+    retorno.current = null;
+    const quadro = requestAnimationFrame(() => {
+      window.scrollTo({ top: rolagem, left: 0, behavior: 'instant' });
+      document.querySelector(`[data-excluir="${id}"]`)?.focus({ preventScroll: true });
+    });
+    return () => cancelAnimationFrame(quadro);
   }, [excluir]);
+
+  function abrirExclusao(denuncia) {
+    retorno.current = { rolagem: window.scrollY, id: denuncia.id };
+    setErroExclusao('');
+    setExcluir(denuncia);
+    // topo na hora; o foco inicial fica em "Manter denúncia" (ConfirmarExclusao)
+    window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+  }
+
+  function manterDenuncia() {
+    setExcluir(null);
+    setErroExclusao('');
+  }
 
   async function mudarStatus(denuncia) {
     const resolvida = denuncia.status.codigo === 'RESOLVIDA';
     setOcupada(denuncia.id);
     setErrosAcao((e) => ({ ...e, [denuncia.id]: '' }));
-    setAviso('');
     try {
       await api(`/denuncias/${denuncia.id}/status`, {
         metodo: 'PATCH',
         corpo: { status: resolvida ? 'ABERTA' : 'RESOLVIDA' },
       });
-      setAviso(resolvida ? 'Denúncia reaberta.' : 'Denúncia marcada como resolvida.');
+      avisar(resolvida ? 'Denúncia reaberta.' : 'Denúncia marcada como resolvida.');
       await carregar();
     } catch (e) {
       setErrosAcao((atual) => ({ ...atual, [denuncia.id]: mensagemDeErro(e) }));
@@ -69,12 +100,16 @@ export default function MinhasDenuncias() {
   }
 
   async function confirmarExclusao() {
-    setOcupada(excluir.id);
+    const alvo = excluir;
+    setOcupada(alvo.id);
     setErroExclusao('');
     try {
-      await api(`/denuncias/${excluir.id}`, { metodo: 'DELETE' });
+      await api(`/denuncias/${alvo.id}`, { metodo: 'DELETE' });
+      retorno.current = null; // a denúncia sumiu: o foco vai para o título, no topo
+      setDenuncias((lista) => lista.filter((d) => d.id !== alvo.id));
       setExcluir(null);
-      setAviso('Denúncia excluída.');
+      avisar('Denúncia excluída.');
+      irParaOTopo();
       await carregar();
     } catch (e) {
       setErroExclusao(mensagemDeErro(e));
@@ -89,10 +124,7 @@ export default function MinhasDenuncias() {
         excluindo={ocupada === excluir.id}
         erro={erroExclusao}
         aoConfirmar={confirmarExclusao}
-        aoCancelar={() => {
-          setExcluir(null);
-          setErroExclusao('');
-        }}
+        aoCancelar={manterDenuncia}
       />
     );
   }
@@ -100,7 +132,6 @@ export default function MinhasDenuncias() {
   return (
     <Tela titulo="Minhas denúncias" comNavegacao>
       <Cabecalho titulo="Minhas denúncias" />
-      <Mensagem tipo="info">{aviso}</Mensagem>
 
       {carregando && <Carregando texto="Carregando suas denúncias…" />}
 
@@ -128,19 +159,19 @@ export default function MinhasDenuncias() {
           {denuncias.map((denuncia) => (
             <section key={denuncia.id} className="md-bloco-gerenciar" aria-label={`Gerenciar: ${denuncia.titulo}`}>
               <CardDenuncia key={`${denuncia.id}-${denuncia.atualizadaEm}`} denuncia={denuncia} />
-              {/* Figma: "Gerenciar denúncia" logo abaixo do card */}
-              <div className="d-flex gap-3" role="group" aria-label="Gerenciar denúncia">
-                <Link to={`/denuncias/${denuncia.id}/editar`} className="md-acao md-acao-gerenciar">
+              <div className="md-acoes-gerenciar" role="group" aria-label="Gerenciar denúncia">
+                <Link to={`/denuncias/${denuncia.id}/editar`} className="md-acao-texto">
                   <img src={iconeEditar} alt="" width="20" height="20" />
                   Editar
                 </Link>
                 <button
                   type="button"
-                  className="md-acao md-acao-gerenciar"
-                  onClick={() => setExcluir(denuncia)}
+                  className="md-acao-texto md-perigo"
+                  onClick={() => abrirExclusao(denuncia)}
                   disabled={ocupada === denuncia.id}
+                  data-excluir={denuncia.id}
                 >
-                  <img src={iconeExcluir} alt="" width="20" height="20" />
+                  <img src={iconeLixeira} alt="" width="20" height="20" />
                   Excluir
                 </button>
               </div>
@@ -154,6 +185,8 @@ export default function MinhasDenuncias() {
           ))}
         </div>
       )}
+
+      <Toast texto={aviso.texto} chave={aviso.chave} aoFechar={() => setAviso((a) => ({ ...a, texto: '' }))} />
     </Tela>
   );
 }
@@ -185,7 +218,12 @@ function Resolucao({ denuncia, ocupada, erro, aoMudarStatus }) {
         </>
       )}
       {resolvida && <p className="md-legenda">Esta denúncia está resolvida.</p>}
-      <button type="button" className="md-botao md-botao-secundario" onClick={aoMudarStatus} disabled={ocupada}>
+      <button
+        type="button"
+        className={`md-botao ${resolvida ? 'md-botao-secundario' : 'md-botao-primario'}`}
+        onClick={aoMudarStatus}
+        disabled={ocupada}
+      >
         {ocupada ? 'Salvando…' : resolvida ? 'Reabrir' : 'Marcar como resolvida'}
       </button>
       {erro && (
