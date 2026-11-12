@@ -487,6 +487,53 @@ BEGIN
 END;
 /
 
+-- Índices baseados em função para a comparação de cidade (feed, busca, relatórios, "cidade viva").
+-- A API compara a cidade sem acentos nem maiúsculas com a expressão gerada por
+-- JdbcUtil.cidadeIgual(coluna) no back-end (os espaços repetidos já são removidos ao gravar, porque
+-- REGEXP_REPLACE não pode ser indexado: ORA-01743):
+--   TRANSLATE(UPPER(TRIM(nm_cidade)), '<com acento>', '<sem acento>') = ?
+-- Um índice comum em NM_CIDADE não serve para essa comparação. O Oracle só usa o índice abaixo se a
+-- expressão da consulta for IDÊNTICA à do índice (mesmas funções, mesma ordem, mesmas listas de
+-- caracteres); se JdbcUtil.cidadeIgual mudar, este índice precisa ser recriado com a nova expressão
+-- (o teste IndiceCidadeScriptTest do back-end confere que as duas continuam iguais).
+-- Se o Oracle recusar o índice (ex.: ORA-01743, "só funções puras podem ser indexadas"), o bloco apenas
+-- registra a falha com DBMS_OUTPUT e o script continua: a API funciona igual, só sem o índice.
+
+DECLARE
+  existe NUMBER;
+BEGIN
+  SELECT COUNT(*) INTO existe FROM user_indexes WHERE index_name = 'IX_DENUNCIA_CIDADE_CHAVE';
+  IF existe = 0 THEN
+    BEGIN
+      EXECUTE IMMEDIATE q'[CREATE INDEX IX_DENUNCIA_CIDADE_CHAVE ON TB_DENUNCIA
+        (TRANSLATE(UPPER(TRIM(nm_cidade)), 'ÁÀÂÃÄÉÈÊËÍÌÎÏÓÒÔÕÖÚÙÛÜÇÑ', 'AAAAAEEEEIIIIOOOOOUUUUCN'), sg_uf)]';
+      DBMS_OUTPUT.PUT_LINE('Criado o índice IX_DENUNCIA_CIDADE_CHAVE');
+    EXCEPTION
+      WHEN OTHERS THEN
+        -- o índice é só otimização: se o Oracle recusar (ex.: ORA-01743), registra e segue o script
+        DBMS_OUTPUT.PUT_LINE('Índice IX_DENUNCIA_CIDADE_CHAVE não criado (a API funciona sem ele): ' || SQLERRM);
+    END;
+  END IF;
+END;
+/
+
+DECLARE
+  existe NUMBER;
+BEGIN
+  SELECT COUNT(*) INTO existe FROM user_indexes WHERE index_name = 'IX_USUARIO_CIDADE_CHAVE';
+  IF existe = 0 THEN
+    BEGIN
+      EXECUTE IMMEDIATE q'[CREATE INDEX IX_USUARIO_CIDADE_CHAVE ON TB_USUARIO
+        (TRANSLATE(UPPER(TRIM(nm_cidade)), 'ÁÀÂÃÄÉÈÊËÍÌÎÏÓÒÔÕÖÚÙÛÜÇÑ', 'AAAAAEEEEIIIIOOOOOUUUUCN'), sg_uf)]';
+      DBMS_OUTPUT.PUT_LINE('Criado o índice IX_USUARIO_CIDADE_CHAVE');
+    EXCEPTION
+      WHEN OTHERS THEN
+        -- o índice é só otimização: se o Oracle recusar (ex.: ORA-01743), registra e segue o script
+        DBMS_OUTPUT.PUT_LINE('Índice IX_USUARIO_CIDADE_CHAVE não criado (a API funciona sem ele): ' || SQLERRM);
+    END;
+  END IF;
+END;
+/
 
 -- =====================================================================================
 -- 4. Carga inicial: catálogo de direitos

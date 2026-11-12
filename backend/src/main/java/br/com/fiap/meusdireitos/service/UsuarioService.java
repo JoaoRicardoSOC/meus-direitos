@@ -54,7 +54,7 @@ public class UsuarioService {
         Usuario usuario = new Usuario();
         usuario.setNome(req.nome());
         usuario.setEmail(req.email());
-        usuario.setCidade(req.cidade());
+        usuario.setCidade(TextoUtil.normalizarEspacos(req.cidade()));
         usuario.setUf(req.uf());
         usuario.setSenhaHash(SenhaUtil.gerarHash(req.senha()));
 
@@ -105,7 +105,7 @@ public class UsuarioService {
             String cidadeAntes = TextoUtil.chaveCidade(usuario.getCidade()) + "|" + usuario.getUf();
             usuario.setNome(req.nome());
             usuario.setEmail(req.email());
-            usuario.setCidade(req.cidade());
+            usuario.setCidade(TextoUtil.normalizarEspacos(req.cidade()));
             usuario.setUf(req.uf());
             mudouDeCidade[0] = !cidadeAntes.equals(TextoUtil.chaveCidade(usuario.getCidade()) + "|" + usuario.getUf());
             dao.atualizar(usuario);

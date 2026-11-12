@@ -22,7 +22,7 @@ class JdbcUtilTest {
     @Test
     void comparacaoDeCidadeTiraAcentosComOMesmoTamanho() {
         String sql = JdbcUtil.cidadeIgual("d.nm_cidade");
-        assertTrue(sql.startsWith("TRANSLATE(UPPER(REGEXP_REPLACE(TRIM(d.nm_cidade)"));
+        assertTrue(sql.startsWith("TRANSLATE(UPPER(TRIM(d.nm_cidade))"));
         assertTrue(sql.endsWith(" = ?"));
         String[] partes = sql.split("'");
         // TRANSLATE troca caractere por caractere: as duas listas precisam ter o mesmo tamanho

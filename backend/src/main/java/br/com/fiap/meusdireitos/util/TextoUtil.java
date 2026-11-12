@@ -25,6 +25,17 @@ public final class TextoUtil {
     }
 
     /**
+     * Tira os espaços das pontas e junta os espaços repetidos. Ex.: "  São   Paulo " → "São Paulo".
+     * A cidade é gravada assim para que a comparação no banco ({@code JdbcUtil.cidadeIgual}) não precise
+     * de expressão regular.
+     *
+     * @return o texto normalizado, ou null se o texto for nulo
+     */
+    public static String normalizarEspacos(String texto) {
+        return texto == null ? null : texto.trim().replaceAll("\\s+", " ");
+    }
+
+    /**
      * Nome próprio com iniciais maiúsculas, mantendo acentos e preposições em minúsculas.
      * Ex.: "são paulo" → "São Paulo"; "santa bárbara d'oeste" → "Santa Bárbara D'oeste".
      */

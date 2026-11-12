@@ -17,6 +17,13 @@ class TextoUtilTest {
     }
 
     @Test
+    void normalizaEspacosSemMexerEmAcentosNemMaiusculas() {
+        assertEquals("São Paulo", TextoUtil.normalizarEspacos("  São   Paulo "));
+        assertEquals("Rio de Janeiro", TextoUtil.normalizarEspacos("Rio\tde  Janeiro"));
+        assertNull(TextoUtil.normalizarEspacos(null));
+    }
+
+    @Test
     void capitalizaNomesDeCidade() {
         assertEquals("São Paulo", TextoUtil.capitalizar("são paulo"));
         assertEquals("Rio de Janeiro", TextoUtil.capitalizar("RIO DE JANEIRO"));
