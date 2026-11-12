@@ -22,7 +22,7 @@ import java.util.List;
 public class CorsFilter implements ContainerResponseFilter {
 
     private static final String METODOS = "GET, POST, PUT, PATCH, DELETE, OPTIONS";
-    private static final String CABECALHOS_PERMITIDOS = "Content-Type, X-Usuario-Id";
+    private static final String CABECALHOS_PERMITIDOS = "Content-Type, Authorization";
     private static final String CABECALHOS_EXPOSTOS = "Location";
     private static final String CACHE_PREFLIGHT_SEGUNDOS = "3600";
 

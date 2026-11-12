@@ -4,14 +4,16 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Base64;
 import java.util.List;
 import java.util.Properties;
 import java.util.logging.Logger;
 
 /**
- * Configurações da aplicação (banco de dados, endereço do servidor e CORS).
+ * Configurações da aplicação (banco de dados, endereço do servidor, CORS e segredo dos tokens de sessão).
  * <p>
  * Cada valor é procurado nesta ordem:
  * <ol>
@@ -90,6 +92,46 @@ public final class AppConfig {
      */
     public static String adminChave() {
         return valor("admin.chave", "MD_ADMIN_CHAVE", null);
+    }
+
+    /** Tamanho mínimo do segredo dos tokens de sessão, quando configurado. */
+    public static final int TAMANHO_MINIMO_SEGREDO = 32;
+
+    /**
+     * Segredo usado para assinar os tokens de sessão (HMAC-SHA256), lido de {@code token.segredo}
+     * ou da variável de ambiente {@code MD_TOKEN_SEGREDO}.
+     * <p>
+     * Se não estiver configurado (ou tiver menos de {@value #TAMANHO_MINIMO_SEGREDO} caracteres), a API gera
+     * um segredo aleatório forte ao subir e avisa no log: funciona, mas todas as sessões caem a cada reinício.
+     * O valor é resolvido uma única vez e reaproveitado enquanto a API estiver no ar.
+     *
+     * @return segredo com pelo menos {@value #TAMANHO_MINIMO_SEGREDO} caracteres
+     */
+    public static String tokenSegredo() {
+        return SegredoToken.VALOR;
+    }
+
+    /** Resolve o segredo na primeira vez que for pedido (idiom "holder": thread-safe e sem sincronização). */
+    private static final class SegredoToken {
+        private static final String VALOR = resolver();
+
+        private static String resolver() {
+            String configurado = valor("token.segredo", "MD_TOKEN_SEGREDO", null);
+            if (configurado != null && configurado.length() >= TAMANHO_MINIMO_SEGREDO) {
+                return configurado;
+            }
+            if (configurado == null) {
+                LOG.warning("token.segredo (ou MD_TOKEN_SEGREDO) não configurado: usando um segredo aleatório."
+                        + " As sessões caem a cada reinício da API (veja db.properties.example).");
+            } else {
+                LOG.warning("token.segredo (ou MD_TOKEN_SEGREDO) tem menos de " + TAMANHO_MINIMO_SEGREDO
+                        + " caracteres e foi ignorado: usando um segredo aleatório."
+                        + " As sessões caem a cada reinício da API (veja db.properties.example).");
+            }
+            byte[] aleatorio = new byte[32];
+            new SecureRandom().nextBytes(aleatorio);
+            return Base64.getUrlEncoder().withoutPadding().encodeToString(aleatorio);
+        }
     }
 
     /**

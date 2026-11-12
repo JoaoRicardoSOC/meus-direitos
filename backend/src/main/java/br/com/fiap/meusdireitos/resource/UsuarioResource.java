@@ -32,12 +32,16 @@ import java.util.List;
 @Produces(MediaType.APPLICATION_JSON)
 public class UsuarioResource {
 
-    /** Cabeçalho com o id do usuário logado (enviado pelo front-end após o login). */
-    public static final String CABECALHO_USUARIO = "X-Usuario-Id";
+    /**
+     * Cabeçalho que identifica o usuário logado: {@code Authorization: Bearer <token>}, com o token
+     * devolvido no login e no cadastro (validado em {@link AutenticacaoService#idDoUsuarioLogado}).
+     */
+    public static final String CABECALHO_USUARIO = "Authorization";
 
     private final UsuarioService service = new UsuarioService();
     private final AutenticacaoService autenticacao = new AutenticacaoService();
 
+    /** Cria a conta. A resposta (201) traz o token de sessão: a pessoa já sai do cadastro logada. */
     @POST
     public Response cadastrar(CadastroUsuarioRequest req, @Context UriInfo uriInfo) {
         UsuarioResponse criado = service.cadastrar(req);

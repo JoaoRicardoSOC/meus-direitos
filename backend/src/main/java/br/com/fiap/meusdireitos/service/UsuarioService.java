@@ -23,6 +23,7 @@ import br.com.fiap.meusdireitos.service.simulacao.SimulacaoService;
 import br.com.fiap.meusdireitos.service.validacao.Validador;
 import br.com.fiap.meusdireitos.util.SenhaUtil;
 import br.com.fiap.meusdireitos.util.TextoUtil;
+import br.com.fiap.meusdireitos.util.TokenUtil;
 
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -39,6 +40,7 @@ public class UsuarioService {
     /**
      * Cadastra um novo usuário (fim do onboarding conversacional).
      *
+     * @return a conta criada, com o token de sessão (a pessoa já sai do cadastro logada)
      * @throws br.com.fiap.meusdireitos.exception.ValidacaoException se algum campo for inválido
      * @throws ConflitoException se o e-mail já estiver em uso
      */
@@ -65,7 +67,8 @@ public class UsuarioService {
         });
         // Depois do cadastro confirmado (outra transação): prepara a "cidade viva". Se falhar, o cadastro vale.
         boolean cidadePreparada = new SimulacaoService().prepararCidade(usuario.getCidade(), usuario.getUf());
-        return UsuarioResponse.de(usuario, false, cidadePreparada);
+        // Já entra logada: o front não precisa chamar /auth/login logo depois do cadastro
+        return UsuarioResponse.de(usuario, false, cidadePreparada).comToken(TokenUtil.gerar(usuario.getId()));
     }
 
     /** Dados da própria conta. */
@@ -113,8 +116,7 @@ public class UsuarioService {
         }
         // Depois da atualização confirmada (outra transação): se falhar, a mudança de cidade vale mesmo assim
         boolean cidadePreparada = new SimulacaoService().prepararCidade(atualizado.cidade(), atualizado.uf());
-        return new UsuarioResponse(atualizado.id(), atualizado.nome(), atualizado.email(), atualizado.cidade(),
-                atualizado.uf(), atualizado.criadoEm(), atualizado.perfilPreenchido(), cidadePreparada);
+        return atualizado.comCidadePreparada(cidadePreparada);
     }
 
     /** Lista pública de usuários (apenas nome, cidade e UF). */

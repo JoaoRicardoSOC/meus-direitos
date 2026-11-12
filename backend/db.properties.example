@@ -27,3 +27,12 @@ simulacao.chave=troque-esta-chave
 # Chave para criar, editar e excluir temas do catálogo de direitos (cabeçalho X-Chave-Admin; MD_ADMIN_CHAVE).
 # Sem chave, o catálogo fica somente leitura. Use um valor difícil de adivinhar e não o versione.
 admin.chave=troque-esta-chave-admin
+
+# Segredo que assina os tokens de sessão devolvidos no login e no cadastro (MD_TOKEN_SEGREDO).
+# Use um valor longo e aleatório (pelo menos 32 caracteres) e não o versione. Para gerar um, por exemplo:
+#   PowerShell: $b = New-Object byte[] 48; [Security.Cryptography.RandomNumberGenerator]::Create().GetBytes($b); [Convert]::ToBase64String($b)
+#   Linux/macOS/Git Bash: openssl rand -base64 48
+# Sem segredo (ou com menos de 32 caracteres), a API gera um aleatório ao subir e avisa no console:
+# funciona, mas todo mundo precisa entrar de novo a cada reinício da API.
+# Fica vazio de propósito: um valor de exemplo copiado sem trocar seria conhecido por qualquer pessoa.
+token.segredo=
