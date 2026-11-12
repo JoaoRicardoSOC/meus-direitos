@@ -9,32 +9,33 @@ import { haQuantoTempo } from '../../utils/formatos.js';
 export default function ComentarioEnviado({ comentario, aoVoltar }) {
   const titulo = useRef(null);
 
-  // leva o foco para o título, para quem usa leitor de tela saber que o envio deu certo
+  // a confirmação substitui a tela: topo na hora e foco no título, para o leitor anunciar o envio
   useEffect(() => {
-    window.scrollTo(0, 0);
-    titulo.current?.focus();
+    window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+    titulo.current?.focus({ preventScroll: true });
   }, []);
 
   return (
     <>
       <Cabecalho titulo="Comentários" aoVoltar={aoVoltar} />
-      <p className="md-sobretitulo">Conversa do bairro</p>
-      <h2 className="md-titulo" ref={titulo} tabIndex={-1} style={{ outline: 'none' }}>
-        Comentário enviado
-      </h2>
-      <p className="md-corpo">Sua participação ajuda a dar visibilidade.</p>
+      <div className="md-celebracao d-flex flex-column" style={{ gap: 'inherit' }}>
+        <h2 className="md-titulo" ref={titulo} tabIndex={-1}>
+          Comentário enviado
+        </h2>
+        <p className="md-corpo">Sua participação na conversa do bairro ajuda a dar visibilidade ao problema.</p>
 
-      <article className="md-card">
-        <p className="md-negrito">
-          {comentario.autor.nome} · {haQuantoTempo(comentario.criadoEm)}
-        </p>
-        <p className="md-corpo">{comentario.texto}</p>
-        <span className="md-selo">Enviado</span>
-      </article>
+        <article className="md-card">
+          <p className="md-comentario-meta">
+            <span className="md-comentario-autor">{comentario.autor.nome}</span> · {haQuantoTempo(comentario.criadoEm)}
+          </p>
+          <p className="md-corpo-tinta">{comentario.texto}</p>
+          <span className="md-selo">Enviado</span>
+        </article>
 
-      <button type="button" className="md-botao md-botao-primario" onClick={aoVoltar}>
-        Voltar à denúncia
-      </button>
+        <button type="button" className="md-botao md-botao-primario" onClick={aoVoltar}>
+          Voltar à denúncia
+        </button>
+      </div>
     </>
   );
 }
