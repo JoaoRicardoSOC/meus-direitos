@@ -132,7 +132,7 @@ Para o app nunca parecer vazio na avaliação, a primeira conta de uma cidade di
 
 ### 4.5 Moderação
 
-Comentários com termos ofensivos comuns são recusados (filtro simples por palavra inteira). Qualquer pessoa logada pode reportar o comentário de outra; com **3 reportes** ele some da conversa e das contagens, sem ser apagado do banco.
+Comentários com termos ofensivos comuns são recusados (filtro simples por palavra inteira). Qualquer pessoa logada pode reportar o comentário de outra; com **3 reportes** ele some da conversa e das contagens, sem ser apagado do banco, e não pode mais ser editado nem reportado (o autor ainda pode excluí-lo).
 
 ## 5. Decisões de arquitetura
 

@@ -26,7 +26,7 @@ O perfil demográfico **nunca** aparece para outras pessoas nem em relatórios: 
 | **Consentimento específico** para dados sensíveis | O questionário só é salvo com a caixa "Concordo em compartilhar estas respostas para receber orientações sobre possíveis direitos. Posso apagá-las quando quiser." marcada. A API recusa (400 em `consentimento`) se houver resposta sem o consentimento |
 | **Necessidade** (só o necessário) | Todas as perguntas do questionário podem ser puladas, e há "Prefiro não informar" |
 | **Finalidade** | As respostas servem só para indicar temas de direitos e ordenar o feed; não são vendidas, exportadas nem usadas em relatórios |
-| **Eliminação a pedido** | A API apaga só o questionário com `DELETE /usuarios/perfil` (no app ainda não há botão para isso: ver a seção 6); "Excluir minha conta" (`POST /usuarios/me/exclusao`, com a senha) apaga a conta, o questionário, as denúncias da pessoa e tudo ligado a elas, além dos votos, comentários, confirmações e reportes que ela fez |
+| **Eliminação a pedido** | "Apagar minhas respostas", no fim da tela Meus Direitos (`DELETE /usuarios/perfil`), apaga só o questionário e o rascunho dele no navegador; "Excluir minha conta" (`POST /usuarios/me/exclusao`, com a senha) apaga a conta, o questionário, as denúncias da pessoa e tudo ligado a elas, além dos votos, comentários, confirmações e reportes que ela fez |
 | **Transparência** | O conteúdo de demonstração é marcado como "Exemplo", e o painel da cidade diz quantas denúncias são de exemplo |
 | **Acesso e correção** | A pessoa vê e edita os dados da conta e as respostas do questionário a qualquer momento |
 
@@ -71,9 +71,8 @@ Se o navegador bloquear o armazenamento (aba privada restrita), o app guarda a s
 - **Sem HTTPS no protótipo.** Em produção, a API precisa ficar atrás de HTTPS; sem isso, o token e a senha trafegam em texto aberto na rede.
 - **Token sem revogação individual.** Sair apaga o token do navegador, mas uma cópia continuaria válida até vencer. Só excluir a conta (ou trocar o segredo) o invalida na hora. Uma lista de tokens revogados exigiria uma tabela nova.
 - **Limite de login em memória.** Zera quando a API reinicia e não seria compartilhado entre várias instâncias.
-- **Filtro de termos simples.** Grafias disfarçadas passam, e um comentário oculto por reportes não tem revisão humana.
+- **Filtro de termos simples.** Grafias disfarçadas passam, e um comentário oculto por reportes não tem revisão humana (enquanto oculto, ele não pode ser editado nem reportado de novo).
 - **Token no `localStorage`.** Um script malicioso que rodasse na página poderia lê-lo. O risco é reduzido porque o app não usa HTML vindo de fora (o React escapa os textos) e não carrega scripts de terceiros.
-- **Apagar só o questionário pelo app.** A caixa de consentimento diz que a pessoa pode apagar as respostas quando quiser. A API já faz isso (`DELETE /usuarios/perfil`), mas o app ainda não tem o botão: hoje, pelo app, só dá para editar as respostas ou excluir a conta inteira.
 - **Dados de exemplo** convivem com os reais nas mesmas tabelas, separados pela marca `st_simulado`.
 
 ## 7. Como relatar um problema de segurança
