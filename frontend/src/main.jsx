@@ -1,7 +1,9 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { HashRouter } from 'react-router-dom';
-import 'bootstrap/dist/css/bootstrap.min.css';
+// Do Bootstrap, só o reset e os utilitários de layout (d-flex, gap-*, m-*...): o resto vem do tema
+import 'bootstrap/dist/css/bootstrap-reboot.min.css';
+import 'bootstrap/dist/css/bootstrap-utilities.min.css';
 import './styles/tema.css';
 import { SessaoProvider } from './contexts/SessaoContext.jsx';
 import App from './App.jsx';
