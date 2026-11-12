@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import Tela from '../../components/Tela.jsx';
 import Cabecalho from '../../components/Cabecalho.jsx';
@@ -8,6 +8,7 @@ import Mensagem from '../../components/Mensagem.jsx';
 import { api } from '../../services/api.js';
 import { useSessao } from '../../contexts/SessaoContext.jsx';
 import { validar, validarCampos } from '../../utils/validacao.js';
+import { focarPrimeiroErro, irParaOTopo } from '../../utils/foco.js';
 import iconeCheck from '../../assets/icones/check.svg';
 import './perfil.css';
 
@@ -34,9 +35,11 @@ export default function EditarPerfil() {
   const [mensagem, setMensagem] = useState('');
   const [enviando, setEnviando] = useState(false);
   const [salvo, setSalvo] = useState(null);
+  const formRef = useRef(null);
 
   function mudar(parcial) {
     setValores((v) => ({ ...v, ...parcial }));
+    setMensagem('');
     setErros((atual) => {
       const copia = { ...atual };
       Object.keys(parcial).forEach((campo) => delete copia[campo]);
@@ -49,7 +52,11 @@ export default function EditarPerfil() {
     setMensagem('');
     const encontrados = validarCampos(valores, REGRAS);
     setErros(encontrados);
-    if (Object.keys(encontrados).length > 0) return;
+    if (Object.keys(encontrados).length > 0) {
+      setMensagem('Confira os campos destacados.');
+      focarPrimeiroErro(formRef.current);
+      return;
+    }
 
     setEnviando(true);
     try {
@@ -65,9 +72,11 @@ export default function EditarPerfil() {
     } catch (erro) {
       if (erro.status === 409) {
         setErros({ email: erro.message }); // e-mail de outra conta
+        focarPrimeiroErro(formRef.current);
       } else {
         setErros(erro.porCampo());
         setMensagem(erro.message);
+        focarPrimeiroErro(formRef.current);
       }
     } finally {
       setEnviando(false);
@@ -79,10 +88,13 @@ export default function EditarPerfil() {
   return (
     <Tela titulo="Editar meus dados">
       <Cabecalho titulo="Editar meus dados" voltarPara="/perfil" />
-      <h2 className="md-titulo">Vamos atualizar?</h2>
-      <p className="md-corpo">Mantenha suas informações em dia.</p>
+      <div className="d-flex flex-column gap-2">
+        <h2 className="md-titulo">Vamos atualizar?</h2>
+        <p className="md-corpo">Mantenha suas informações em dia.</p>
+      </div>
 
-      <form className="d-flex flex-column gap-3" onSubmit={salvar} noValidate>
+      <form ref={formRef} className="md-grupo d-flex flex-column gap-3" onSubmit={salvar} noValidate>
+        <Mensagem>{mensagem}</Mensagem>
         <Campo
           rotulo="Nome"
           value={valores.nome}
@@ -102,14 +114,14 @@ export default function EditarPerfil() {
         />
         <CampoCidade cidade={valores.cidade} uf={valores.uf} aoMudar={mudar} erros={erros} />
 
-        <Mensagem>{mensagem}</Mensagem>
-
-        <button type="submit" className="md-botao md-botao-primario" disabled={enviando}>
-          {enviando ? 'Salvando…' : 'Salvar alterações'}
-        </button>
-        <Link to="/perfil" className="md-botao md-botao-secundario">
-          Cancelar
-        </Link>
+        <div className="md-grupo d-flex flex-column gap-3">
+          <button type="submit" className="md-botao md-botao-primario" disabled={enviando}>
+            {enviando ? 'Salvando…' : 'Salvar alterações'}
+          </button>
+          <Link to="/perfil" className="md-botao md-botao-secundario">
+            Cancelar
+          </Link>
+        </div>
       </form>
     </Tela>
   );
@@ -120,19 +132,25 @@ export default function EditarPerfil() {
  * e aparecem no perfil). "Voltar ao perfil" e a seta levam para /perfil.
  */
 function DadosSalvos() {
+  // a confirmação substitui o formulário: volta ao topo e foca o título
+  useEffect(() => {
+    irParaOTopo();
+  }, []);
+
   return (
     <Tela titulo="Dados atualizados" comNavegacao>
       <Cabecalho titulo="Meu perfil" voltarPara="/perfil" />
       <div className="md-espaco-confirmacao" aria-hidden="true" />
-      <img src={iconeCheck} alt="" width="48" height="48" />
-      <div role="status" className="md-confirmacao-textos">
-        <p className="md-sobretitulo">Tudo certo</p>
-        <h2 className="md-titulo">Dados atualizados</h2>
-        <p className="md-corpo">Suas alterações foram salvas na demonstração.</p>
+      <div className="md-celebracao md-confirmacao">
+        <img src={iconeCheck} alt="" width="48" height="48" className="md-check" />
+        <div role="status" className="md-confirmacao-textos">
+          <h2 className="md-titulo">Dados atualizados</h2>
+          <p className="md-corpo">Suas alterações foram salvas.</p>
+        </div>
+        <Link to="/perfil" className="md-grupo md-botao md-botao-primario">
+          Voltar ao perfil
+        </Link>
       </div>
-      <Link to="/perfil" className="md-botao md-botao-primario">
-        Voltar ao perfil
-      </Link>
     </Tela>
   );
 }
