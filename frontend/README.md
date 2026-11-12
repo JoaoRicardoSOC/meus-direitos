@@ -30,13 +30,15 @@ VITE_API_URL=http://localhost:8080/api
 
 ## 3. Entrega: abrir o `index.html` direto no navegador
 
-O checklist da FIAP pede que o `index.html` abra sem servidor. Para isso:
+O checklist da FIAP pede que o `index.html` abra sem servidor. A pasta **`dist/` já vem pronta no repositório**: com a API rodando, abra `dist/index.html` no navegador (duplo clique).
+
+Depois de mudar o código, gere a `dist/` de novo antes de entregar:
 
 ```bash
 npm run build
 ```
 
-e abra `dist/index.html` no navegador (duplo clique).
+Esse caminho foi testado de ponta a ponta com a API e o Oracle reais, abrindo o `index.html` pelo `file://`: cadastro, feed, votos, comentários, resolução, nova denúncia, questionário, canais oficiais e exclusão da conta.
 
 O projeto já está preparado para isso:
 - `base: './'` no `vite.config.js`: todos os caminhos são relativos;
