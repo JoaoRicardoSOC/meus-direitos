@@ -35,6 +35,7 @@ Ela grava e lê os dados de um banco **Oracle** via **JDBC**.
 | `token.segredo` | `MD_TOKEN_SEGREDO` | recomendada | sem segredo (ou com menos de 32 caracteres), a API gera um aleatório ao subir: as sessões caem a cada reinício |
 
 - A variável de ambiente tem prioridade sobre o arquivo.
+- O tamanho do pool de conexões vem só da variável de ambiente `MD_DB_POOL` (padrão `5`, de 1 a 50).
 - O `db.properties` está no `.gitignore`: **a senha do banco nunca vai para o repositório.**
 - Se faltar usuário ou senha, a API avisa no console ao subir.
 
@@ -58,11 +59,31 @@ mvn clean compile exec:java
 mvn test
 ```
 
-São 68 testes JUnit 5 que não precisam de banco. Eles cobrem:
+Os testes de unidade (JUnit 5) não precisam de banco. Eles cobrem:
 - as regras de domínio (feed, resolução pela comunidade, tags do perfil);
 - os validadores e o hash de senha;
 - a tradução de erros do Oracle;
-- o gerador de conteúdo de demonstração.
+- o gerador de conteúdo de demonstração;
+- o pool de conexões (com uma `Connection` falsa, sem banco);
+- o filtro de termos ofensivos dos comentários;
+- a igualdade entre a expressão de cidade das consultas e a dos índices do `script.sql`.
+
+#### Testes de integração (Oracle)
+
+`src/test/java/.../integracao/DaosIntegracaoTest` testa os DAOs contra o Oracle de verdade: usuário, denúncia no
+feed e na busca com a cidade escrita sem acento, votos e placar, comentário oculto após 3 reportes, resumo da
+cidade e a ordem de exclusão da conta. **Nada fica gravado:** cada teste usa uma única conexão com
+`autoCommit=false` e termina com ROLLBACK (só as sequences avançam). Os dados usam uma cidade fictícia e e-mails
+com sufixo aleatório.
+
+Eles só rodam com a variável `MD_INTEGRACAO=true` (e com o `db.properties` preenchido); sem ela, o `mvn test`
+os marca como ignorados:
+
+```bash
+MD_INTEGRACAO=true mvn test                          # Git Bash / Linux / macOS
+$env:MD_INTEGRACAO="true"; mvn test                  # PowerShell
+MD_INTEGRACAO=true mvn test -Dtest=DaosIntegracaoTest   # só os de integração
+```
 
 ## 4. Arquitetura
 
@@ -117,7 +138,7 @@ O projeto usa **apenas** as tecnologias do curso. O `pom.xml` tem só estas depe
 - `ojdbc8`;
 - `junit-jupiter`.
 
-Não há Spring, Hibernate/JPA, Lombok, Bean Validation nem pool de conexões.
+Não há Spring, Hibernate/JPA, Lombok, Bean Validation nem biblioteca de pool de conexões (o pool é feito com o JDK, ver abaixo).
 
 Alguns recursos vêm da **própria especificação JAX-RS ou do JDK**, sem nenhuma dependência nova:
 
@@ -132,6 +153,7 @@ Alguns recursos vêm da **própria especificação JAX-RS ou do JDK**, sem nenhu
 | `java.util.Properties` + `System.getenv` | Tirar a senha do Oracle do código e do git | JDK |
 | `java.util.logging` | Registrar erros inesperados no console (o cliente recebe só a mensagem amigável) | JDK |
 | `addBatch` / `executeBatch` | Gravar o conteúdo de demonstração de uma cidade nova em ~1–2 s (antes ~7,5 s) | A mesma API JDBC do `PreparedStatement` |
+| `java.lang.reflect.Proxy` + `BlockingQueue` + `Semaphore` | Pool de conexões: reaproveitar as conexões com o Oracle em vez de abrir uma por requisição | JDK |
 
 Outras decisões:
 - **Token de sessão assinado.** O login (`POST /auth/login`) e o cadastro (`POST /usuarios`) devolvem o usuário com o campo `token`, e o front o envia nas rotas 🔒 em `Authorization: Bearer <token>`. Formato: `base64url(id + "." + expiraEm) + "." + base64url(HMAC-SHA256(segredo, parte1))`, válido por **7 dias**. A assinatura é conferida em tempo constante e, em toda rota 🔒, a API confere também se o usuário ainda existe (conta excluída = 401). Sem o segredo (`token.segredo`), ninguém consegue trocar o id nem estender a validade. No Insomnia: faça o login, copie o `token` e use *Auth → Bearer Token*.
@@ -140,7 +162,30 @@ Outras decisões:
 - **Cabeçalhos de segurança.** Toda resposta traz `X-Content-Type-Options: nosniff`, `Referrer-Policy: no-referrer`, `X-Frame-Options: DENY` e `Cache-Control: no-store` (dados pessoais não ficam em cache). As listas fixas (`/categorias`, `/status-denuncia`, `/racas-cor`, `/deficiencias`, `/percursos-escolares`) são a exceção: `Cache-Control: public, max-age=86400`.
 - **Consentimento no questionário.** `PUT /usuarios/perfil` só grava dados sensíveis (data de nascimento, raça/cor, deficiência, percurso escolar, baixa renda) com `consentimento: true`; sem ele, 400 no campo `consentimento`.
 - **IPv4 e IPv6 em loopback.** Com `server.uri` em `localhost`/`127.0.0.1`, a API também escuta em `::1` na mesma porta. No Windows, navegadores e o Node tentam `::1` primeiro e esperariam ~2 s até cair para o IPv4. Se a máquina não tiver IPv6, a API só avisa no console.
-- **Conexão por operação** com try-with-resources: nenhuma conexão fica aberta entre requisições.
+- **Pool de conexões só com o JDK** (`factory.PoolConexoes`). Abrir uma conexão com o Oracle da FIAP custa
+  centenas de milissegundos, e antes cada requisição abria uma. Agora até `MD_DB_POOL` conexões (padrão 5) ficam
+  abertas numa `BlockingQueue` e são reaproveitadas:
+  - `ConnectionFactory.getConnection()` entrega uma conexão livre (testada com `isValid(2)`; se o banco a
+    derrubou, é descartada e outra é aberta) ou abre uma nova se ainda houver vaga;
+  - com todas em uso, espera até 10 s e então responde 503 ("banco indisponível"), sem travar o servidor;
+  - quem chama recebe um **proxy** da conexão: o código continua usando try-with-resources, e o `close()` do
+    proxy desfaz o que ficou sem COMMIT (ROLLBACK), volta ao autocommit e devolve a conexão ao pool.
+    Fechar duas vezes devolve uma vez só. `Transacao` e os DAOs não mudaram.
+- **Índice para a busca por cidade.** A cidade é comparada sem acentos nem maiúsculas
+  (`JdbcUtil.cidadeIgual`: `TRANSLATE(UPPER(TRIM(...)))`), e a API junta os espaços repetidos antes de gravar.
+  Assim a expressão só usa funções puras: com `REGEXP_REPLACE` o Oracle recusa o índice (ORA-01743).
+  O `script.sql` cria índices baseados em função com exatamente essa expressão, mais a
+  UF, em `TB_DENUNCIA` e `TB_USUARIO` (`IX_DENUNCIA_CIDADE_CHAVE`, `IX_USUARIO_CIDADE_CHAVE`). O Oracle só usa o
+  índice se a expressão da consulta for idêntica; um teste de unidade confere isso. Se o Oracle recusar o índice,
+  o script só registra o aviso e a API funciona igual, sem ele.
+- **Moderação de comentários.**
+  - Filtro simples de termos ofensivos (`service.moderacao.FiltroTermosOfensivos`): ao criar ou editar um
+    comentário com palavrão ou ofensa comum, a API responde 400 no campo `texto`. Compara palavra inteira, sem
+    acentos e sem diferenciar maiúsculas. Não é moderação completa: grafias disfarçadas passam.
+  - Reporte pela comunidade: `POST /comentarios/{id}/reporte` (🔒, 204). Cada pessoa reporta um comentário uma
+    vez (chave primária em `TB_REPORTE_COMENTARIO`); reportar o próprio comentário dá 422. Com **3 reportes** o
+    comentário some da conversa para todos e deixa de contar no total de comentários da denúncia e nos relatórios.
+  - Ao excluir comentário, denúncia ou conta, os reportes ligados são apagados antes, na mesma transação.
 - **"Cidade viva".** Na primeira conta de uma cidade, a API cria moradores e denúncias de exemplo (marcados como `simulado`), para que o avaliador veja votos, comentários e resolução funcionando. Esses moradores não fazem login, não aparecem nas listas de usuários e podem ser removidos com `DELETE /api/simulacao`.
 
 ## 6. Limitações conhecidas
@@ -148,7 +193,9 @@ Outras decisões:
 - O token de sessão não pode ser revogado antes de vencer (7 dias): sair no front apaga o token do navegador, mas uma cópia continuaria válida. A exclusão da conta invalida o token na hora (a API confere se o usuário existe). O próximo passo seria uma lista de sessões no banco.
 - O limite de tentativas de login fica em memória: zera ao reiniciar a API e não seria compartilhado entre várias instâncias.
 - Não há perfis de usuário: a administração do catálogo de direitos usa uma chave fixa (`X-Chave-Admin`).
-- A API abre uma conexão por requisição, sem pool. É suficiente para o MVP.
+- O pool de conexões é simples: tamanho fixo, sem métricas nem tempo máximo de vida da conexão. Uma conexão
+  esquecida aberta (sem `close()`) ocupa a vaga para sempre; por isso todo acesso passa por `Transacao`.
+- Comentário oculto por reportes não tem revisão humana nem recurso: só volta se os reportes forem apagados no banco.
 - A cidade é comparada por texto, ignorando acentos, maiúsculas e espaços repetidos ("Sao Paulo" = "São Paulo"). O próximo passo seria uma tabela de municípios do IBGE.
 - Não há upload de imagem: a denúncia guarda o caminho de uma das fotos de demonstração do front (`img/demo/...`).
 - Uma requisição `GET` com corpo é recusada pelo servidor Grizzly com 400 sem JSON, antes de chegar à API. Navegadores não enviam corpo em `GET`.
