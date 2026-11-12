@@ -19,8 +19,8 @@ import java.util.List;
  * Relatórios da cidade ("Números da cidade" e rankings), para dar visibilidade aos problemas
  * e medir o impacto (ODS 11).
  * <p>
- * A cidade vem de {@code ?cidade=&uf=}; se não for informada e houver usuário logado,
- * usa a cidade do cadastro dele.
+ * A cidade vem de {@code ?cidade=&uf=} (os dois juntos; só um deles responde 400 no que faltou);
+ * se nenhum for informado e houver usuário logado, usa a cidade do cadastro dele.
  */
 public class RelatorioService {
 
@@ -73,8 +73,15 @@ public class RelatorioService {
      * @throws ValidacaoException se a cidade não puder ser determinada ou a UF for inválida
      */
     Cidade resolverCidade(String cidade, String uf, Long idLeitor) {
-        boolean informada = cidade != null && !cidade.isBlank() && uf != null && !uf.isBlank();
-        if (informada) {
+        boolean temCidade = cidade != null && !cidade.isBlank();
+        boolean temUf = uf != null && !uf.isBlank();
+        if (temCidade != temUf) {
+            // Só um dos dois: avisa o que falta em vez de ignorar o valor e usar a cidade do login
+            String faltando = temCidade ? "uf" : "cidade";
+            throw new ValidacaoException("Informe a cidade e a UF juntas.",
+                    List.of(new ErroCampo(faltando, "Campo obrigatório quando o outro é informado.")));
+        }
+        if (temCidade) {
             new Validador().tamanho("cidade", cidade, 2, 80).uf("uf", uf).lancarSeHouverErros();
             return new Cidade(cidade.trim(), uf.trim().toUpperCase());
         }
