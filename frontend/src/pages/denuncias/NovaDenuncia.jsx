@@ -5,6 +5,7 @@ import Cabecalho from '../../components/Cabecalho.jsx';
 import Campo from '../../components/Campo.jsx';
 import Mensagem, { Carregando } from '../../components/Mensagem.jsx';
 import { api } from '../../services/api.js';
+import { enderecoPorPosicao, obterPosicao } from '../../services/localizacao.js';
 import { useSessao } from '../../contexts/SessaoContext.jsx';
 import { obrigatorio, tamanho, validarCampos } from '../../utils/validacao.js';
 import { focarPrimeiroErro } from '../../utils/foco.js';
@@ -104,6 +105,8 @@ export default function NovaDenuncia() {
   const [enviando, setEnviando] = useState(false);
   const [carregando, setCarregando] = useState(editando);
   const [erroCarga, setErroCarga] = useState('');
+  // "Usar minha localização": { estado: 'buscando' | 'ok' | 'erro', texto }
+  const [localizacao, setLocalizacao] = useState(null);
 
   // Etapa atual, lida da URL. "publicada" só existe com a resposta do POST no estado do histórico.
   const passoNaUrl = parametros.get('passo');
@@ -204,6 +207,34 @@ export default function NovaDenuncia() {
   function voltarAoFormulario() {
     if (local.state?.doFormulario) navegar(-1);
     else navegar({ search: '' }, { replace: true });
+  }
+
+  /**
+   * Preenche Endereço ("Rua, número") e Bairro a partir da posição do aparelho (Nominatim reverso).
+   * Só troca o que veio do mapa: se a rua não vier, o que a pessoa digitou fica. Ela revisa antes de publicar.
+   */
+  async function usarMinhaLocalizacao() {
+    if (localizacao?.estado === 'buscando') return;
+    setLocalizacao({ estado: 'buscando', texto: 'Localizando…' });
+    try {
+      const posicao = await obterPosicao();
+      const { endereco, bairro } = await enderecoPorPosicao(posicao);
+      const parcial = {};
+      if (endereco) parcial.endereco = endereco.slice(0, 150);
+      if (bairro) parcial.bairro = bairro.slice(0, 80);
+      if (Object.keys(parcial).length > 0) mudar(parcial);
+      setLocalizacao(
+        endereco
+          ? { estado: 'ok', texto: 'Endereço preenchido pela sua localização. Confira antes de publicar.' }
+          : { estado: 'erro', texto: 'Não achamos a rua desta posição. Digite o endereço.' },
+      );
+    } catch (erro) {
+      const textos = {
+        negada: 'Localização negada. Digite o endereço.',
+        'sem-suporte': 'Este navegador não informa a localização. Digite o endereço.',
+      };
+      setLocalizacao({ estado: 'erro', texto: textos[erro.message] ?? 'Não foi possível localizar agora. Digite o endereço.' });
+    }
   }
 
   function preencherExemplo() {
@@ -364,7 +395,8 @@ export default function NovaDenuncia() {
           </div>
 
           {/* O Figma tem só "Endereço"; a API pede endereço e bairro separados (pedido 2).
-              Sem preenchimento automático: a denúncia é pública e não deve puxar o endereço de casa. */}
+              Sem autocompletar do navegador: a denúncia é pública e não deve puxar o endereço de casa.
+              A localização só é usada quando a pessoa toca em "Usar minha localização". */}
           <div className="md-campo">
             <label htmlFor={`${idForm}-endereco`} className="md-campo-rotulo">
               Endereço
@@ -379,7 +411,11 @@ export default function NovaDenuncia() {
                 autoComplete="off"
                 maxLength={150}
                 aria-invalid={erros.endereco ? true : undefined}
-                aria-describedby={erros.endereco ? `${idForm}-erro-endereco` : undefined}
+                aria-describedby={
+                  [erros.endereco ? `${idForm}-erro-endereco` : null, localizacao ? `${idForm}-localizacao` : null]
+                    .filter(Boolean)
+                    .join(' ') || undefined
+                }
               />
               <span className="md-icone-campo" aria-hidden="true">
                 <img src={iconePin} alt="" width="20" height="20" />
@@ -390,6 +426,23 @@ export default function NovaDenuncia() {
                 {erros.endereco}
               </p>
             )}
+            <div className="md-usar-localizacao">
+              <button
+                type="button"
+                className="md-acao-texto"
+                onClick={usarMinhaLocalizacao}
+                aria-disabled={localizacao?.estado === 'buscando' || undefined}
+              >
+                Usar minha localização
+              </button>
+              <p
+                id={`${idForm}-localizacao`}
+                className={localizacao?.estado === 'erro' ? 'md-erro-campo' : 'md-legenda'}
+                role="status"
+              >
+                {localizacao?.texto}
+              </p>
+            </div>
           </div>
 
           <Campo

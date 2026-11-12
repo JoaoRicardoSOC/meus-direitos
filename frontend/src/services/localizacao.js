@@ -1,6 +1,7 @@
 /**
- * Localização para a tela 32 (Canais oficiais): onde a pessoa está, o portal da prefeitura
- * dessa cidade e a busca por CRAS próximos.
+ * Localização: usada na tela 32 (Canais oficiais: onde a pessoa está, o portal da prefeitura
+ * dessa cidade e a busca por CRAS próximos) e na nova denúncia ("Usar minha localização":
+ * rua, número e bairro a partir da posição).
  *
  * Serviços usados (públicos e sem chave):
  * - Geolocalização do navegador: pede permissão à pessoa.
@@ -67,6 +68,21 @@ export async function cidadePorPosicao({ lat, lon }) {
     format: 'jsonv2', lat, lon, zoom: 10, extratags: 1, addressdetails: 1, 'accept-language': 'pt-BR',
   });
   return lerLugar(await buscarJson(`${NOMINATIM}/reverse?${parametros}`));
+}
+
+/**
+ * Coordenadas → endereço da nova denúncia: { endereco: "Rua, número", bairro }.
+ * Zoom 18 = nível de edifício. Qualquer parte pode vir vazia (rua sem nome no mapa, sem número).
+ */
+export async function enderecoPorPosicao({ lat, lon }) {
+  const parametros = new URLSearchParams({
+    format: 'jsonv2', lat, lon, zoom: 18, addressdetails: 1, 'accept-language': 'pt-BR',
+  });
+  const lugar = await buscarJson(`${NOMINATIM}/reverse?${parametros}`);
+  const partes = lugar?.address ?? {};
+  const endereco = [partes.road, partes.house_number].filter(Boolean).join(', ');
+  const bairro = partes.suburb ?? partes.neighbourhood ?? partes.city_district ?? '';
+  return { endereco, bairro };
 }
 
 /** Nome da cidade e UF (do cadastro) → mesmos dados, quando não há localização. */

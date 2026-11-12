@@ -227,6 +227,20 @@
   background: var(--md-verde);
 }
 
+/* 12 · "Usar minha localização" logo abaixo do Endereço, com o andamento ou o erro ao lado */
+.md-usar-localizacao {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  column-gap: 12px;
+  margin-top: -4px; /* o botão já tem 44px de alvo: aproxima do campo */
+}
+
+.md-usar-localizacao .md-acao-texto[aria-disabled='true'] {
+  opacity: 0.6;
+  cursor: progress;
+}
+
 /* Hover só em quem tem mouse (no celular ele fica preso) */
 @media (hover: hover) and (pointer: fine) {
   .md-entrada-botao:hover {
