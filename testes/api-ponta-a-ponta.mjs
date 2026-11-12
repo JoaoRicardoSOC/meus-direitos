@@ -131,16 +131,19 @@ try {
   const c = await criarConta('c');
   const d = await criarConta('d');
   const reportes = [];
-  for (const conta of [b, c, d]) {
+  for (const conta of [b, b, c, d]) {
     reportes.push((await chamar('POST', `/comentarios/${idComentario}/reporte`, { token: conta.token })).status);
   }
-  const repetido = await chamar('POST', `/comentarios/${idComentario}/reporte`, { token: b.token });
-  verificar('Reportes aceitos e idempotentes (204)', [...reportes, repetido.status].every((s) => s === 204), reportes.join(','));
+  verificar('Reportes aceitos e idempotentes (204)', reportes.every((s) => s === 204), reportes.join(','));
   const lista = await chamar('GET', `/denuncias/${idDenuncia}/comentarios`, { token: a.token });
   const detalhe = await chamar('GET', `/denuncias/${idDenuncia}`);
   verificar('Comentário com 3 reportes some da conversa e do total',
     Array.isArray(lista.dados) && !lista.dados.some((x) => x.id === idComentario) && detalhe.dados?.comentarios === 0,
     `${lista.dados?.length} na lista; total ${detalhe.dados?.comentarios}`);
+  const editarOculto = await chamar('PUT', `/comentarios/${idComentario}`, { token: a.token, corpo: { texto: 'Texto novo.' } });
+  const reportarOculto = await chamar('POST', `/comentarios/${idComentario}/reporte`, { token: b.token });
+  verificar('Comentário oculto não pode ser editado nem reportado (404)',
+    editarOculto.status === 404 && reportarOculto.status === 404, `${editarOculto.status} / ${reportarOculto.status}`);
 
   // 9. Questionário exige consentimento quando há dado sensível
   const semConsentimento = await chamar('PUT', '/usuarios/perfil', { token: a.token, corpo: { baixaRenda: true } });
@@ -155,6 +158,8 @@ try {
   const resumo = await chamar('GET', '/relatorios/resumo', { token: a.token });
   const porCategoria = await chamar('GET', '/relatorios/categorias', { token: a.token });
   verificar('Relatórios da cidade', resumo.status === 200 && porCategoria.status === 200, `${resumo.dados?.denuncias ?? '?'} denúncias`);
+  const soCidade = await chamar('GET', '/relatorios/resumo?cidade=Campinas', { token: a.token });
+  verificar('Relatório com só a cidade → 400 na UF', soCidade.status === 400 && temErroNoCampo(soCidade, 'uf'));
 
   // 11. Limite de tentativas de login (conta D: 5 erros e a 6ª tentativa, mesmo certa, é bloqueada)
   for (let i = 0; i < 5; i++) {
