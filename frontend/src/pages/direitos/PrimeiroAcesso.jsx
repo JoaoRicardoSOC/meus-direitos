@@ -1,6 +1,5 @@
 import { Link } from 'react-router-dom';
 import Tela from '../../components/Tela.jsx';
-import Cabecalho from '../../components/Cabecalho.jsx';
 import iconeEscudo from '../../assets/icones/escudo-destaque.svg';
 import iconeCadeado from '../../assets/icones/cadeado.svg';
 import './PrimeiroAcesso.css';
@@ -8,12 +7,14 @@ import './PrimeiroAcesso.css';
 /**
  * 22 · Direitos / Primeiro acesso.
  * Mostrada em "Meus Direitos" enquanto a pessoa não respondeu o questionário (GET /usuarios/perfil → 404).
+ * É a raiz da aba: sem seta de voltar, com o título da aba como na tela de direitos.
  */
 export default function PrimeiroAcesso() {
   return (
     <Tela titulo="Meus Direitos" comNavegacao>
-      <Cabecalho titulo="Meus Direitos" voltarPara="/cidade" />
-      <div className="md-primeiro-acesso-espaco" />
+      <h1 className="md-titulo" tabIndex={-1} data-foco-tela>
+        Meus Direitos
+      </h1>
 
       <section className="md-primeiro-acesso-destaque" aria-labelledby="primeiro-acesso-titulo">
         <img src={iconeEscudo} alt="" width="44" height="44" />
@@ -30,6 +31,7 @@ export default function PrimeiroAcesso() {
         realidade. É rápido.
       </p>
 
+      {/* Aviso de privacidade: o cadeado fica só aqui */}
       <div className="md-informacao">
         <img src={iconeCadeado} alt="" width="20" height="20" />
         <p className="md-legenda">
@@ -37,12 +39,14 @@ export default function PrimeiroAcesso() {
         </p>
       </div>
 
-      <Link to="/direitos/questionario" className="md-botao md-botao-primario">
-        Conhecer meus direitos
-      </Link>
-      <Link to="/cidade" className="md-botao md-botao-secundario">
-        Agora não
-      </Link>
+      <div className="md-primeiro-acesso-acoes md-grupo">
+        <Link to="/direitos/questionario" className="md-botao md-botao-primario">
+          Conhecer meus direitos
+        </Link>
+        <Link to="/cidade" className="md-botao md-botao-secundario">
+          Agora não
+        </Link>
+      </div>
     </Tela>
   );
 }
