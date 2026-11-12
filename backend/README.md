@@ -101,7 +101,7 @@ factory   (ConnectionFactory → Oracle)
 - regra de negócio → 422
 - banco fora do ar → 503
 
-Tudo isso foi testado com uma bateria de 87 casos e com o banco desligado: o servidor não cai.
+Esses casos foram testados manualmente, inclusive com o banco desligado: o servidor não cai. Para repetir os testes, use a pasta **"10 · Erros (robustez)"** da coleção do Insomnia (14 requisições que provocam os erros acima, exceto o 503, que exige desligar o banco).
 
 **Regra de negócio central: o feed "Para você".**
 - Relevância = saldo de votos, **+10** se a categoria afeta o perfil da pessoa (ex.: calçada para quem tem deficiência física), **−15** se a denúncia já foi resolvida.
