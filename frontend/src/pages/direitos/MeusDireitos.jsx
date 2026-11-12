@@ -70,28 +70,34 @@ export default function MeusDireitos() {
             </ul>
           )}
 
-          {direitos.length > 0 ? (
-            <ul className="d-flex flex-column gap-3 list-unstyled m-0">
-              {direitos.map((direito) => (
-                <li key={direito.id}>
-                  <CardTema direito={direito} />
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <Mensagem tipo="info">
-              Ainda não encontramos temas para o seu perfil. Isso não quer dizer que você não tenha direitos:
-              consulte os canais oficiais ou revise suas respostas.
-            </Mensagem>
-          )}
+          {/* "Lista rolável de direitos" do Figma: cards, botão e legenda com 12 px entre si */}
+          <div className="md-direito-lista">
+            {direitos.length > 0 ? (
+              <ul className="md-direito-lista list-unstyled m-0">
+                {direitos.map((direito) => (
+                  <li key={direito.id}>
+                    <CardTema direito={direito} />
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <>
+                <Mensagem tipo="info">
+                  Ainda não encontramos temas para o seu perfil. Isso não quer dizer que você não tenha direitos:
+                  consulte os canais oficiais ou revise suas respostas.
+                </Mensagem>
+                {/* Sem temas, não há detalhe que leve à tela 32: o atalho só aparece neste caso */}
+                <Link to="/direitos/canais" className="md-botao md-botao-secundario">
+                  Consultar canais oficiais
+                </Link>
+              </>
+            )}
 
-          <Link to="/direitos/questionario" className="md-botao md-botao-secundario">
-            Revisar meu perfil
-          </Link>
-          <Link to="/direitos/canais" className="md-botao md-botao-secundario">
-            Consultar canais oficiais
-          </Link>
-          <p className="md-legenda">Esta lista orienta a pesquisa. Não confirma elegibilidade.</p>
+            <Link to="/direitos/questionario" className="md-botao md-botao-secundario">
+              Revisar meu perfil
+            </Link>
+            <p className="md-legenda">Esta lista orienta a pesquisa. Não confirma elegibilidade.</p>
+          </div>
         </>
       )}
     </Tela>
@@ -103,14 +109,14 @@ function CardTema({ direito }) {
   const icone = iconeDoTema(direito.icone);
   return (
     <Link to={`/direitos/${direito.id}`} className="md-card md-direito-card">
-      <span className="d-flex gap-3 align-items-start">
+      <span className="md-direito-card-titulo">
         <span className="md-direito-icone" aria-hidden="true">
           <img src={icone.src} alt="" width={icone.tamanho} height={icone.tamanho} />
         </span>
         <span className="md-subtitulo">{direito.titulo}</span>
       </span>
       {direito.resumo && <span className="md-corpo">{direito.resumo}</span>}
-      <span className="d-flex gap-2 align-items-start justify-content-between md-negrito md-direito-link">
+      <span className="d-flex gap-2 align-items-start justify-content-between md-negrito md-direito-destaque">
         Entender os critérios
         <img src={iconeSetaBaixo} alt="" width="24" height="24" />
       </span>

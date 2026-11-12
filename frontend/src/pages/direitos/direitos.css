@@ -27,11 +27,33 @@
   flex-shrink: 0;
 }
 
-.md-direito-link {
+/* Linha do ícone com o título do tema (tela 28): 12 px entre eles */
+.md-direito-card-titulo {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+/* Textos em verde e negrito: "Entender os critérios", títulos dos passos, fonte oficial */
+.md-direito-destaque {
   color: var(--md-verde);
 }
 
-/* "Por onde começar" (telas 29–31): passos numerados sem o marcador do navegador */
+/* Tela 28: cards, "Revisar meu perfil" e legenda ficam a 12 px entre si */
+.md-direito-lista {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* Tela 32: os cards de canal seguem o espaçamento de 20 px do conteúdo */
+.md-direito-canais {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* "Por onde começar" (telas 29–31): título e texto de cada passo a 12 px, como no card do Figma */
 .md-direito-passos {
   list-style: none;
   padding: 0;
@@ -44,5 +66,5 @@
 .md-direito-passos li {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 12px;
 }
