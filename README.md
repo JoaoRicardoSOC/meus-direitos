@@ -35,7 +35,7 @@ Plataforma colaborativa que une **zeladoria urbana** e **informação sobre dire
 
 1. **Banco de dados:** execute `database/script.sql` no Oracle (SQL Developer).
 2. **Back-end:** siga [`backend/README.md`](backend/README.md): copie `db.properties.example` para `db.properties`, preencha usuário e senha do Oracle e rode `mvn clean compile exec:java` na pasta `backend/`. A API sobe em `http://localhost:8080/api`.
-3. **Front-end:** veja `frontend/README.md`.
+3. **Front-end:** em desenvolvimento na pasta `frontend/`; as instruções de execução ficarão em `frontend/README.md`. Enquanto isso, a API pode ser testada com a coleção do Insomnia (ver abaixo).
 
 ## Documentação
 
