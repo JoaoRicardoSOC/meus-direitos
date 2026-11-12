@@ -8,7 +8,7 @@
       "_type": "workspace",
       "parentId": null,
       "name": "Meus Direitos — API",
-      "description": "FIAP Global Solution 2026/2. Suba a API (backend/README.md) e ajuste as variáveis do ambiente: usuario_id recebe o \"id\" devolvido no cadastro ou no login.",
+      "description": "FIAP Global Solution 2026/2. Suba a API (backend/README.md) e ajuste as variáveis do ambiente: token recebe o \"token\" devolvido no cadastro ou no login (vai no cabeçalho Authorization: Bearer) e usuario_id, o \"id\". outro_token é o token de uma segunda conta da mesma cidade.",
       "scope": "collection"
     },
     {
@@ -26,6 +26,8 @@
       "name": "Local",
       "data": {
         "base_url": "http://localhost:8080/api",
+        "token": "cole-aqui-o-token-do-cadastro-ou-login",
+        "outro_token": "cole-aqui-o-token-da-outra-conta",
         "usuario_id": "1",
         "outro_usuario_id": "2",
         "denuncia_id": "1",
@@ -134,7 +136,7 @@
       "_type": "request_group",
       "parentId": "wrk_meus_direitos",
       "name": "02 · Usuários e login",
-      "description": "Depois do cadastro ou login, copie o \"id\" para a variável usuario_id.",
+      "description": "Depois do cadastro ou login, copie o \"token\" para a variável token e o \"id\" para usuario_id. Depois de 5 senhas erradas seguidas no mesmo e-mail, o login responde 429 por 15 minutos.",
       "metaSortKey": -992
     },
     {
@@ -192,8 +194,8 @@
       "body": {},
       "headers": [
         {
-          "name": "X-Usuario-Id",
-          "value": "{{ _.usuario_id }}"
+          "name": "Authorization",
+          "value": "Bearer {{ _.token }}"
         }
       ],
       "parameters": [],
@@ -218,8 +220,8 @@
           "value": "application/json"
         },
         {
-          "name": "X-Usuario-Id",
-          "value": "{{ _.usuario_id }}"
+          "name": "Authorization",
+          "value": "Bearer {{ _.token }}"
         }
       ],
       "parameters": [],
@@ -244,8 +246,8 @@
           "value": "application/json"
         },
         {
-          "name": "X-Usuario-Id",
-          "value": "{{ _.usuario_id }}"
+          "name": "Authorization",
+          "value": "Bearer {{ _.token }}"
         }
       ],
       "parameters": [],
@@ -298,8 +300,8 @@
           "value": "application/json"
         },
         {
-          "name": "X-Usuario-Id",
-          "value": "{{ _.usuario_id }}"
+          "name": "Authorization",
+          "value": "Bearer {{ _.token }}"
         }
       ],
       "parameters": [],
@@ -319,12 +321,12 @@
       "_type": "request",
       "parentId": "fld_md_017",
       "name": "Salvar perfil",
-      "description": "",
+      "description": "Se houver alguma resposta preenchida, \"consentimento\": true é obrigatório (sem ele → 400 no campo consentimento).",
       "method": "PUT",
       "url": "{{ _.base_url }}/usuarios/perfil",
       "body": {
         "mimeType": "application/json",
-        "text": "{\n  \"dataNascimento\": \"1958-03-12\",\n  \"racaCor\": \"NAO_INFORMADO\",\n  \"deficiencia\": \"FISICA\",\n  \"percursoEscolar\": \"ESCOLA_PUBLICA\",\n  \"baixaRenda\": true\n}"
+        "text": "{\n  \"dataNascimento\": \"1958-03-12\",\n  \"racaCor\": \"NAO_INFORMADO\",\n  \"deficiencia\": \"FISICA\",\n  \"percursoEscolar\": \"ESCOLA_PUBLICA\",\n  \"baixaRenda\": true,\n  \"consentimento\": true\n}"
       },
       "headers": [
         {
@@ -332,8 +334,8 @@
           "value": "application/json"
         },
         {
-          "name": "X-Usuario-Id",
-          "value": "{{ _.usuario_id }}"
+          "name": "Authorization",
+          "value": "Bearer {{ _.token }}"
         }
       ],
       "parameters": [],
@@ -351,8 +353,8 @@
       "body": {},
       "headers": [
         {
-          "name": "X-Usuario-Id",
-          "value": "{{ _.usuario_id }}"
+          "name": "Authorization",
+          "value": "Bearer {{ _.token }}"
         }
       ],
       "parameters": [],
@@ -370,8 +372,8 @@
       "body": {},
       "headers": [
         {
-          "name": "X-Usuario-Id",
-          "value": "{{ _.usuario_id }}"
+          "name": "Authorization",
+          "value": "Bearer {{ _.token }}"
         }
       ],
       "parameters": [],
@@ -389,8 +391,8 @@
       "body": {},
       "headers": [
         {
-          "name": "X-Usuario-Id",
-          "value": "{{ _.usuario_id }}"
+          "name": "Authorization",
+          "value": "Bearer {{ _.token }}"
         }
       ],
       "parameters": [],
@@ -549,8 +551,8 @@
           "value": "application/json"
         },
         {
-          "name": "X-Usuario-Id",
-          "value": "{{ _.usuario_id }}"
+          "name": "Authorization",
+          "value": "Bearer {{ _.token }}"
         }
       ],
       "parameters": [],
@@ -568,8 +570,8 @@
       "body": {},
       "headers": [
         {
-          "name": "X-Usuario-Id",
-          "value": "{{ _.usuario_id }}"
+          "name": "Authorization",
+          "value": "Bearer {{ _.token }}"
         }
       ],
       "parameters": [],
@@ -594,8 +596,8 @@
           "value": "application/json"
         },
         {
-          "name": "X-Usuario-Id",
-          "value": "{{ _.usuario_id }}"
+          "name": "Authorization",
+          "value": "Bearer {{ _.token }}"
         }
       ],
       "parameters": [],
@@ -620,8 +622,8 @@
           "value": "application/json"
         },
         {
-          "name": "X-Usuario-Id",
-          "value": "{{ _.usuario_id }}"
+          "name": "Authorization",
+          "value": "Bearer {{ _.token }}"
         }
       ],
       "parameters": [],
@@ -639,8 +641,8 @@
       "body": {},
       "headers": [
         {
-          "name": "X-Usuario-Id",
-          "value": "{{ _.usuario_id }}"
+          "name": "Authorization",
+          "value": "Bearer {{ _.token }}"
         }
       ],
       "parameters": [],
@@ -697,8 +699,8 @@
       "body": {},
       "headers": [
         {
-          "name": "X-Usuario-Id",
-          "value": "{{ _.usuario_id }}"
+          "name": "Authorization",
+          "value": "Bearer {{ _.token }}"
         }
       ],
       "parameters": [],
@@ -724,8 +726,8 @@
       "body": {},
       "headers": [
         {
-          "name": "X-Usuario-Id",
-          "value": "{{ _.usuario_id }}"
+          "name": "Authorization",
+          "value": "Bearer {{ _.token }}"
         }
       ],
       "parameters": [
@@ -756,8 +758,8 @@
       "body": {},
       "headers": [
         {
-          "name": "X-Usuario-Id",
-          "value": "{{ _.usuario_id }}"
+          "name": "Authorization",
+          "value": "Bearer {{ _.token }}"
         }
       ],
       "parameters": [
@@ -788,8 +790,8 @@
       "body": {},
       "headers": [
         {
-          "name": "X-Usuario-Id",
-          "value": "{{ _.usuario_id }}"
+          "name": "Authorization",
+          "value": "Bearer {{ _.token }}"
         }
       ],
       "parameters": [
@@ -814,7 +816,7 @@
       "_type": "request_group",
       "parentId": "wrk_meus_direitos",
       "name": "07 · Votos, comentários e resolução",
-      "description": "Use outro_usuario_id (morador da mesma cidade) para votar, comentar e confirmar a denúncia de outra pessoa.",
+      "description": "Use outro_token (morador da mesma cidade) para votar, comentar e confirmar a denúncia de outra pessoa.",
       "metaSortKey": -959
     },
     {
@@ -835,8 +837,8 @@
           "value": "application/json"
         },
         {
-          "name": "X-Usuario-Id",
-          "value": "{{ _.outro_usuario_id }}"
+          "name": "Authorization",
+          "value": "Bearer {{ _.outro_token }}"
         }
       ],
       "parameters": [],
@@ -861,8 +863,8 @@
           "value": "application/json"
         },
         {
-          "name": "X-Usuario-Id",
-          "value": "{{ _.outro_usuario_id }}"
+          "name": "Authorization",
+          "value": "Bearer {{ _.outro_token }}"
         }
       ],
       "parameters": [],
@@ -880,8 +882,8 @@
       "body": {},
       "headers": [
         {
-          "name": "X-Usuario-Id",
-          "value": "{{ _.outro_usuario_id }}"
+          "name": "Authorization",
+          "value": "Bearer {{ _.outro_token }}"
         }
       ],
       "parameters": [],
@@ -920,8 +922,8 @@
           "value": "application/json"
         },
         {
-          "name": "X-Usuario-Id",
-          "value": "{{ _.outro_usuario_id }}"
+          "name": "Authorization",
+          "value": "Bearer {{ _.outro_token }}"
         }
       ],
       "parameters": [],
@@ -946,8 +948,8 @@
           "value": "application/json"
         },
         {
-          "name": "X-Usuario-Id",
-          "value": "{{ _.outro_usuario_id }}"
+          "name": "Authorization",
+          "value": "Bearer {{ _.outro_token }}"
         }
       ],
       "parameters": [],
@@ -965,13 +967,32 @@
       "body": {},
       "headers": [
         {
-          "name": "X-Usuario-Id",
-          "value": "{{ _.outro_usuario_id }}"
+          "name": "Authorization",
+          "value": "Bearer {{ _.outro_token }}"
         }
       ],
       "parameters": [],
       "authentication": {},
       "metaSortKey": 48
+    },
+    {
+      "_id": "req_md_077",
+      "_type": "request",
+      "parentId": "fld_md_041",
+      "name": "Reportar comentário",
+      "description": "Reporta como ofensivo o comentário de outra pessoa (204; repetir não conta duas vezes). Com 3 reportes de pessoas diferentes, o comentário some da conversa. O próprio comentário → 422.",
+      "method": "POST",
+      "url": "{{ _.base_url }}/comentarios/{{ _.comentario_id }}/reporte",
+      "body": {},
+      "headers": [
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ _.token }}"
+        }
+      ],
+      "parameters": [],
+      "authentication": {},
+      "metaSortKey": 48.5
     },
     {
       "_id": "req_md_049",
@@ -984,8 +1005,8 @@
       "body": {},
       "headers": [
         {
-          "name": "X-Usuario-Id",
-          "value": "{{ _.outro_usuario_id }}"
+          "name": "Authorization",
+          "value": "Bearer {{ _.outro_token }}"
         }
       ],
       "parameters": [],
@@ -1003,8 +1024,8 @@
       "body": {},
       "headers": [
         {
-          "name": "X-Usuario-Id",
-          "value": "{{ _.outro_usuario_id }}"
+          "name": "Authorization",
+          "value": "Bearer {{ _.outro_token }}"
         }
       ],
       "parameters": [],
@@ -1030,8 +1051,8 @@
       "body": {},
       "headers": [
         {
-          "name": "X-Usuario-Id",
-          "value": "{{ _.usuario_id }}"
+          "name": "Authorization",
+          "value": "Bearer {{ _.token }}"
         }
       ],
       "parameters": [],
@@ -1355,6 +1376,32 @@
       "metaSortKey": 68
     },
     {
+      "_id": "req_md_078",
+      "_type": "request",
+      "parentId": "fld_md_062",
+      "name": "400 · foto que não é de demonstração",
+      "description": "imagemUrl só aceita fotos img/demo/... → 400 no campo imagemUrl.",
+      "method": "POST",
+      "url": "{{ _.base_url }}/denuncias",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"titulo\": \"Buraco grande na Rua Augusta\",\n  \"descricao\": \"Buraco na faixa da direita, perto do número 1200.\",\n  \"categoria\": \"ASFALTO\",\n  \"endereco\": \"Rua Augusta, 1200\",\n  \"imagemUrl\": \"https://exemplo.com/foto.jpg\"\n}"
+      },
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        },
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ _.token }}"
+        }
+      ],
+      "parameters": [],
+      "authentication": {},
+      "metaSortKey": 68.5
+    },
+    {
       "_id": "req_md_069",
       "_type": "request",
       "parentId": "fld_md_062",
@@ -1372,8 +1419,8 @@
           "value": "application/json"
         },
         {
-          "name": "X-Usuario-Id",
-          "value": "{{ _.usuario_id }}"
+          "name": "Authorization",
+          "value": "Bearer {{ _.token }}"
         }
       ],
       "parameters": [],
@@ -1418,6 +1465,25 @@
       "metaSortKey": 71
     },
     {
+      "_id": "req_md_079",
+      "_type": "request",
+      "parentId": "fld_md_062",
+      "name": "401 · token inválido",
+      "description": "Token ausente, adulterado ou vencido (7 dias) → 401.",
+      "method": "GET",
+      "url": "{{ _.base_url }}/usuarios/me",
+      "body": {},
+      "headers": [
+        {
+          "name": "Authorization",
+          "value": "Bearer token-adulterado"
+        }
+      ],
+      "parameters": [],
+      "authentication": {},
+      "metaSortKey": 71.5
+    },
+    {
       "_id": "req_md_072",
       "_type": "request",
       "parentId": "fld_md_062",
@@ -1457,8 +1523,8 @@
           "value": "application/json"
         },
         {
-          "name": "X-Usuario-Id",
-          "value": "{{ _.outro_usuario_id }}"
+          "name": "Authorization",
+          "value": "Bearer {{ _.outro_token }}"
         }
       ],
       "parameters": [],
@@ -1512,8 +1578,8 @@
       "body": {},
       "headers": [
         {
-          "name": "X-Usuario-Id",
-          "value": "{{ _.usuario_id }}"
+          "name": "Authorization",
+          "value": "Bearer {{ _.token }}"
         }
       ],
       "parameters": [],
