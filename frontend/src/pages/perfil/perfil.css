@@ -1,0 +1,80 @@
+/* 19 · Perfil: avatar grande (72 px no Figma) */
+.md-avatar-perfil {
+  width: 72px;
+  height: 72px;
+}
+
+/* Dados da conta: rótulo pequeno e valor logo abaixo */
+.md-dados-conta {
+  margin: 0;
+}
+
+.md-dados-conta dt {
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 1.45;
+  color: var(--md-apagado);
+}
+
+.md-dados-conta dd {
+  font-size: 16px;
+  line-height: 1.45;
+  color: var(--md-tinta);
+  margin: 0 0 12px;
+  overflow-wrap: anywhere;
+}
+
+.md-dados-conta dd:last-child {
+  margin-bottom: 0;
+}
+
+/* Opções da conta (Minhas denúncias, Trocar senha, Excluir minha conta) */
+.md-opcoes-conta {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  gap: 0;
+}
+
+.md-opcoes-conta li + li {
+  border-top: 1px solid var(--md-linha);
+}
+
+.md-opcao-conta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 52px;
+  padding: 8px 4px;
+  border-radius: 12px;
+  font-size: 16px;
+  line-height: 1.45;
+  color: var(--md-tinta);
+  text-decoration: none;
+}
+
+.md-opcao-conta:hover {
+  color: var(--md-verde);
+}
+
+.md-opcao-conta:focus-visible {
+  outline: 3px solid var(--bs-focus-ring-color);
+}
+
+.md-opcao-conta-perigo,
+.md-opcao-conta-perigo:hover {
+  color: var(--md-erro);
+}
+
+/* A seta do Figma aponta para a esquerda (Voltar); aqui ela indica "abrir" */
+.md-opcao-conta img {
+  transform: rotate(180deg);
+  flex-shrink: 0;
+}
+
+/* Excluir conta: lista do que é apagado */
+.md-lista-exclusao {
+  margin: 0;
+  padding-left: 20px;
+}
