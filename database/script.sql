@@ -1,382 +1,603 @@
 -- =====================================================================================
 -- Meus Direitos · FIAP Global Solution 2026/2 (CitizenTech)
--- Script do banco de dados (Oracle): estrutura (DDL) e carga inicial.
+-- Script do banco de dados (Oracle): estrutura (DDL) e carga inicial do catálogo de direitos.
 --
 -- Como executar: no SQL Developer, abra este arquivo e use "Executar Script" (F5),
 -- conectado ao schema que a API usa (db.usuario do backend/db.properties).
--- O script pode ser executado de novo: ele apaga e recria as tabelas do projeto (os dados delas são perdidos).
 --
--- ATENÇÃO, schema compartilhado: o script mexe SOMENTE nestes objetos, pelo nome, e em nenhum outro:
+-- O SCRIPT NÃO APAGA NEM ALTERA NADA. Ele só cria o que ainda não existe:
+--   * cada tabela, sequence e índice é criado apenas se ainda não houver um objeto com o mesmo nome;
+--   * cada tema do catálogo de direitos é inserido apenas se ainda não houver um tema com o mesmo título.
+-- Por isso pode ser executado num schema compartilhado com outros projetos e quantas vezes for preciso:
+-- num schema que já tem as tabelas do projeto, não muda nada; num schema vazio, monta tudo do zero.
+--
+-- Objetos deste projeto (e somente estes):
 --   tabelas    TB_USUARIO, TB_PERFIL_DEMOGRAFICO, TB_DENUNCIA, TB_COMENTARIO, TB_VOTO_DENUNCIA,
 --              TB_CONFIRMACAO_RESOLUCAO, TB_DIREITO, TB_DIREITO_PASSO, TB_DIREITO_TAG, TB_SEMEADURA_CIDADE
 --   sequences  SEQ_USUARIO, SEQ_DENUNCIA, SEQ_COMENTARIO, SEQ_DIREITO
--- Antes de rodar num schema que já tenha tabelas, confira que nenhum outro projeto usa esses nomes
--- (SELECT table_name FROM user_tables). Se as tabelas deste projeto já existem com dados que você quer
--- manter, NÃO rode este script.
 --
+-- As definições abaixo são as mesmas do schema usado no Oracle da FIAP (extraídas com DBMS_METADATA).
 -- Convenções (as mesmas do back-end, em dao.jdbc.JdbcUtil):
---   * prefixos: tb_ tabela, cd_ código, ds_ descrição, nm_ nome, sg_ sigla, dt_ data,
---     tp_ tipo (enum), st_ situação/flag, nr_ número, qt_ quantidade;
---   * booleanos em CHAR(1) 'S'/'N';
---   * enums gravados pelo nome da constante Java, com CHECK aceitando os mesmos valores;
---   * textos em VARCHAR2(n CHAR): o limite é em caracteres, como na validação da API
---     (com BYTE, um texto acentuado no limite estouraria a coluna);
+--   * prefixos: TB_ tabela, CD_ código, DS_ descrição, NM_ nome, SG_ sigla, DT_ data,
+--     TP_ tipo (enum), ST_ situação/flag, NR_ número, QT_ quantidade;
+--   * booleanos em CHAR(1) 'S'/'N'; enums gravados pelo nome da constante Java, com CHECK;
 --   * sem ON DELETE CASCADE: a API apaga as tabelas filhas antes, na mesma transação.
 -- =====================================================================================
 
+SET DEFINE OFF;
+SET SERVEROUTPUT ON;
 
 -- =====================================================================================
--- 1. Limpeza (ignora objetos que ainda não existem)
+-- 1. Sequences (chaves geradas pela API com SEQ_xxx.NEXTVAL)
 -- =====================================================================================
 
+DECLARE
+  existe NUMBER;
 BEGIN
-    FOR t IN (SELECT table_name FROM user_tables WHERE table_name IN (
-                  'TB_CONFIRMACAO_RESOLUCAO', 'TB_VOTO_DENUNCIA', 'TB_COMENTARIO', 'TB_DENUNCIA',
-                  'TB_PERFIL_DEMOGRAFICO', 'TB_DIREITO_TAG', 'TB_DIREITO_PASSO', 'TB_DIREITO',
-                  'TB_SEMEADURA_CIDADE', 'TB_USUARIO')) LOOP
-        EXECUTE IMMEDIATE 'DROP TABLE ' || t.table_name || ' CASCADE CONSTRAINTS PURGE';
-    END LOOP;
-    FOR s IN (SELECT sequence_name FROM user_sequences WHERE sequence_name IN (
-                  'SEQ_USUARIO', 'SEQ_DENUNCIA', 'SEQ_COMENTARIO', 'SEQ_DIREITO')) LOOP
-        EXECUTE IMMEDIATE 'DROP SEQUENCE ' || s.sequence_name;
-    END LOOP;
+  SELECT COUNT(*) INTO existe FROM user_sequences WHERE sequence_name = 'SEQ_USUARIO';
+  IF existe = 0 THEN
+    EXECUTE IMMEDIATE 'CREATE SEQUENCE SEQ_USUARIO START WITH 1 INCREMENT BY 1 NOCACHE';
+    DBMS_OUTPUT.PUT_LINE('Criada a sequence SEQ_USUARIO');
+  ELSE
+    DBMS_OUTPUT.PUT_LINE('SEQ_USUARIO já existe: mantida como está');
+  END IF;
 END;
 /
 
+DECLARE
+  existe NUMBER;
+BEGIN
+  SELECT COUNT(*) INTO existe FROM user_sequences WHERE sequence_name = 'SEQ_DENUNCIA';
+  IF existe = 0 THEN
+    EXECUTE IMMEDIATE 'CREATE SEQUENCE SEQ_DENUNCIA START WITH 1 INCREMENT BY 1 NOCACHE';
+    DBMS_OUTPUT.PUT_LINE('Criada a sequence SEQ_DENUNCIA');
+  ELSE
+    DBMS_OUTPUT.PUT_LINE('SEQ_DENUNCIA já existe: mantida como está');
+  END IF;
+END;
+/
+
+DECLARE
+  existe NUMBER;
+BEGIN
+  SELECT COUNT(*) INTO existe FROM user_sequences WHERE sequence_name = 'SEQ_COMENTARIO';
+  IF existe = 0 THEN
+    EXECUTE IMMEDIATE 'CREATE SEQUENCE SEQ_COMENTARIO START WITH 1 INCREMENT BY 1 NOCACHE';
+    DBMS_OUTPUT.PUT_LINE('Criada a sequence SEQ_COMENTARIO');
+  ELSE
+    DBMS_OUTPUT.PUT_LINE('SEQ_COMENTARIO já existe: mantida como está');
+  END IF;
+END;
+/
+
+DECLARE
+  existe NUMBER;
+BEGIN
+  SELECT COUNT(*) INTO existe FROM user_sequences WHERE sequence_name = 'SEQ_DIREITO';
+  IF existe = 0 THEN
+    EXECUTE IMMEDIATE 'CREATE SEQUENCE SEQ_DIREITO START WITH 1 INCREMENT BY 1 NOCACHE';
+    DBMS_OUTPUT.PUT_LINE('Criada a sequence SEQ_DIREITO');
+  ELSE
+    DBMS_OUTPUT.PUT_LINE('SEQ_DIREITO já existe: mantida como está');
+  END IF;
+END;
+/
 
 -- =====================================================================================
--- 2. Sequences (chaves geradas pela API com seq_xxx.NEXTVAL)
+-- 2. Tabelas (na ordem das chaves estrangeiras)
 -- =====================================================================================
 
-CREATE SEQUENCE seq_usuario    START WITH 1 INCREMENT BY 1 NOCACHE;
-CREATE SEQUENCE seq_denuncia   START WITH 1 INCREMENT BY 1 NOCACHE;
-CREATE SEQUENCE seq_comentario START WITH 1 INCREMENT BY 1 NOCACHE;
-CREATE SEQUENCE seq_direito    START WITH 1 INCREMENT BY 1 NOCACHE;
+-- Conta do usuário. ST_SIMULADO = 'S' marca os moradores de exemplo da "cidade viva".
+DECLARE
+  existe NUMBER;
+BEGIN
+  SELECT COUNT(*) INTO existe FROM user_tables WHERE table_name = 'TB_USUARIO';
+  IF existe = 0 THEN
+    EXECUTE IMMEDIATE q'[
+    CREATE TABLE TB_USUARIO
+       (    CD_USUARIO NUMBER(10,0),
+        NM_USUARIO VARCHAR2(100) NOT NULL,
+        DS_EMAIL VARCHAR2(120) NOT NULL,
+        DS_SENHA_HASH VARCHAR2(200) NOT NULL,
+        NM_CIDADE VARCHAR2(80) NOT NULL,
+        SG_UF CHAR(2) NOT NULL,
+        DT_CADASTRO TIMESTAMP (6) DEFAULT SYSTIMESTAMP NOT NULL,
+        ST_SIMULADO CHAR(1) DEFAULT 'N' NOT NULL,
+         CONSTRAINT PK_USUARIO PRIMARY KEY (CD_USUARIO),
+         CONSTRAINT UK_USUARIO_EMAIL UNIQUE (DS_EMAIL),
+         CONSTRAINT CK_USUARIO_SIMULADO CHECK (st_simulado IN ('S','N'))
+       )]';
+    DBMS_OUTPUT.PUT_LINE('Criada a tabela TB_USUARIO');
+  ELSE
+    DBMS_OUTPUT.PUT_LINE('TB_USUARIO já existe: mantida como está');
+  END IF;
+END;
+/
 
-
--- =====================================================================================
--- 3. Tabelas
--- =====================================================================================
-
--- Conta do usuário. st_simulado = 'S' marca os moradores de exemplo da "cidade viva".
-CREATE TABLE tb_usuario (
-    cd_usuario     NUMBER(10)          NOT NULL,
-    nm_usuario     VARCHAR2(100 CHAR)  NOT NULL,
-    ds_email       VARCHAR2(120 CHAR)  NOT NULL,
-    ds_senha_hash  VARCHAR2(200 CHAR)  NOT NULL,  -- PBKDF2 "iteracoes:salt:hash" (nunca a senha)
-    nm_cidade      VARCHAR2(80 CHAR)   NOT NULL,
-    sg_uf          CHAR(2)             NOT NULL,
-    dt_cadastro    DATE                NOT NULL,
-    st_simulado    CHAR(1)             DEFAULT 'N' NOT NULL,
-    CONSTRAINT pk_usuario PRIMARY KEY (cd_usuario),
-    CONSTRAINT uk_usuario_email UNIQUE (ds_email),
-    CONSTRAINT ck_usuario_uf CHECK (sg_uf IN (
-        'AC', 'AL', 'AP', 'AM', 'BA', 'CE', 'DF', 'ES', 'GO', 'MA', 'MT', 'MS', 'MG', 'PA',
-        'PB', 'PR', 'PE', 'PI', 'RJ', 'RN', 'RS', 'RO', 'RR', 'SC', 'SP', 'SE', 'TO')),
-    CONSTRAINT ck_usuario_simulado CHECK (st_simulado IN ('S', 'N'))
-);
-
--- Questionário "Meus Direitos" (opcional, 0..1 por usuário). Todas as respostas podem ficar em branco.
-CREATE TABLE tb_perfil_demografico (
-    cd_usuario           NUMBER(10)         NOT NULL,
-    dt_nascimento        DATE,
-    tp_raca_cor          VARCHAR2(20 CHAR),
-    tp_deficiencia       VARCHAR2(20 CHAR),
-    tp_percurso_escolar  VARCHAR2(20 CHAR),
-    st_baixa_renda       CHAR(1),
-    dt_atualizacao       DATE               NOT NULL,
-    CONSTRAINT pk_perfil_demografico PRIMARY KEY (cd_usuario),
-    CONSTRAINT fk_perfil_usuario FOREIGN KEY (cd_usuario) REFERENCES tb_usuario (cd_usuario),
-    CONSTRAINT ck_perfil_raca_cor CHECK (tp_raca_cor IN (
-        'BRANCA', 'PRETA', 'PARDA', 'AMARELA', 'INDIGENA', 'NAO_INFORMADO')),
-    CONSTRAINT ck_perfil_deficiencia CHECK (tp_deficiencia IN (
-        'NENHUMA', 'FISICA', 'VISUAL', 'AUDITIVA', 'INTELECTUAL', 'NAO_INFORMADO')),
-    CONSTRAINT ck_perfil_percurso CHECK (tp_percurso_escolar IN (
-        'ESCOLA_PUBLICA', 'ESCOLA_PARTICULAR', 'MISTO', 'NAO_INFORMADO')),
-    CONSTRAINT ck_perfil_baixa_renda CHECK (st_baixa_renda IN ('S', 'N'))
-);
+-- Questionário "Meus Direitos" (opcional, no máximo um por usuário).
+DECLARE
+  existe NUMBER;
+BEGIN
+  SELECT COUNT(*) INTO existe FROM user_tables WHERE table_name = 'TB_PERFIL_DEMOGRAFICO';
+  IF existe = 0 THEN
+    EXECUTE IMMEDIATE q'[
+    CREATE TABLE TB_PERFIL_DEMOGRAFICO
+       (    CD_USUARIO NUMBER(10,0),
+        DT_NASCIMENTO DATE,
+        TP_RACA_COR VARCHAR2(15),
+        TP_DEFICIENCIA VARCHAR2(15),
+        TP_PERCURSO_ESCOLAR VARCHAR2(20),
+        ST_BAIXA_RENDA CHAR(1),
+        DT_ATUALIZACAO TIMESTAMP (6) DEFAULT SYSTIMESTAMP NOT NULL,
+         CONSTRAINT CK_PERFIL_RACA CHECK (tp_raca_cor IN
+                             ('BRANCA','PRETA','PARDA','AMARELA','INDIGENA','NAO_INFORMADO')),
+         CONSTRAINT CK_PERFIL_DEF CHECK (tp_deficiencia IN
+                             ('NENHUMA','FISICA','VISUAL','AUDITIVA','INTELECTUAL','NAO_INFORMADO')),
+         CONSTRAINT CK_PERFIL_ESC CHECK (tp_percurso_escolar IN
+                             ('ESCOLA_PUBLICA','ESCOLA_PARTICULAR','MISTO','NAO_INFORMADO')),
+         CONSTRAINT CK_PERFIL_RENDA CHECK (st_baixa_renda IN ('S','N')),
+         CONSTRAINT PK_PERFIL PRIMARY KEY (CD_USUARIO),
+         CONSTRAINT FK_PERFIL_USUARIO FOREIGN KEY (CD_USUARIO)
+          REFERENCES TB_USUARIO (CD_USUARIO)
+       )]';
+    DBMS_OUTPUT.PUT_LINE('Criada a tabela TB_PERFIL_DEMOGRAFICO');
+  ELSE
+    DBMS_OUTPUT.PUT_LINE('TB_PERFIL_DEMOGRAFICO já existe: mantida como está');
+  END IF;
+END;
+/
 
 -- Problema urbano registrado por um morador, na cidade do cadastro dele.
-CREATE TABLE tb_denuncia (
-    cd_denuncia     NUMBER(10)           NOT NULL,
-    cd_usuario      NUMBER(10)           NOT NULL,
-    ds_titulo       VARCHAR2(120 CHAR)   NOT NULL,
-    ds_denuncia     VARCHAR2(1000 CHAR)  NOT NULL,
-    tp_categoria    VARCHAR2(30 CHAR)    NOT NULL,
-    st_denuncia     VARCHAR2(20 CHAR)    DEFAULT 'ABERTA' NOT NULL,
-    ds_endereco     VARCHAR2(150 CHAR)   NOT NULL,
-    nm_bairro       VARCHAR2(80 CHAR),
-    nm_cidade       VARCHAR2(80 CHAR)    NOT NULL,
-    sg_uf           CHAR(2)              NOT NULL,
-    ds_imagem_url   VARCHAR2(300 CHAR),
-    dt_criacao      DATE                 NOT NULL,
-    dt_atualizacao  DATE                 NOT NULL,
-    CONSTRAINT pk_denuncia PRIMARY KEY (cd_denuncia),
-    CONSTRAINT fk_denuncia_usuario FOREIGN KEY (cd_usuario) REFERENCES tb_usuario (cd_usuario),
-    CONSTRAINT ck_denuncia_categoria CHECK (tp_categoria IN (
-        'ASFALTO', 'ILUMINACAO', 'CALCADA_ACESSIBILIDADE', 'SEGURANCA', 'LIMPEZA_URBANA', 'OUTROS')),
-    CONSTRAINT ck_denuncia_status CHECK (st_denuncia IN ('ABERTA', 'EM_ANDAMENTO', 'RESOLVIDA')),
-    CONSTRAINT ck_denuncia_uf CHECK (sg_uf IN (
-        'AC', 'AL', 'AP', 'AM', 'BA', 'CE', 'DF', 'ES', 'GO', 'MA', 'MT', 'MS', 'MG', 'PA',
-        'PB', 'PR', 'PE', 'PI', 'RJ', 'RN', 'RS', 'RO', 'RR', 'SC', 'SP', 'SE', 'TO'))
-);
+DECLARE
+  existe NUMBER;
+BEGIN
+  SELECT COUNT(*) INTO existe FROM user_tables WHERE table_name = 'TB_DENUNCIA';
+  IF existe = 0 THEN
+    EXECUTE IMMEDIATE q'[
+    CREATE TABLE TB_DENUNCIA
+       (    CD_DENUNCIA NUMBER(10,0),
+        CD_USUARIO NUMBER(10,0) NOT NULL,
+        DS_TITULO VARCHAR2(120) NOT NULL,
+        DS_DENUNCIA VARCHAR2(1000) NOT NULL,
+        TP_CATEGORIA VARCHAR2(25) NOT NULL,
+        ST_DENUNCIA VARCHAR2(15) DEFAULT 'ABERTA' NOT NULL,
+        DS_ENDERECO VARCHAR2(150) NOT NULL,
+        NM_BAIRRO VARCHAR2(80),
+        NM_CIDADE VARCHAR2(80) NOT NULL,
+        SG_UF CHAR(2) NOT NULL,
+        DS_IMAGEM_URL VARCHAR2(300),
+        DT_CRIACAO TIMESTAMP (6) DEFAULT SYSTIMESTAMP NOT NULL,
+        DT_ATUALIZACAO TIMESTAMP (6) DEFAULT SYSTIMESTAMP NOT NULL,
+         CONSTRAINT CK_DENUNCIA_CAT CHECK (tp_categoria IN
+                        ('ASFALTO','ILUMINACAO','CALCADA_ACESSIBILIDADE','SEGURANCA','LIMPEZA_URBANA','OUTROS')),
+         CONSTRAINT CK_DENUNCIA_STATUS CHECK (st_denuncia IN ('ABERTA','EM_ANDAMENTO','RESOLVIDA')),
+         CONSTRAINT PK_DENUNCIA PRIMARY KEY (CD_DENUNCIA),
+         CONSTRAINT FK_DENUNCIA_USUARIO FOREIGN KEY (CD_USUARIO)
+          REFERENCES TB_USUARIO (CD_USUARIO)
+       )]';
+    DBMS_OUTPUT.PUT_LINE('Criada a tabela TB_DENUNCIA');
+  ELSE
+    DBMS_OUTPUT.PUT_LINE('TB_DENUNCIA já existe: mantida como está');
+  END IF;
+END;
+/
 
--- "Conversa do bairro". dt_edicao só é preenchida quando o autor edita o comentário.
-CREATE TABLE tb_comentario (
-    cd_comentario  NUMBER(10)          NOT NULL,
-    cd_denuncia    NUMBER(10)          NOT NULL,
-    cd_usuario     NUMBER(10)          NOT NULL,
-    ds_comentario  VARCHAR2(500 CHAR)  NOT NULL,
-    dt_criacao     DATE                NOT NULL,
-    dt_edicao      DATE,
-    CONSTRAINT pk_comentario PRIMARY KEY (cd_comentario),
-    CONSTRAINT fk_comentario_denuncia FOREIGN KEY (cd_denuncia) REFERENCES tb_denuncia (cd_denuncia),
-    CONSTRAINT fk_comentario_usuario FOREIGN KEY (cd_usuario) REFERENCES tb_usuario (cd_usuario)
-);
+-- "Conversa do bairro". DT_EDICAO só é preenchida quando o autor edita o comentário.
+DECLARE
+  existe NUMBER;
+BEGIN
+  SELECT COUNT(*) INTO existe FROM user_tables WHERE table_name = 'TB_COMENTARIO';
+  IF existe = 0 THEN
+    EXECUTE IMMEDIATE q'[
+    CREATE TABLE TB_COMENTARIO
+       (    CD_COMENTARIO NUMBER(10,0),
+        CD_DENUNCIA NUMBER(10,0) NOT NULL,
+        CD_USUARIO NUMBER(10,0) NOT NULL,
+        DS_COMENTARIO VARCHAR2(500) NOT NULL,
+        DT_CRIACAO TIMESTAMP (6) DEFAULT SYSTIMESTAMP NOT NULL,
+        DT_EDICAO TIMESTAMP (6),
+         CONSTRAINT PK_COMENTARIO PRIMARY KEY (CD_COMENTARIO),
+         CONSTRAINT FK_COMENT_DENUNCIA FOREIGN KEY (CD_DENUNCIA)
+          REFERENCES TB_DENUNCIA (CD_DENUNCIA),
+         CONSTRAINT FK_COMENT_USUARIO FOREIGN KEY (CD_USUARIO)
+          REFERENCES TB_USUARIO (CD_USUARIO)
+       )]';
+    DBMS_OUTPUT.PUT_LINE('Criada a tabela TB_COMENTARIO');
+  ELSE
+    DBMS_OUTPUT.PUT_LINE('TB_COMENTARIO já existe: mantida como está');
+  END IF;
+END;
+/
 
--- Voto (↑/↓). A chave composta garante um voto por pessoa em cada denúncia.
-CREATE TABLE tb_voto_denuncia (
-    cd_usuario   NUMBER(10)        NOT NULL,
-    cd_denuncia  NUMBER(10)        NOT NULL,
-    tp_voto      VARCHAR2(4 CHAR)  NOT NULL,
-    dt_voto      DATE              NOT NULL,
-    CONSTRAINT pk_voto_denuncia PRIMARY KEY (cd_usuario, cd_denuncia),
-    CONSTRAINT fk_voto_usuario FOREIGN KEY (cd_usuario) REFERENCES tb_usuario (cd_usuario),
-    CONSTRAINT fk_voto_denuncia FOREIGN KEY (cd_denuncia) REFERENCES tb_denuncia (cd_denuncia),
-    CONSTRAINT ck_voto_tipo CHECK (tp_voto IN ('UP', 'DOWN'))
-);
+-- Voto (UP/DOWN). A chave composta garante um voto por pessoa em cada denúncia.
+DECLARE
+  existe NUMBER;
+BEGIN
+  SELECT COUNT(*) INTO existe FROM user_tables WHERE table_name = 'TB_VOTO_DENUNCIA';
+  IF existe = 0 THEN
+    EXECUTE IMMEDIATE q'[
+    CREATE TABLE TB_VOTO_DENUNCIA
+       (    CD_USUARIO NUMBER(10,0) NOT NULL,
+        CD_DENUNCIA NUMBER(10,0) NOT NULL,
+        TP_VOTO VARCHAR2(4) NOT NULL,
+        DT_VOTO TIMESTAMP (6) DEFAULT SYSTIMESTAMP NOT NULL,
+         CONSTRAINT CK_VOTO_TIPO CHECK (tp_voto IN ('UP','DOWN')),
+         CONSTRAINT PK_VOTO_DENUNCIA PRIMARY KEY (CD_USUARIO, CD_DENUNCIA),
+         CONSTRAINT FK_VOTO_USUARIO FOREIGN KEY (CD_USUARIO)
+          REFERENCES TB_USUARIO (CD_USUARIO),
+         CONSTRAINT FK_VOTO_DENUNCIA FOREIGN KEY (CD_DENUNCIA)
+          REFERENCES TB_DENUNCIA (CD_DENUNCIA)
+       )]';
+    DBMS_OUTPUT.PUT_LINE('Criada a tabela TB_VOTO_DENUNCIA');
+  ELSE
+    DBMS_OUTPUT.PUT_LINE('TB_VOTO_DENUNCIA já existe: mantida como está');
+  END IF;
+END;
+/
 
 -- "Já foi resolvido": na 3ª confirmação de moradores diferentes, a denúncia vira RESOLVIDA.
-CREATE TABLE tb_confirmacao_resolucao (
-    cd_usuario      NUMBER(10)  NOT NULL,
-    cd_denuncia     NUMBER(10)  NOT NULL,
-    dt_confirmacao  DATE        NOT NULL,
-    CONSTRAINT pk_confirmacao_resolucao PRIMARY KEY (cd_usuario, cd_denuncia),
-    CONSTRAINT fk_confirmacao_usuario FOREIGN KEY (cd_usuario) REFERENCES tb_usuario (cd_usuario),
-    CONSTRAINT fk_confirmacao_denuncia FOREIGN KEY (cd_denuncia) REFERENCES tb_denuncia (cd_denuncia)
-);
+DECLARE
+  existe NUMBER;
+BEGIN
+  SELECT COUNT(*) INTO existe FROM user_tables WHERE table_name = 'TB_CONFIRMACAO_RESOLUCAO';
+  IF existe = 0 THEN
+    EXECUTE IMMEDIATE q'[
+    CREATE TABLE TB_CONFIRMACAO_RESOLUCAO
+       (    CD_USUARIO NUMBER(10,0) NOT NULL,
+        CD_DENUNCIA NUMBER(10,0) NOT NULL,
+        DT_CONFIRMACAO TIMESTAMP (6) DEFAULT SYSTIMESTAMP NOT NULL,
+         CONSTRAINT PK_CONFIRMACAO_RESOLUCAO PRIMARY KEY (CD_USUARIO, CD_DENUNCIA),
+         CONSTRAINT FK_CONFRES_USUARIO FOREIGN KEY (CD_USUARIO)
+          REFERENCES TB_USUARIO (CD_USUARIO),
+         CONSTRAINT FK_CONFRES_DENUNCIA FOREIGN KEY (CD_DENUNCIA)
+          REFERENCES TB_DENUNCIA (CD_DENUNCIA)
+       )]';
+    DBMS_OUTPUT.PUT_LINE('Criada a tabela TB_CONFIRMACAO_RESOLUCAO');
+  ELSE
+    DBMS_OUTPUT.PUT_LINE('TB_CONFIRMACAO_RESOLUCAO já existe: mantida como está');
+  END IF;
+END;
+/
 
 -- Catálogo de temas de direitos (tela "Meus Direitos").
-CREATE TABLE tb_direito (
-    cd_direito       NUMBER(10)           NOT NULL,
-    ds_titulo        VARCHAR2(120 CHAR)   NOT NULL,
-    ds_resumo        VARCHAR2(200 CHAR)   NOT NULL,
-    ds_direito       VARCHAR2(1000 CHAR)  NOT NULL,
-    ds_aviso         VARCHAR2(300 CHAR),
-    ds_base_legal    VARCHAR2(300 CHAR),
-    ds_link_oficial  VARCHAR2(300 CHAR),
-    tp_icone         VARCHAR2(20 CHAR)    NOT NULL,
-    nr_ordem         NUMBER(3)            DEFAULT 0 NOT NULL,
-    CONSTRAINT pk_direito PRIMARY KEY (cd_direito),
-    CONSTRAINT ck_direito_icone CHECK (tp_icone IN (
-        'TRANSPORTE', 'PRIORIDADE', 'MUNICIPIO', 'EDUCACAO', 'SAUDE', 'RENDA', 'OUTRO')),
-    CONSTRAINT ck_direito_ordem CHECK (nr_ordem BETWEEN 0 AND 999)
-);
+DECLARE
+  existe NUMBER;
+BEGIN
+  SELECT COUNT(*) INTO existe FROM user_tables WHERE table_name = 'TB_DIREITO';
+  IF existe = 0 THEN
+    EXECUTE IMMEDIATE q'[
+    CREATE TABLE TB_DIREITO
+       (    CD_DIREITO NUMBER(10,0),
+        DS_TITULO VARCHAR2(120) NOT NULL,
+        DS_RESUMO VARCHAR2(200) NOT NULL,
+        DS_DIREITO VARCHAR2(1000) NOT NULL,
+        DS_AVISO VARCHAR2(300),
+        DS_BASE_LEGAL VARCHAR2(300),
+        DS_LINK_OFICIAL VARCHAR2(300),
+        TP_ICONE VARCHAR2(15) DEFAULT 'OUTRO' NOT NULL,
+        NR_ORDEM NUMBER(3,0) DEFAULT 0 NOT NULL,
+         CONSTRAINT CK_DIREITO_ICONE CHECK (tp_icone IN
+                         ('TRANSPORTE','PRIORIDADE','MUNICIPIO','EDUCACAO','SAUDE','RENDA','OUTRO')),
+         CONSTRAINT PK_DIREITO PRIMARY KEY (CD_DIREITO),
+         CONSTRAINT UK_DIREITO_TITULO UNIQUE (DS_TITULO)
+       )]';
+    DBMS_OUTPUT.PUT_LINE('Criada a tabela TB_DIREITO');
+  ELSE
+    DBMS_OUTPUT.PUT_LINE('TB_DIREITO já existe: mantida como está');
+  END IF;
+END;
+/
 
--- Passos "Por onde começar" de cada tema (1 a 10, numerados a partir de 1).
-CREATE TABLE tb_direito_passo (
-    cd_direito  NUMBER(10)          NOT NULL,
-    nr_ordem    NUMBER(2)           NOT NULL,
-    ds_titulo   VARCHAR2(80 CHAR)   NOT NULL,
-    ds_passo    VARCHAR2(400 CHAR)  NOT NULL,
-    CONSTRAINT pk_direito_passo PRIMARY KEY (cd_direito, nr_ordem),
-    CONSTRAINT fk_passo_direito FOREIGN KEY (cd_direito) REFERENCES tb_direito (cd_direito)
-);
+-- Passos "Por onde começar" de cada tema (1 a 10).
+DECLARE
+  existe NUMBER;
+BEGIN
+  SELECT COUNT(*) INTO existe FROM user_tables WHERE table_name = 'TB_DIREITO_PASSO';
+  IF existe = 0 THEN
+    EXECUTE IMMEDIATE q'[
+    CREATE TABLE TB_DIREITO_PASSO
+       (    CD_DIREITO NUMBER(10,0) NOT NULL,
+        NR_ORDEM NUMBER(2,0) NOT NULL,
+        DS_TITULO VARCHAR2(80) NOT NULL,
+        DS_PASSO VARCHAR2(400) NOT NULL,
+         CONSTRAINT CK_PASSO_ORDEM CHECK (nr_ordem BETWEEN 1 AND 10),
+         CONSTRAINT PK_DIREITO_PASSO PRIMARY KEY (CD_DIREITO, NR_ORDEM),
+         CONSTRAINT FK_PASSO_DIREITO FOREIGN KEY (CD_DIREITO)
+          REFERENCES TB_DIREITO (CD_DIREITO)
+       )]';
+    DBMS_OUTPUT.PUT_LINE('Criada a tabela TB_DIREITO_PASSO');
+  ELSE
+    DBMS_OUTPUT.PUT_LINE('TB_DIREITO_PASSO já existe: mantida como está');
+  END IF;
+END;
+/
 
--- Públicos a que o tema se aplica. TODOS = aparece para qualquer pessoa que respondeu o questionário.
-CREATE TABLE tb_direito_tag (
-    cd_direito  NUMBER(10)         NOT NULL,
-    tp_tag      VARCHAR2(20 CHAR)  NOT NULL,
-    CONSTRAINT pk_direito_tag PRIMARY KEY (cd_direito, tp_tag),
-    CONSTRAINT fk_tag_direito FOREIGN KEY (cd_direito) REFERENCES tb_direito (cd_direito),
-    CONSTRAINT ck_direito_tag CHECK (tp_tag IN (
-        'IDOSO', 'JOVEM', 'PCD', 'PCD_MOBILIDADE', 'PPI', 'ESCOLA_PUBLICA', 'BAIXA_RENDA', 'TODOS'))
-);
+-- Públicos a que o tema se aplica. TODOS = qualquer pessoa que respondeu o questionário.
+DECLARE
+  existe NUMBER;
+BEGIN
+  SELECT COUNT(*) INTO existe FROM user_tables WHERE table_name = 'TB_DIREITO_TAG';
+  IF existe = 0 THEN
+    EXECUTE IMMEDIATE q'[
+    CREATE TABLE TB_DIREITO_TAG
+       (    CD_DIREITO NUMBER(10,0) NOT NULL,
+        TP_TAG VARCHAR2(20) NOT NULL,
+         CONSTRAINT CK_DTAG_TAG CHECK (tp_tag IN
+                    ('IDOSO','JOVEM','PCD','PCD_MOBILIDADE','PPI','ESCOLA_PUBLICA','BAIXA_RENDA','TODOS')),
+         CONSTRAINT PK_DIREITO_TAG PRIMARY KEY (CD_DIREITO, TP_TAG),
+         CONSTRAINT FK_DTAG_DIREITO FOREIGN KEY (CD_DIREITO)
+          REFERENCES TB_DIREITO (CD_DIREITO)
+       )]';
+    DBMS_OUTPUT.PUT_LINE('Criada a tabela TB_DIREITO_TAG');
+  ELSE
+    DBMS_OUTPUT.PUT_LINE('TB_DIREITO_TAG já existe: mantida como está');
+  END IF;
+END;
+/
 
 -- "Cidade viva": cidades que já receberam o conteúdo de demonstração e o último pulso de atividade.
--- nm_cidade_chave é o nome em maiúsculas e sem acento ("SAO PAULO"); a chave primária impede
--- que duas requisições simultâneas semeiem a mesma cidade.
-CREATE TABLE tb_semeadura_cidade (
-    nm_cidade_chave  VARCHAR2(80 CHAR)  NOT NULL,
-    sg_uf            CHAR(2)            NOT NULL,
-    nm_cidade        VARCHAR2(80 CHAR)  NOT NULL,
-    dt_semeadura     DATE               NOT NULL,
-    dt_ultimo_pulso  DATE               NOT NULL,
-    qt_eventos       NUMBER(10)         DEFAULT 0 NOT NULL,
-    CONSTRAINT pk_semeadura_cidade PRIMARY KEY (nm_cidade_chave, sg_uf)
-);
-
-
--- =====================================================================================
--- 4. Índices
--- =====================================================================================
-
--- Chaves estrangeiras (exclusões em lote e contagens por denúncia/usuário)
-CREATE INDEX ix_denuncia_usuario     ON tb_denuncia (cd_usuario);
-CREATE INDEX ix_comentario_denuncia  ON tb_comentario (cd_denuncia);
-CREATE INDEX ix_comentario_usuario   ON tb_comentario (cd_usuario);
-CREATE INDEX ix_voto_denuncia        ON tb_voto_denuncia (cd_denuncia);
-CREATE INDEX ix_confirmacao_denuncia ON tb_confirmacao_resolucao (cd_denuncia);
-
--- Feed, busca e relatórios filtram pela UF (a cidade é comparada sem acento, por função)
-CREATE INDEX ix_denuncia_uf_criacao  ON tb_denuncia (sg_uf, dt_criacao);
-CREATE INDEX ix_usuario_uf           ON tb_usuario (sg_uf);
-
--- Título de tema único, sem diferenciar maiúsculas (a API responde 409 ao repetir)
-CREATE UNIQUE INDEX uk_direito_titulo ON tb_direito (UPPER(ds_titulo));
-
+DECLARE
+  existe NUMBER;
+BEGIN
+  SELECT COUNT(*) INTO existe FROM user_tables WHERE table_name = 'TB_SEMEADURA_CIDADE';
+  IF existe = 0 THEN
+    EXECUTE IMMEDIATE q'[
+    CREATE TABLE TB_SEMEADURA_CIDADE
+       (    NM_CIDADE_CHAVE VARCHAR2(80) NOT NULL,
+        SG_UF CHAR(2) NOT NULL,
+        NM_CIDADE VARCHAR2(80) NOT NULL,
+        DT_SEMEADURA TIMESTAMP (6) DEFAULT SYSTIMESTAMP NOT NULL,
+        DT_ULTIMO_PULSO TIMESTAMP (6) DEFAULT SYSTIMESTAMP NOT NULL,
+        QT_EVENTOS NUMBER(6,0) DEFAULT 0 NOT NULL,
+         CONSTRAINT PK_SEMEADURA_CIDADE PRIMARY KEY (NM_CIDADE_CHAVE, SG_UF)
+       )]';
+    DBMS_OUTPUT.PUT_LINE('Criada a tabela TB_SEMEADURA_CIDADE');
+  ELSE
+    DBMS_OUTPUT.PUT_LINE('TB_SEMEADURA_CIDADE já existe: mantida como está');
+  END IF;
+END;
+/
 
 -- =====================================================================================
--- 5. Carga inicial: catálogo de direitos
+-- 3. Índices (as chaves primárias e únicas já criam os seus)
+-- =====================================================================================
+
+DECLARE
+  existe NUMBER;
+BEGIN
+  SELECT COUNT(*) INTO existe FROM user_indexes WHERE index_name = 'IX_COMENTARIO_DENUNCIA';
+  IF existe = 0 THEN
+    EXECUTE IMMEDIATE q'[CREATE INDEX IX_COMENTARIO_DENUNCIA ON TB_COMENTARIO (CD_DENUNCIA)]';
+    DBMS_OUTPUT.PUT_LINE('Criado o índice IX_COMENTARIO_DENUNCIA');
+  END IF;
+END;
+/
+
+DECLARE
+  existe NUMBER;
+BEGIN
+  SELECT COUNT(*) INTO existe FROM user_indexes WHERE index_name = 'IX_COMENTARIO_USUARIO';
+  IF existe = 0 THEN
+    EXECUTE IMMEDIATE q'[CREATE INDEX IX_COMENTARIO_USUARIO ON TB_COMENTARIO (CD_USUARIO)]';
+    DBMS_OUTPUT.PUT_LINE('Criado o índice IX_COMENTARIO_USUARIO');
+  END IF;
+END;
+/
+
+DECLARE
+  existe NUMBER;
+BEGIN
+  SELECT COUNT(*) INTO existe FROM user_indexes WHERE index_name = 'IX_CONFRES_DENUNCIA';
+  IF existe = 0 THEN
+    EXECUTE IMMEDIATE q'[CREATE INDEX IX_CONFRES_DENUNCIA ON TB_CONFIRMACAO_RESOLUCAO (CD_DENUNCIA)]';
+    DBMS_OUTPUT.PUT_LINE('Criado o índice IX_CONFRES_DENUNCIA');
+  END IF;
+END;
+/
+
+DECLARE
+  existe NUMBER;
+BEGIN
+  SELECT COUNT(*) INTO existe FROM user_indexes WHERE index_name = 'IX_DENUNCIA_CIDADE';
+  IF existe = 0 THEN
+    EXECUTE IMMEDIATE q'[CREATE INDEX IX_DENUNCIA_CIDADE ON TB_DENUNCIA (NM_CIDADE, SG_UF)]';
+    DBMS_OUTPUT.PUT_LINE('Criado o índice IX_DENUNCIA_CIDADE');
+  END IF;
+END;
+/
+
+DECLARE
+  existe NUMBER;
+BEGIN
+  SELECT COUNT(*) INTO existe FROM user_indexes WHERE index_name = 'IX_DENUNCIA_USUARIO';
+  IF existe = 0 THEN
+    EXECUTE IMMEDIATE q'[CREATE INDEX IX_DENUNCIA_USUARIO ON TB_DENUNCIA (CD_USUARIO)]';
+    DBMS_OUTPUT.PUT_LINE('Criado o índice IX_DENUNCIA_USUARIO');
+  END IF;
+END;
+/
+
+DECLARE
+  existe NUMBER;
+BEGIN
+  SELECT COUNT(*) INTO existe FROM user_indexes WHERE index_name = 'IX_DIREITO_TAG';
+  IF existe = 0 THEN
+    EXECUTE IMMEDIATE q'[CREATE INDEX IX_DIREITO_TAG ON TB_DIREITO_TAG (TP_TAG)]';
+    DBMS_OUTPUT.PUT_LINE('Criado o índice IX_DIREITO_TAG');
+  END IF;
+END;
+/
+
+DECLARE
+  existe NUMBER;
+BEGIN
+  SELECT COUNT(*) INTO existe FROM user_indexes WHERE index_name = 'IX_USUARIO_SIMULADO';
+  IF existe = 0 THEN
+    EXECUTE IMMEDIATE q'[CREATE INDEX IX_USUARIO_SIMULADO ON TB_USUARIO (ST_SIMULADO, SG_UF)]';
+    DBMS_OUTPUT.PUT_LINE('Criado o índice IX_USUARIO_SIMULADO');
+  END IF;
+END;
+/
+
+DECLARE
+  existe NUMBER;
+BEGIN
+  SELECT COUNT(*) INTO existe FROM user_indexes WHERE index_name = 'IX_VOTO_DENUNCIA';
+  IF existe = 0 THEN
+    EXECUTE IMMEDIATE q'[CREATE INDEX IX_VOTO_DENUNCIA ON TB_VOTO_DENUNCIA (CD_DENUNCIA)]';
+    DBMS_OUTPUT.PUT_LINE('Criado o índice IX_VOTO_DENUNCIA');
+  END IF;
+END;
+/
+
+-- =====================================================================================
+-- 4. Carga inicial: catálogo de direitos
 -- =====================================================================================
 -- Linguagem cautelosa: cada tema indica uma possibilidade a verificar e o caminho oficial.
 -- O tema aparece em GET /direitos/meus quando uma das suas tags bate com o perfil da pessoa
--- (TODOS aparece para qualquer perfil respondido). Revise as regras antes de cada entrega:
--- valores e critérios de programas sociais mudam com frequência.
-
-SET DEFINE OFF;
+-- (TODOS aparece para qualquer perfil respondido). Cada tema só entra se ainda não houver um
+-- tema com o mesmo título; temas já cadastrados não são alterados.
 
 -- 1. Transporte e mobilidade
-INSERT INTO tb_direito (cd_direito, ds_titulo, ds_resumo, ds_direito, ds_aviso, ds_base_legal, ds_link_oficial, tp_icone, nr_ordem)
-VALUES (seq_direito.NEXTVAL, 'Transporte e mobilidade',
-        'Saiba onde consultar gratuidades e programas de transporte.',
-        'Passe Livre e outros programas de transporte. Pessoas a partir de 65 anos podem ter gratuidade no transporte coletivo urbano, e muitas cidades estendem o benefício a partir dos 60. Pessoas com deficiência de baixa renda podem ter o Passe Livre interestadual. Exemplos para pesquisa.',
-        'Os critérios variam por programa e localidade. Confirme as regras no órgão responsável.',
-        'Lei 10.741/2003 (Estatuto da Pessoa Idosa), arts. 39 e 40; Lei 8.899/1994',
-        'https://www.gov.br/pt-br/servicos/obter-o-passe-livre-interestadual', 'TRANSPORTE', 1);
-INSERT INTO tb_direito_passo (cd_direito, nr_ordem, ds_titulo, ds_passo) VALUES (seq_direito.CURRVAL, 1, 'Identifique o programa',
-        'Verifique se o deslocamento é municipal, intermunicipal ou interestadual.');
-INSERT INTO tb_direito_passo (cd_direito, nr_ordem, ds_titulo, ds_passo) VALUES (seq_direito.CURRVAL, 2, 'Consulte o órgão responsável',
-        'Procure o portal oficial do serviço de transporte e confira os critérios atuais.');
-INSERT INTO tb_direito_passo (cd_direito, nr_ordem, ds_titulo, ds_passo) VALUES (seq_direito.CURRVAL, 3, 'Separe os documentos',
-        'Em geral pedem documento com foto e, conforme o programa, comprovante de residência, laudo médico ou inscrição no CadÚnico.');
-INSERT INTO tb_direito_tag (cd_direito, tp_tag) VALUES (seq_direito.CURRVAL, 'IDOSO');
-INSERT INTO tb_direito_tag (cd_direito, tp_tag) VALUES (seq_direito.CURRVAL, 'PCD');
-INSERT INTO tb_direito_tag (cd_direito, tp_tag) VALUES (seq_direito.CURRVAL, 'PCD_MOBILIDADE');
+DECLARE
+  existe  NUMBER;
+  id_tema NUMBER;
+BEGIN
+  SELECT COUNT(*) INTO existe FROM tb_direito WHERE UPPER(ds_titulo) = UPPER(q'[Transporte e mobilidade]');
+  IF existe = 0 THEN
+    INSERT INTO tb_direito (cd_direito, ds_titulo, ds_resumo, ds_direito, ds_aviso, ds_base_legal, ds_link_oficial, tp_icone, nr_ordem)
+      VALUES (seq_direito.NEXTVAL, q'[Transporte e mobilidade]',
+              q'[Saiba onde consultar gratuidades e programas de transporte.]',
+              q'[Passe Livre e outros programas de transporte. Exemplos para pesquisa.]',
+              q'[Os critérios variam por programa e localidade. Confirme as regras no órgão responsável.]',
+              q'[Lei 10.741/2003 (Estatuto da Pessoa Idosa), arts. 39 e 40; Lei 8.899/1994 (Passe Livre interestadual)]',
+              q'[https://www.gov.br/pt-br/servicos/obter-o-passe-livre-interestadual]', 'TRANSPORTE', 1)
+      RETURNING cd_direito INTO id_tema;
+    INSERT INTO tb_direito_passo (cd_direito, nr_ordem, ds_titulo, ds_passo)
+      VALUES (id_tema, 1, q'[Identifique o programa]', q'[Verifique se o deslocamento é municipal, intermunicipal ou interestadual.]');
+    INSERT INTO tb_direito_passo (cd_direito, nr_ordem, ds_titulo, ds_passo)
+      VALUES (id_tema, 2, q'[Consulte o órgão responsável]', q'[Procure o portal oficial do serviço de transporte e confira os critérios atuais.]');
+    INSERT INTO tb_direito_tag (cd_direito, tp_tag) VALUES (id_tema, 'IDOSO');
+    INSERT INTO tb_direito_tag (cd_direito, tp_tag) VALUES (id_tema, 'PCD');
+    INSERT INTO tb_direito_tag (cd_direito, tp_tag) VALUES (id_tema, 'PCD_MOBILIDADE');
+    DBMS_OUTPUT.PUT_LINE(q'[Inserido o tema Transporte e mobilidade]');
+  ELSE
+    DBMS_OUTPUT.PUT_LINE(q'[Tema Transporte e mobilidade já existe: mantido como está]');
+  END IF;
+END;
+/
 
 -- 2. Atendimento prioritário
-INSERT INTO tb_direito (cd_direito, ds_titulo, ds_resumo, ds_direito, ds_aviso, ds_base_legal, ds_link_oficial, tp_icone, nr_ordem)
-VALUES (seq_direito.NEXTVAL, 'Atendimento prioritário',
-        'Filas e atendimento preferencial em órgãos públicos, bancos e serviços.',
-        'Pessoas idosas (60+) e pessoas com deficiência podem ter atendimento preferencial em repartições públicas, bancos, serviços de saúde e no comércio. A partir dos 80 anos, a prioridade pode ser ainda maior, à frente das demais pessoas idosas.',
-        'Cada local organiza a prioridade de um jeito. Se ela não for respeitada, procure a ouvidoria do serviço.',
-        'Lei 10.048/2000; Lei 10.741/2003 (Estatuto da Pessoa Idosa), art. 3º; Lei 13.146/2015 (Estatuto da Pessoa com Deficiência), art. 9º',
-        'https://www.planalto.gov.br/ccivil_03/leis/l10048.htm', 'PRIORIDADE', 2);
-INSERT INTO tb_direito_passo (cd_direito, nr_ordem, ds_titulo, ds_passo) VALUES (seq_direito.CURRVAL, 1, 'Leve um documento',
-        'Tenha em mãos um documento com foto que comprove a idade ou, se for o caso, um documento que indique a deficiência.');
-INSERT INTO tb_direito_passo (cd_direito, nr_ordem, ds_titulo, ds_passo) VALUES (seq_direito.CURRVAL, 2, 'Procure a fila ou o guichê preferencial',
-        'Se não houver sinalização, peça atendimento preferencial a um funcionário.');
-INSERT INTO tb_direito_passo (cd_direito, nr_ordem, ds_titulo, ds_passo) VALUES (seq_direito.CURRVAL, 3, 'Registre a reclamação',
-        'Se o direito não for respeitado, registre na ouvidoria do órgão ou do banco, ou no Procon da sua cidade.');
-INSERT INTO tb_direito_tag (cd_direito, tp_tag) VALUES (seq_direito.CURRVAL, 'IDOSO');
-INSERT INTO tb_direito_tag (cd_direito, tp_tag) VALUES (seq_direito.CURRVAL, 'PCD');
+DECLARE
+  existe  NUMBER;
+  id_tema NUMBER;
+BEGIN
+  SELECT COUNT(*) INTO existe FROM tb_direito WHERE UPPER(ds_titulo) = UPPER(q'[Atendimento prioritário]');
+  IF existe = 0 THEN
+    INSERT INTO tb_direito (cd_direito, ds_titulo, ds_resumo, ds_direito, ds_aviso, ds_base_legal, ds_link_oficial, tp_icone, nr_ordem)
+      VALUES (seq_direito.NEXTVAL, q'[Atendimento prioritário]',
+              q'[Entenda como consultar as regras de atendimento.]',
+              q'[Informação para ajudar você a solicitar atendimento.]',
+              q'[Os critérios variam por programa e localidade. Confirme as regras no órgão responsável.]',
+              q'[Lei 10.048/2000 (atendimento prioritário)]',
+              q'[https://www.planalto.gov.br/ccivil_03/leis/l10048.htm]', 'PRIORIDADE', 2)
+      RETURNING cd_direito INTO id_tema;
+    INSERT INTO tb_direito_passo (cd_direito, nr_ordem, ds_titulo, ds_passo)
+      VALUES (id_tema, 1, q'[Entenda as regras]', q'[Consulte a legislação aplicável e as orientações oficiais do serviço.]');
+    INSERT INTO tb_direito_passo (cd_direito, nr_ordem, ds_titulo, ds_passo)
+      VALUES (id_tema, 2, q'[Verifique a documentação]', q'[Confira com o estabelecimento ou órgão quais comprovantes são necessários.]');
+    INSERT INTO tb_direito_tag (cd_direito, tp_tag) VALUES (id_tema, 'IDOSO');
+    INSERT INTO tb_direito_tag (cd_direito, tp_tag) VALUES (id_tema, 'PCD');
+    DBMS_OUTPUT.PUT_LINE(q'[Inserido o tema Atendimento prioritário]');
+  ELSE
+    DBMS_OUTPUT.PUT_LINE(q'[Tema Atendimento prioritário já existe: mantido como está]');
+  END IF;
+END;
+/
 
--- 3. BPC
-INSERT INTO tb_direito (cd_direito, ds_titulo, ds_resumo, ds_direito, ds_aviso, ds_base_legal, ds_link_oficial, tp_icone, nr_ordem)
-VALUES (seq_direito.NEXTVAL, 'Benefício de Prestação Continuada (BPC)',
-        'Um salário mínimo por mês para pessoa idosa ou com deficiência de família de baixa renda.',
-        'O BPC pode ser concedido a pessoas a partir de 65 anos ou a pessoas com deficiência de qualquer idade, quando a renda da família é baixa. Não é aposentadoria e não exige ter contribuído com o INSS. A inscrição no CadÚnico é obrigatória.',
-        'Os limites de renda e as regras de avaliação mudam. Confirme os critérios atuais no CRAS ou no INSS.',
-        'Lei 8.742/1993 (Lei Orgânica da Assistência Social), art. 20',
-        'https://www.planalto.gov.br/ccivil_03/leis/l8742.htm', 'RENDA', 3);
-INSERT INTO tb_direito_passo (cd_direito, nr_ordem, ds_titulo, ds_passo) VALUES (seq_direito.CURRVAL, 1, 'Atualize o CadÚnico',
-        'Procure o CRAS da sua região para fazer ou atualizar a inscrição da família no Cadastro Único.');
-INSERT INTO tb_direito_passo (cd_direito, nr_ordem, ds_titulo, ds_passo) VALUES (seq_direito.CURRVAL, 2, 'Faça o pedido no INSS',
-        'O pedido pode ser feito pelo aplicativo ou site Meu INSS, ou pela central 135.');
-INSERT INTO tb_direito_passo (cd_direito, nr_ordem, ds_titulo, ds_passo) VALUES (seq_direito.CURRVAL, 3, 'Acompanhe as avaliações',
-        'Para pessoas com deficiência há avaliação médica e social. Acompanhe o andamento e as convocações pelo Meu INSS.');
-INSERT INTO tb_direito_tag (cd_direito, tp_tag) VALUES (seq_direito.CURRVAL, 'BAIXA_RENDA');
+-- 3. Benefícios municipais
+DECLARE
+  existe  NUMBER;
+  id_tema NUMBER;
+BEGIN
+  SELECT COUNT(*) INTO existe FROM tb_direito WHERE UPPER(ds_titulo) = UPPER(q'[Benefícios municipais]');
+  IF existe = 0 THEN
+    INSERT INTO tb_direito (cd_direito, ds_titulo, ds_resumo, ds_direito, ds_aviso, ds_base_legal, ds_link_oficial, tp_icone, nr_ordem)
+      VALUES (seq_direito.NEXTVAL, q'[Benefícios municipais]',
+              q'[Consulte possíveis isenções e apoios na sua cidade.]',
+              q'[Isenção de IPTU para idosos e outros apoios podem depender de regras locais.]',
+              q'[Os critérios variam por programa e localidade. Confirme as regras no órgão responsável.]',
+              NULL,
+              NULL, 'MUNICIPIO', 3)
+      RETURNING cd_direito INTO id_tema;
+    INSERT INTO tb_direito_passo (cd_direito, nr_ordem, ds_titulo, ds_passo)
+      VALUES (id_tema, 1, q'[Consulte sua prefeitura]', q'[Busque o tema no portal oficial da cidade, sem presumir que o benefício existe.]');
+    INSERT INTO tb_direito_passo (cd_direito, nr_ordem, ds_titulo, ds_passo)
+      VALUES (id_tema, 2, q'[Confira os critérios]', q'[Idade, renda, imóvel e outros requisitos precisam ser verificados no município.]');
+    INSERT INTO tb_direito_tag (cd_direito, tp_tag) VALUES (id_tema, 'TODOS');
+    DBMS_OUTPUT.PUT_LINE(q'[Inserido o tema Benefícios municipais]');
+  ELSE
+    DBMS_OUTPUT.PUT_LINE(q'[Tema Benefícios municipais já existe: mantido como está]');
+  END IF;
+END;
+/
 
--- 4. Tarifa Social de Energia Elétrica
-INSERT INTO tb_direito (cd_direito, ds_titulo, ds_resumo, ds_direito, ds_aviso, ds_base_legal, ds_link_oficial, tp_icone, nr_ordem)
-VALUES (seq_direito.NEXTVAL, 'Tarifa Social de Energia Elétrica',
-        'Desconto na conta de luz para famílias inscritas no CadÚnico.',
-        'Famílias de baixa renda inscritas no CadÚnico, ou com alguém que recebe o BPC, podem ter desconto na conta de luz. Em muitos casos o desconto é aplicado automaticamente quando os dados do CadÚnico estão atualizados.',
-        'As faixas de desconto e os critérios mudam. Confirme com a distribuidora de energia da sua cidade.',
-        'Lei 12.212/2010',
-        'https://www.planalto.gov.br/ccivil_03/_ato2007-2010/2010/lei/l12212.htm', 'RENDA', 4);
-INSERT INTO tb_direito_passo (cd_direito, nr_ordem, ds_titulo, ds_passo) VALUES (seq_direito.CURRVAL, 1, 'Confira o CadÚnico',
-        'Verifique no CRAS se a inscrição da família está ativa e atualizada.');
-INSERT INTO tb_direito_passo (cd_direito, nr_ordem, ds_titulo, ds_passo) VALUES (seq_direito.CURRVAL, 2, 'Fale com a distribuidora',
-        'Informe o NIS e o número da instalação à distribuidora de energia e pergunte se o desconto já está aplicado.');
-INSERT INTO tb_direito_tag (cd_direito, tp_tag) VALUES (seq_direito.CURRVAL, 'BAIXA_RENDA');
+-- 4. Educação e cotas
+DECLARE
+  existe  NUMBER;
+  id_tema NUMBER;
+BEGIN
+  SELECT COUNT(*) INTO existe FROM tb_direito WHERE UPPER(ds_titulo) = UPPER(q'[Educação e cotas]');
+  IF existe = 0 THEN
+    INSERT INTO tb_direito (cd_direito, ds_titulo, ds_resumo, ds_direito, ds_aviso, ds_base_legal, ds_link_oficial, tp_icone, nr_ordem)
+      VALUES (seq_direito.NEXTVAL, q'[Educação e cotas]',
+              q'[Veja como funcionam as cotas no ensino superior público.]',
+              q'[Universidades e institutos federais reservam vagas para quem estudou em escola pública, com subcotas para pessoas pretas, pardas, indígenas e com deficiência.]',
+              q'[Cada processo seletivo publica suas próprias regras no edital. Leia o edital antes de se inscrever.]',
+              q'[Lei 12.711/2012 (Lei de Cotas)]',
+              q'[https://www.gov.br/mec/pt-br]', 'EDUCACAO', 4)
+      RETURNING cd_direito INTO id_tema;
+    INSERT INTO tb_direito_passo (cd_direito, nr_ordem, ds_titulo, ds_passo)
+      VALUES (id_tema, 1, q'[Confira seu percurso escolar]', q'[As cotas exigem, em geral, o ensino médio completo em escola pública.]');
+    INSERT INTO tb_direito_passo (cd_direito, nr_ordem, ds_titulo, ds_passo)
+      VALUES (id_tema, 2, q'[Leia o edital]', q'[No Sisu ou no vestibular, verifique as modalidades de cota e os documentos exigidos.]');
+    INSERT INTO tb_direito_tag (cd_direito, tp_tag) VALUES (id_tema, 'ESCOLA_PUBLICA');
+    INSERT INTO tb_direito_tag (cd_direito, tp_tag) VALUES (id_tema, 'PCD');
+    INSERT INTO tb_direito_tag (cd_direito, tp_tag) VALUES (id_tema, 'PPI');
+    DBMS_OUTPUT.PUT_LINE(q'[Inserido o tema Educação e cotas]');
+  ELSE
+    DBMS_OUTPUT.PUT_LINE(q'[Tema Educação e cotas já existe: mantido como está]');
+  END IF;
+END;
+/
 
--- 5. ID Jovem
-INSERT INTO tb_direito (cd_direito, ds_titulo, ds_resumo, ds_direito, ds_aviso, ds_base_legal, ds_link_oficial, tp_icone, nr_ordem)
-VALUES (seq_direito.NEXTVAL, 'Identidade Jovem (ID Jovem)',
-        'Viagens interestaduais gratuitas ou com desconto e meia-entrada para jovens de baixa renda.',
-        'Jovens de 15 a 29 anos de famílias inscritas no CadÚnico podem emitir a ID Jovem, que dá acesso a vagas gratuitas ou com desconto no transporte interestadual e à meia-entrada em eventos culturais e esportivos.',
-        'É preciso ter de 15 a 29 anos e CadÚnico atualizado. Confirme as regras no canal oficial da ID Jovem.',
-        'Lei 12.852/2013 (Estatuto da Juventude), arts. 23 e 32; Decreto 8.537/2015',
-        'https://www.planalto.gov.br/ccivil_03/_ato2015-2018/2015/decreto/d8537.htm', 'TRANSPORTE', 5);
-INSERT INTO tb_direito_passo (cd_direito, nr_ordem, ds_titulo, ds_passo) VALUES (seq_direito.CURRVAL, 1, 'Tenha o NIS em mãos',
-        'O NIS é o número da inscrição no CadÚnico. Se não souber, pergunte no CRAS.');
-INSERT INTO tb_direito_passo (cd_direito, nr_ordem, ds_titulo, ds_passo) VALUES (seq_direito.CURRVAL, 2, 'Emita a carteira',
-        'Emita a ID Jovem pelo aplicativo oficial ou pelo portal gov.br e guarde a versão digital.');
-INSERT INTO tb_direito_passo (cd_direito, nr_ordem, ds_titulo, ds_passo) VALUES (seq_direito.CURRVAL, 3, 'Reserve com antecedência',
-        'As vagas gratuitas no transporte interestadual são limitadas: procure a empresa de ônibus antes da viagem.');
-INSERT INTO tb_direito_tag (cd_direito, tp_tag) VALUES (seq_direito.CURRVAL, 'BAIXA_RENDA');
-
--- 6. Cotas no ensino superior
-INSERT INTO tb_direito (cd_direito, ds_titulo, ds_resumo, ds_direito, ds_aviso, ds_base_legal, ds_link_oficial, tp_icone, nr_ordem)
-VALUES (seq_direito.NEXTVAL, 'Cotas no ensino superior',
-        'Reserva de vagas em universidades e institutos federais.',
-        'Metade das vagas das universidades e institutos federais é reservada a quem cursou todo o ensino médio em escola pública. Dentro dessa reserva há vagas para pessoas pretas, pardas e indígenas, quilombolas, pessoas com deficiência e estudantes de baixa renda.',
-        'Cada edital (Sisu, vestibular próprio) detalha os documentos e as comissões de verificação. Leia o edital da instituição.',
-        'Lei 12.711/2012 (Lei de Cotas), atualizada pela Lei 14.723/2023',
-        'https://www.planalto.gov.br/ccivil_03/_ato2011-2014/2012/lei/l12711.htm', 'EDUCACAO', 6);
-INSERT INTO tb_direito_passo (cd_direito, nr_ordem, ds_titulo, ds_passo) VALUES (seq_direito.CURRVAL, 1, 'Confira se você se enquadra',
-        'Veja no edital qual modalidade de cota corresponde ao seu percurso escolar, renda, raça/cor ou deficiência.');
-INSERT INTO tb_direito_passo (cd_direito, nr_ordem, ds_titulo, ds_passo) VALUES (seq_direito.CURRVAL, 2, 'Reúna os documentos',
-        'Histórico escolar do ensino médio, comprovantes de renda da família e, se for o caso, autodeclaração ou laudo.');
-INSERT INTO tb_direito_passo (cd_direito, nr_ordem, ds_titulo, ds_passo) VALUES (seq_direito.CURRVAL, 3, 'Escolha a modalidade na inscrição',
-        'No Sisu ou no vestibular, marque a modalidade de cota correta e acompanhe os prazos de matrícula.');
-INSERT INTO tb_direito_tag (cd_direito, tp_tag) VALUES (seq_direito.CURRVAL, 'ESCOLA_PUBLICA');
-INSERT INTO tb_direito_tag (cd_direito, tp_tag) VALUES (seq_direito.CURRVAL, 'PPI');
-INSERT INTO tb_direito_tag (cd_direito, tp_tag) VALUES (seq_direito.CURRVAL, 'PCD');
-
--- 7. Meia-entrada
-INSERT INTO tb_direito (cd_direito, ds_titulo, ds_resumo, ds_direito, ds_aviso, ds_base_legal, ds_link_oficial, tp_icone, nr_ordem)
-VALUES (seq_direito.NEXTVAL, 'Meia-entrada em cultura e esporte',
-        'Pague metade do ingresso em cinemas, shows, teatros e eventos esportivos.',
-        'Têm direito à meia-entrada: pessoas a partir de 60 anos, estudantes, pessoas com deficiência (e o acompanhante, quando necessário) e jovens de 15 a 29 anos de baixa renda com a ID Jovem.',
-        'Os eventos podem limitar a quantidade de ingressos com meia-entrada. Leve o documento que comprova o direito.',
-        'Lei 12.933/2013; Lei 10.741/2003 (Estatuto da Pessoa Idosa), art. 23',
-        'https://www.planalto.gov.br/ccivil_03/_ato2011-2014/2013/lei/l12933.htm', 'OUTRO', 7);
-INSERT INTO tb_direito_passo (cd_direito, nr_ordem, ds_titulo, ds_passo) VALUES (seq_direito.CURRVAL, 1, 'Separe o comprovante',
-        'Documento com foto (idade), carteira estudantil, ID Jovem ou documento que indique a deficiência.');
-INSERT INTO tb_direito_passo (cd_direito, nr_ordem, ds_titulo, ds_passo) VALUES (seq_direito.CURRVAL, 2, 'Escolha meia-entrada na compra',
-        'Na bilheteria ou no site, selecione o ingresso de meia-entrada e apresente o comprovante na entrada.');
-INSERT INTO tb_direito_tag (cd_direito, tp_tag) VALUES (seq_direito.CURRVAL, 'IDOSO');
-INSERT INTO tb_direito_tag (cd_direito, tp_tag) VALUES (seq_direito.CURRVAL, 'PCD');
-INSERT INTO tb_direito_tag (cd_direito, tp_tag) VALUES (seq_direito.CURRVAL, 'JOVEM');
-INSERT INTO tb_direito_tag (cd_direito, tp_tag) VALUES (seq_direito.CURRVAL, 'BAIXA_RENDA');
-
--- 8. Saúde
-INSERT INTO tb_direito (cd_direito, ds_titulo, ds_resumo, ds_direito, ds_aviso, ds_base_legal, ds_link_oficial, tp_icone, nr_ordem)
-VALUES (seq_direito.NEXTVAL, 'Saúde pública (SUS)',
-        'Atendimento gratuito, vacinas e medicamentos pelo SUS.',
-        'Qualquer pessoa pode ser atendida gratuitamente pelo SUS: consultas na Unidade Básica de Saúde (UBS), vacinas, exames, urgência e emergência. Alguns medicamentos são gratuitos ou têm desconto pelo programa Farmácia Popular.',
-        'A oferta de serviços varia por município. Procure a UBS mais próxima para saber o que está disponível.',
-        'Constituição Federal, art. 196; Lei 8.080/1990',
-        'https://www.planalto.gov.br/ccivil_03/leis/l8080.htm', 'SAUDE', 8);
-INSERT INTO tb_direito_passo (cd_direito, nr_ordem, ds_titulo, ds_passo) VALUES (seq_direito.CURRVAL, 1, 'Tenha o Cartão SUS',
-        'Faça o Cartão Nacional de Saúde na UBS ou consulte o número no aplicativo Meu SUS Digital.');
-INSERT INTO tb_direito_passo (cd_direito, nr_ordem, ds_titulo, ds_passo) VALUES (seq_direito.CURRVAL, 2, 'Procure a UBS da sua região',
-        'A UBS é a porta de entrada: ela agenda consultas e encaminha para especialistas e exames.');
-INSERT INTO tb_direito_tag (cd_direito, tp_tag) VALUES (seq_direito.CURRVAL, 'TODOS');
-
--- 9. Benefícios municipais
-INSERT INTO tb_direito (cd_direito, ds_titulo, ds_resumo, ds_direito, ds_aviso, ds_base_legal, ds_link_oficial, tp_icone, nr_ordem)
-VALUES (seq_direito.NEXTVAL, 'Benefícios da sua cidade',
-        'Programas próprios da prefeitura: isenções, auxílios e serviços locais.',
-        'Muitas prefeituras têm programas próprios, como isenção de IPTU para pessoas idosas ou de baixa renda, auxílios emergenciais, cursos gratuitos e transporte especial para pessoas com deficiência. Os programas mudam de cidade para cidade.',
-        'Não há uma regra nacional: confirme no site oficial da prefeitura ou no CRAS.',
-        NULL, NULL, 'MUNICIPIO', 9);
-INSERT INTO tb_direito_passo (cd_direito, nr_ordem, ds_titulo, ds_passo) VALUES (seq_direito.CURRVAL, 1, 'Consulte o site da prefeitura',
-        'Procure a área de serviços ao cidadão ou de assistência social no site oficial da sua cidade.');
-INSERT INTO tb_direito_passo (cd_direito, nr_ordem, ds_titulo, ds_passo) VALUES (seq_direito.CURRVAL, 2, 'Pergunte no CRAS',
-        'O CRAS orienta sobre os programas sociais do município e ajuda na inscrição.');
-INSERT INTO tb_direito_tag (cd_direito, tp_tag) VALUES (seq_direito.CURRVAL, 'TODOS');
+-- 5. Assistência e renda
+DECLARE
+  existe  NUMBER;
+  id_tema NUMBER;
+BEGIN
+  SELECT COUNT(*) INTO existe FROM tb_direito WHERE UPPER(ds_titulo) = UPPER(q'[Assistência e renda]');
+  IF existe = 0 THEN
+    INSERT INTO tb_direito (cd_direito, ds_titulo, ds_resumo, ds_direito, ds_aviso, ds_base_legal, ds_link_oficial, tp_icone, nr_ordem)
+      VALUES (seq_direito.NEXTVAL, q'[Assistência e renda]',
+              q'[Programas sociais que podem apoiar famílias de baixa renda.]',
+              q'[Benefícios como o BPC e a Tarifa Social de Energia dependem do Cadastro Único e de critérios de renda.]',
+              q'[A aprovação depende de análise do órgão responsável. Procure o CRAS da sua região.]',
+              q'[Lei 8.742/1993 (LOAS); Lei 12.212/2010 (Tarifa Social de Energia)]',
+              q'[https://www.gov.br/mds/pt-br]', 'RENDA', 5)
+      RETURNING cd_direito INTO id_tema;
+    INSERT INTO tb_direito_passo (cd_direito, nr_ordem, ds_titulo, ds_passo)
+      VALUES (id_tema, 1, q'[Atualize o Cadastro Único]', q'[Procure o CRAS com documentos de todos da família para fazer ou atualizar o cadastro.]');
+    INSERT INTO tb_direito_passo (cd_direito, nr_ordem, ds_titulo, ds_passo)
+      VALUES (id_tema, 2, q'[Pergunte sobre os programas]', q'[No atendimento, peça orientação sobre os benefícios para os quais sua família pode ser avaliada.]');
+    INSERT INTO tb_direito_tag (cd_direito, tp_tag) VALUES (id_tema, 'BAIXA_RENDA');
+    INSERT INTO tb_direito_tag (cd_direito, tp_tag) VALUES (id_tema, 'IDOSO');
+    INSERT INTO tb_direito_tag (cd_direito, tp_tag) VALUES (id_tema, 'PCD');
+    DBMS_OUTPUT.PUT_LINE(q'[Inserido o tema Assistência e renda]');
+  ELSE
+    DBMS_OUTPUT.PUT_LINE(q'[Tema Assistência e renda já existe: mantido como está]');
+  END IF;
+END;
+/
 
 COMMIT;
