@@ -1,4 +1,9 @@
 /* 01 · Boas-vindas */
+.md-boas-vindas {
+  min-height: 100vh;
+  min-height: 100dvh;
+}
+
 .md-marca {
   margin-bottom: 45px;
 }
@@ -20,19 +25,26 @@
   height: 200px;
 }
 
-/* 02–05 · Cadastro e 06 · Entrar: espaço do Figma entre o cabeçalho e o conteúdo */
-.md-espaco-cabecalho {
-  height: 15px;
+/* As ações descem para o pé da tela, perto do polegar */
+.md-boas-vindas-acoes {
+  margin-top: auto;
+  padding-top: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
 }
 
-.md-espaco-entrar {
-  height: 50px;
+/* No computador o app é uma folha com 24px de margem em cima e embaixo */
+@media (min-width: 768px) {
+  .md-boas-vindas {
+    min-height: calc(100vh - 48px);
+    min-height: calc(100dvh - 48px);
+  }
 }
 
-.md-espaco-titulo {
-  height: 12px;
-}
-
-.md-espaco-botao {
-  height: 16px;
+/* 02–05 · Cadastro e 06 · Entrar: formulário no mesmo ritmo da tela (20px entre itens) */
+.md-formulario-inicio {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
 }
