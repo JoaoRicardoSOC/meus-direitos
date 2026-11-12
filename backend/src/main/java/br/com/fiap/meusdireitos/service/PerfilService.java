@@ -29,6 +29,8 @@ public class PerfilService {
 
     static final int IDADE_MAXIMA = 120;
     private static final String MSG_SEM_PERFIL = "Você ainda não respondeu o questionário de Meus Direitos.";
+    static final String MSG_SEM_CONSENTIMENTO =
+            "Para salvar estes dados, confirme que concorda em compartilhá-los para receber orientações.";
 
     /**
      * @throws EntidadeNaoEncontradaException (404) se o usuário ainda não respondeu: o front mostra o questionário
@@ -43,15 +45,14 @@ public class PerfilService {
         });
     }
 
-    /** Cria ou atualiza as respostas e devolve as tags e os direitos aplicáveis. */
+    /**
+     * Cria ou atualiza as respostas e devolve as tags e os direitos aplicáveis.
+     * Se algum dado sensível vier preenchido, exige {@code consentimento == true} (LGPD, art. 11):
+     * sem ele, 400 no campo "consentimento". O consentimento não é gravado.
+     */
     public PerfilCompletoResponse salvar(Long idUsuario, PerfilRequest req) {
         Validador.corpoObrigatorio(req);
-        LocalDate hoje = LocalDate.now();
-        new Validador()
-                .dataNoPassado("dataNascimento", req.dataNascimento())
-                .regra(req.dataNascimento() == null || !req.dataNascimento().isBefore(hoje.minusYears(IDADE_MAXIMA)),
-                        "dataNascimento", "Confira o ano de nascimento.")
-                .lancarSeHouverErros();
+        validar(req, LocalDate.now());
 
         PerfilDemografico perfil = new PerfilDemografico();
         perfil.setIdUsuario(idUsuario);
@@ -65,6 +66,17 @@ public class PerfilService {
             new PerfilDemograficoDaoJdbc(con).salvar(perfil);
             return montarResposta(con, perfil);
         });
+    }
+
+    /** Regras do questionário, sem acesso ao banco (testável isoladamente). */
+    static void validar(PerfilRequest req, LocalDate hoje) {
+        new Validador()
+                .dataNoPassado("dataNascimento", req.dataNascimento())
+                .regra(req.dataNascimento() == null || !req.dataNascimento().isBefore(hoje.minusYears(IDADE_MAXIMA)),
+                        "dataNascimento", "Confira o ano de nascimento.")
+                .regra(!req.temDadoSensivel() || Boolean.TRUE.equals(req.consentimento()), "consentimento",
+                        MSG_SEM_CONSENTIMENTO)
+                .lancarSeHouverErros();
     }
 
     /** Apaga os dados sensíveis do questionário. */
