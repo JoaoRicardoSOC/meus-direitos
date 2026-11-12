@@ -43,3 +43,25 @@ export function dataCurta(dataIso) {
   const [ano, mes, dia] = dataIso.slice(0, 10).split('-');
   return `${dia}/${mes}/${ano}`;
 }
+
+const numeros = new Intl.NumberFormat('pt-BR');
+
+/** 1234 → "1.234" */
+export function numero(valor) {
+  return numeros.format(valor ?? 0);
+}
+
+/** plural(1, 'comentário', 'comentários') → "1 comentário"; plural(3, …) → "3 comentários" */
+export function plural(quantidade, singular, pluralTexto) {
+  return `${numero(quantidade)} ${quantidade === 1 ? singular : pluralTexto}`;
+}
+
+/** Remove acentos e caixa para comparar nomes de cidade ("São Paulo" = "sao paulo"). */
+export function chaveTexto(texto) {
+  return (texto ?? '')
+    .normalize('NFD')
+    .replace(/\p{M}/gu, '')
+    .trim()
+    .replace(/\s+/g, ' ')
+    .toLowerCase();
+}
