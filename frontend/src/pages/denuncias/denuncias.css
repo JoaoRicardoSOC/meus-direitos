@@ -26,12 +26,6 @@
   border-color: var(--md-erro);
 }
 
-.md-entrada-botao:focus-visible {
-  outline: none;
-  border-color: var(--md-verde);
-  box-shadow: 0 0 0 3px var(--bs-focus-ring-color);
-}
-
 /* 12 / 13 · "Adicionar foto do problema" e 14 · opções de categoria */
 .md-opcao {
   display: flex;
@@ -49,6 +43,9 @@
   color: var(--md-verde);
   text-align: left;
   cursor: pointer;
+  transition:
+    background-color var(--md-dur-cor) ease,
+    border-color var(--md-dur-cor) ease;
 }
 
 /* 14 · opção de categoria: cartão branco com borda, raio 18, padding 16, texto tinta */
@@ -61,19 +58,10 @@
   color: var(--md-tinta);
 }
 
-.md-opcao:hover {
-  filter: brightness(0.97);
-}
-
-.md-opcao:focus-visible {
-  outline: 3px solid var(--bs-focus-ring-color);
-  outline-offset: 2px;
-}
-
-/* Categoria já escolhida: o Figma não mostra o estado; borda verde discreta */
+/* Categoria escolhida: borda de 2px verde e check à direita (o padding compensa a borda, sem pulo) */
 .md-opcao-categoria.ativo {
-  border-color: var(--md-verde);
-  box-shadow: inset 0 0 0 1px var(--md-verde);
+  padding: 15px;
+  border: 2px solid var(--md-verde);
   background: var(--md-suave);
 }
 
@@ -90,40 +78,73 @@
   margin: 0;
 }
 
-/* 13 · prévia da foto (60 px) e 15 · prévia grande (280 px) */
+/* 13 · foto anexada (miniatura + "Remover foto") e 15 · prévia grande */
 .md-foto-previa {
   display: block;
   width: 100%;
   object-fit: cover;
   border-radius: 12px;
+  background: var(--md-esqueleto);
+}
+
+.md-foto-anexada {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.md-foto-anexada .md-foto-previa {
+  width: 96px;
+  aspect-ratio: 4 / 3;
+  flex-shrink: 0;
+}
+
+.md-foto-grande {
+  aspect-ratio: 4 / 3;
+}
+
+/* 15 · miniaturas: três por linha; a escolhida com borda de 2px verde e check */
+.md-miniaturas {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
 }
 
 .md-miniatura {
+  position: relative;
   padding: 0;
-  border: 3px solid transparent;
+  border: 2px solid transparent;
   border-radius: 14px;
   background: transparent;
-  width: 72px;
+  overflow: hidden;
+  cursor: pointer;
+  transition: border-color var(--md-dur-cor) ease;
+}
+
+.md-miniatura-foto {
+  display: block;
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+  border-radius: 12px;
+  background: var(--md-esqueleto);
 }
 
 .md-miniatura.ativo {
   border-color: var(--md-verde);
 }
 
-.md-miniatura:focus-visible {
-  outline: 3px solid var(--bs-focus-ring-color);
-}
-
-/* Link discreto ("Remover foto") */
-.md-botao-texto {
-  align-self: flex-start;
-  padding: 4px 0;
-  border: 0;
-  background: transparent;
-  font-size: 13px;
-  font-weight: 700;
-  color: var(--md-verde);
-  text-decoration: underline;
+.md-miniatura-check {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--md-branco);
 }
 
 /* 16 · Denúncia publicada */
@@ -157,6 +178,7 @@
 
 .md-confirmacao .md-selo {
   align-self: center;
+  background: var(--md-branco);
 }
 
 /* 18 · Excluir denúncia */
@@ -174,7 +196,18 @@
 .md-bloco-gerenciar {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 12px;
+}
+
+/* 17 · Editar e Excluir em texto, lado a lado */
+.md-acoes-gerenciar {
+  display: flex;
+  gap: 24px;
+}
+
+.md-acoes-gerenciar .md-acao-texto:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 /* 17 · Progresso "X de 3 moradores confirmaram" */
@@ -194,18 +227,22 @@
   background: var(--md-verde);
 }
 
-/* 17 · "Gerenciar denúncia": Editar e Excluir lado a lado (158×48, gap 12, estilo md-acao) */
-.md-acao-gerenciar {
-  flex: 1;
-  padding: 10px;
-}
+/* Hover só em quem tem mouse (no celular ele fica preso) */
+@media (hover: hover) and (pointer: fine) {
+  .md-entrada-botao:hover {
+    border-color: var(--md-apagado);
+  }
 
-.md-acao-gerenciar:hover {
-  color: var(--md-verde);
-  filter: brightness(0.97);
-}
+  .md-opcao:hover {
+    background: var(--md-suave-escuro);
+  }
 
-.md-acao-gerenciar:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
+  .md-opcao-categoria:not(.ativo):hover {
+    background: var(--md-suave);
+    border-color: var(--md-suave-escuro);
+  }
+
+  .md-miniatura:not(.ativo):hover {
+    border-color: var(--md-suave-escuro);
+  }
 }

@@ -1,5 +1,5 @@
-import { useEffect, useId, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useEffect, useId, useRef, useState } from 'react';
+import { useLocation, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import Tela from '../../components/Tela.jsx';
 import Cabecalho from '../../components/Cabecalho.jsx';
 import Campo from '../../components/Campo.jsx';
@@ -7,6 +7,7 @@ import Mensagem, { Carregando } from '../../components/Mensagem.jsx';
 import { api } from '../../services/api.js';
 import { useSessao } from '../../contexts/SessaoContext.jsx';
 import { obrigatorio, tamanho, validarCampos } from '../../utils/validacao.js';
+import { focarPrimeiroErro } from '../../utils/foco.js';
 import EscolherCategoria from './EscolherCategoria.jsx';
 import EscolherFoto from './EscolherFoto.jsx';
 import DenunciaPublicada from './DenunciaPublicada.jsx';
@@ -39,10 +40,48 @@ function corpoDaRequisicao(valores) {
   return corpo;
 }
 
+/** Rascunho da denúncia nova: fica na aba até publicar (a edição não usa rascunho). */
+const CHAVE_RASCUNHO = 'md-rascunho-denuncia';
+
+function lerRascunho() {
+  try {
+    const salvo = JSON.parse(sessionStorage.getItem(CHAVE_RASCUNHO) ?? 'null');
+    if (!salvo || typeof salvo !== 'object') return VAZIO;
+    const valores = { ...VAZIO };
+    Object.keys(VAZIO).forEach((campo) => {
+      if (typeof salvo[campo] === 'string') valores[campo] = salvo[campo];
+    });
+    return valores;
+  } catch {
+    return VAZIO;
+  }
+}
+
+function salvarRascunho(valores) {
+  try {
+    const vazio = Object.values(valores).every((valor) => !String(valor).trim());
+    if (vazio) sessionStorage.removeItem(CHAVE_RASCUNHO);
+    else sessionStorage.setItem(CHAVE_RASCUNHO, JSON.stringify(valores));
+  } catch {
+    // sem armazenamento (aba privada, cota cheia): o formulário segue funcionando sem rascunho
+  }
+}
+
+function apagarRascunho() {
+  try {
+    sessionStorage.removeItem(CHAVE_RASCUNHO);
+  } catch {
+    // idem
+  }
+}
+
+const ETAPAS_DO_FORMULARIO = ['categoria', 'foto'];
+
 /**
  * 12 · Nova denúncia / Inicial, 13 · Preenchida, 14 · Categorias, 15 · Foto / Prévia e 16 · Denúncia publicada.
  * O mesmo componente cria (/denuncias/nova → POST) e edita (/denuncias/:id/editar → PUT).
- * As telas 14 e 15 são passos internos: a escolha volta para o formulário sem perder o que foi digitado.
+ * As telas 14, 15 e 16 são etapas na URL (?passo=categoria|foto|publicada): o "voltar" do celular
+ * volta ao formulário sem perder o que foi digitado, na mesma rolagem e no botão que abriu a etapa.
  */
 export default function NovaDenuncia() {
   const { id } = useParams();
@@ -50,17 +89,41 @@ export default function NovaDenuncia() {
   const { usuario } = useSessao();
   const usuarioId = usuario?.id;
   const navegar = useNavigate();
+  const local = useLocation();
+  const [parametros] = useSearchParams();
   const idForm = useId();
+  const formRef = useRef(null);
+  const botaoCategoriaRef = useRef(null);
+  const botaoFotoRef = useRef(null);
+  const retorno = useRef(null); // { rolagem, botao }: guardado ao abrir uma etapa a partir do formulário
 
-  const [passo, setPasso] = useState('formulario'); // formulario | categorias | foto | publicada
-  const [valores, setValores] = useState(VAZIO);
+  const [valores, setValores] = useState(() => (editando ? VAZIO : lerRascunho()));
   const [categorias, setCategorias] = useState(CATEGORIAS_PADRAO);
   const [erros, setErros] = useState({});
   const [mensagem, setMensagem] = useState('');
   const [enviando, setEnviando] = useState(false);
   const [carregando, setCarregando] = useState(editando);
   const [erroCarga, setErroCarga] = useState('');
-  const [publicada, setPublicada] = useState(null);
+
+  // Etapa atual, lida da URL. "publicada" só existe com a resposta do POST no estado do histórico.
+  const passoNaUrl = parametros.get('passo');
+  const publicada = local.state?.publicada;
+  let passo = 'formulario';
+  if (ETAPAS_DO_FORMULARIO.includes(passoNaUrl)) passo = passoNaUrl;
+  else if (passoNaUrl === 'publicada' && publicada && !editando) passo = 'publicada';
+
+  // Direção da entrada: as etapas avançam pela direita; a volta ao formulário vem pela esquerda
+  const [passoAnterior, setPassoAnterior] = useState(passo);
+  const [direcao, setDirecao] = useState(undefined);
+  if (passoAnterior !== passo) {
+    setPassoAnterior(passo);
+    setDirecao(passo === 'formulario' ? 'tras' : undefined);
+  }
+
+  // ?passo= desconhecido (ou "publicada" sem a resposta): volta ao formulário, no lugar
+  useEffect(() => {
+    if (passoNaUrl && passo === 'formulario') navegar({ search: '' }, { replace: true });
+  }, [passoNaUrl, passo, navegar]);
 
   // Opções da tela 14. Se a API falhar, ficam as categorias documentadas (o envio mostrará o erro).
   useEffect(() => {
@@ -102,9 +165,24 @@ export default function NovaDenuncia() {
     };
   }, [editando, id, usuarioId]);
 
-  // Cada passo começa no topo da página
+  // Rascunho da denúncia nova
   useEffect(() => {
-    window.scrollTo(0, 0);
+    if (!editando) salvarRascunho(valores);
+  }, [editando, valores]);
+
+  // De volta ao formulário: a mesma rolagem de antes (na hora) e o foco no botão que abriu a etapa.
+  // Dois quadros: no primeiro o GerenciarRota foca o título; no segundo o foco vem para o botão.
+  useEffect(() => {
+    if (passo !== 'formulario' || !retorno.current) return undefined;
+    const { rolagem, botao } = retorno.current;
+    retorno.current = null;
+    let quadro = requestAnimationFrame(() => {
+      quadro = requestAnimationFrame(() => {
+        window.scrollTo({ top: rolagem, left: 0, behavior: 'instant' });
+        botao.current?.focus({ preventScroll: true });
+      });
+    });
+    return () => cancelAnimationFrame(quadro);
   }, [passo]);
 
   function mudar(parcial) {
@@ -114,6 +192,18 @@ export default function NovaDenuncia() {
       Object.keys(parcial).forEach((campo) => delete copia[campo]);
       return copia;
     });
+  }
+
+  /** Abre a etapa empilhando no histórico (o GerenciarRota leva ao topo e foca o título). */
+  function abrir(etapa, botao) {
+    retorno.current = { rolagem: window.scrollY, botao };
+    navegar({ search: `?passo=${etapa}` }, { state: { doFormulario: true } });
+  }
+
+  /** Volta ao formulário: desempilha a etapa; se ela foi aberta direto pela URL, troca no lugar. */
+  function voltarAoFormulario() {
+    if (local.state?.doFormulario) navegar(-1);
+    else navegar({ search: '' }, { replace: true });
   }
 
   function preencherExemplo() {
@@ -128,7 +218,8 @@ export default function NovaDenuncia() {
     const encontrados = validarCampos(valores, REGRAS);
     setErros(encontrados);
     if (Object.keys(encontrados).length > 0) {
-      setMensagem('Verifique os campos destacados.');
+      setMensagem('Preencha os campos destacados para publicar.');
+      focarPrimeiroErro(formRef.current);
       return;
     }
 
@@ -140,16 +231,20 @@ export default function NovaDenuncia() {
         navegar('/minhas', { state: { aviso: 'Denúncia atualizada.' } });
       } else {
         const resposta = await api('/denuncias', { metodo: 'POST', corpo });
-        setPublicada(resposta);
-        setPasso('publicada');
+        apagarRascunho();
+        setValores(VAZIO);
+        // Troca no lugar: o "voltar" da confirmação não reabre o formulário já enviado
+        navegar({ search: '?passo=publicada' }, { replace: true, state: { publicada: resposta } });
       }
     } catch (erro) {
       if (erro.status === 409) {
         setErros({ titulo: erro.message });
+        setMensagem('Verifique o campo destacado.');
       } else {
         setErros(erro.porCampo());
         setMensagem(erro.status === 503 ? 'Serviço indisponível, tente novamente.' : erro.message);
       }
+      focarPrimeiroErro(formRef.current);
     } finally {
       setEnviando(false);
     }
@@ -157,11 +252,20 @@ export default function NovaDenuncia() {
 
   const tituloTela = editando ? 'Editar denúncia' : 'Nova denúncia';
 
-  if (passo === 'publicada' && publicada) {
+  if (carregando || erroCarga) {
+    return (
+      <Tela titulo={tituloTela}>
+        <Cabecalho titulo={tituloTela} />
+        {carregando ? <Carregando texto="Carregando a denúncia…" /> : <Mensagem>{erroCarga}</Mensagem>}
+      </Tela>
+    );
+  }
+
+  if (passo === 'publicada') {
     return <DenunciaPublicada denuncia={publicada} />;
   }
 
-  if (passo === 'categorias') {
+  if (passo === 'categoria') {
     return (
       <EscolherCategoria
         categorias={categorias}
@@ -170,9 +274,9 @@ export default function NovaDenuncia() {
           // trocar de categoria tira uma foto que era de outra categoria
           const fotoDeOutra = valores.imagemUrl && valores.categoria && valores.categoria !== codigo;
           mudar(fotoDeOutra ? { categoria: codigo, imagemUrl: '' } : { categoria: codigo });
-          setPasso('formulario');
+          voltarAoFormulario();
         }}
-        aoVoltar={() => setPasso('formulario')}
+        aoVoltar={voltarAoFormulario}
       />
     );
   }
@@ -184,151 +288,163 @@ export default function NovaDenuncia() {
         atual={valores.imagemUrl}
         aoUsar={(caminho) => {
           mudar({ imagemUrl: caminho });
-          setPasso('formulario');
+          voltarAoFormulario();
         }}
-        aoVoltar={() => setPasso('formulario')}
+        aoVoltar={voltarAoFormulario}
       />
     );
   }
 
-  if (carregando || erroCarga) {
-    return (
-      <Tela titulo={tituloTela}>
-        <Cabecalho titulo={tituloTela} />
-        {carregando ? <Carregando texto="Carregando a denúncia…" /> : <Mensagem>{erroCarga}</Mensagem>}
-      </Tela>
-    );
-  }
-
   const nomeCategoria = categorias.find((c) => c.codigo === valores.categoria)?.descricao;
-  const vazio = Object.values(valores).every((valor) => !String(valor).trim());
 
   return (
-    <Tela titulo={tituloTela} gap={12}>
-      <Cabecalho titulo={tituloTela} />
-      <h2 className="md-titulo">O que precisa de atenção?</h2>
-      <p className="md-corpo">Conte o que está acontecendo no seu bairro.</p>
+    <Tela titulo={tituloTela}>
+      <div key="formulario" className="md-etapa" data-direcao={direcao}>
+        <Cabecalho titulo={tituloTela} />
 
-      <form className="d-flex flex-column" style={{ gap: 12 }} onSubmit={enviar} noValidate>
-        <Campo
-          rotulo="Título do problema"
-          value={valores.titulo}
-          onChange={(e) => mudar({ titulo: e.target.value })}
-          erro={erros.titulo}
-          placeholder="Ex.: buraco na rua"
-          maxLength={120}
-        />
-
-        <Campo
-          rotulo="Descrição"
-          tipo="textarea"
-          rows={2}
-          value={valores.descricao}
-          onChange={(e) => mudar({ descricao: e.target.value })}
-          erro={erros.descricao}
-          placeholder="Descreva o problema e o impacto."
-          maxLength={1000}
-        />
-
-        {/* Categoria: abre a tela 14 */}
-        <div className="md-campo">
-          <span id={`${idForm}-rotulo`} className="md-campo-rotulo">
-            Categoria
-          </span>
-          <button
-            type="button"
-            className={`md-entrada-botao ${nomeCategoria ? '' : 'vazio'} ${erros.categoria ? 'is-invalid' : ''}`}
-            onClick={() => setPasso('categorias')}
-            aria-labelledby={`${idForm}-rotulo ${idForm}-valor`}
-            aria-describedby={erros.categoria ? `${idForm}-erro` : undefined}
-          >
-            <span id={`${idForm}-valor`}>{nomeCategoria ?? 'Selecione uma categoria'}</span>
-            <img src={iconeChevron} alt="" width="20" height="20" />
-          </button>
-          {erros.categoria && (
-            <p id={`${idForm}-erro`} className="md-erro-campo" role="alert">
-              {erros.categoria}
-            </p>
-          )}
-        </div>
-
-        {/* O Figma tem só "Endereço"; a API pede endereço e bairro separados (pedido 2) */}
-        <div className="md-campo">
-          <label htmlFor={`${idForm}-endereco`} className="md-campo-rotulo">
-            Endereço
-          </label>
-          <div className="md-entrada-com-icone">
-            <input
-              id={`${idForm}-endereco`}
-              className={`form-control md-entrada ${erros.endereco ? 'is-invalid' : ''}`}
-              value={valores.endereco}
-              onChange={(e) => mudar({ endereco: e.target.value })}
-              placeholder="Rua e número"
-              autoComplete="street-address"
-              maxLength={150}
-              aria-invalid={erros.endereco ? true : undefined}
-              aria-describedby={erros.endereco ? `${idForm}-erro-endereco` : undefined}
-            />
-            <span className="md-icone-campo" aria-hidden="true">
-              <img src={iconePin} alt="" width="20" height="20" />
-            </span>
-          </div>
-          {erros.endereco && (
-            <p id={`${idForm}-erro-endereco`} className="md-erro-campo" role="alert">
-              {erros.endereco}
-            </p>
-          )}
-        </div>
-
-        <Campo
-          rotulo="Bairro (opcional)"
-          value={valores.bairro}
-          onChange={(e) => mudar({ bairro: e.target.value })}
-          erro={erros.bairro}
-          placeholder="Ex.: Centro"
-          maxLength={80}
-        />
-
-        {/* Foto: abre a tela 15 */}
         <div className="d-flex flex-column gap-2">
-          <button type="button" className="md-opcao" onClick={() => setPasso('foto')}>
-            <img src={iconeCamera} alt="" width="24" height="24" />
-            {valores.imagemUrl ? 'Foto adicionada · 1 imagem' : 'Adicionar foto do problema'}
-          </button>
-          {valores.imagemUrl && (
-            <>
-              <img
-                src={valores.imagemUrl}
-                alt={`Foto ilustrativa: ${descricaoDaFoto(valores.imagemUrl)}`}
-                className="md-foto-previa"
-                style={{ height: 60 }}
-              />
-              <button type="button" className="md-botao-texto" onClick={() => mudar({ imagemUrl: '' })}>
-                Remover foto
-              </button>
-            </>
-          )}
-          {erros.imagemUrl && (
-            <p className="md-erro-campo" role="alert">
-              {erros.imagemUrl}
-            </p>
+          <h2 className="md-titulo">O que precisa de atenção?</h2>
+          <p className="md-corpo">Conte o que está acontecendo no seu bairro.</p>
+          {!editando && (
+            <button type="button" className="md-acao-texto align-self-start" onClick={preencherExemplo}>
+              Usar um exemplo
+            </button>
           )}
         </div>
 
-        <Mensagem>{mensagem}</Mensagem>
+        <form
+          ref={formRef}
+          className="d-flex flex-column md-grupo"
+          style={{ gap: 20 }}
+          onSubmit={enviar}
+          noValidate
+        >
+          <Campo
+            rotulo="Título do problema"
+            value={valores.titulo}
+            onChange={(e) => mudar({ titulo: e.target.value })}
+            erro={erros.titulo}
+            placeholder="Ex.: buraco na rua"
+            maxLength={120}
+          />
 
-        {vazio && !editando ? (
-          <button type="button" className="md-botao md-botao-primario" onClick={preencherExemplo}>
-            Preencher exemplo
-          </button>
-        ) : (
-          <button type="submit" className="md-botao md-botao-primario" disabled={enviando}>
-            {enviando ? 'Enviando…' : editando ? 'Salvar alterações' : 'Publicar denúncia'}
-          </button>
-        )}
+          <Campo
+            rotulo="Descrição"
+            tipo="textarea"
+            rows={2}
+            value={valores.descricao}
+            onChange={(e) => mudar({ descricao: e.target.value })}
+            erro={erros.descricao}
+            placeholder="Descreva o problema e o impacto."
+            maxLength={1000}
+          />
 
-        <p className="md-legenda">Não inclua rostos ou dados de outras pessoas.</p>
-      </form>
+          {/* Categoria: abre a tela 14 */}
+          <div className="md-campo">
+            <span id={`${idForm}-rotulo`} className="md-campo-rotulo">
+              Categoria
+            </span>
+            <button
+              ref={botaoCategoriaRef}
+              type="button"
+              className={`md-entrada-botao ${nomeCategoria ? '' : 'vazio'} ${erros.categoria ? 'is-invalid' : ''}`}
+              onClick={() => abrir('categoria', botaoCategoriaRef)}
+              aria-labelledby={`${idForm}-rotulo ${idForm}-valor`}
+              aria-invalid={erros.categoria ? true : undefined}
+              aria-describedby={erros.categoria ? `${idForm}-erro` : undefined}
+            >
+              <span id={`${idForm}-valor`}>{nomeCategoria ?? 'Selecione uma categoria'}</span>
+              <img src={iconeChevron} alt="" width="20" height="20" />
+            </button>
+            {erros.categoria && (
+              <p id={`${idForm}-erro`} className="md-erro-campo">
+                {erros.categoria}
+              </p>
+            )}
+          </div>
+
+          {/* O Figma tem só "Endereço"; a API pede endereço e bairro separados (pedido 2).
+              Sem preenchimento automático: a denúncia é pública e não deve puxar o endereço de casa. */}
+          <div className="md-campo">
+            <label htmlFor={`${idForm}-endereco`} className="md-campo-rotulo">
+              Endereço
+            </label>
+            <div className="md-entrada-com-icone">
+              <input
+                id={`${idForm}-endereco`}
+                className={`form-control md-entrada ${erros.endereco ? 'is-invalid' : ''}`}
+                value={valores.endereco}
+                onChange={(e) => mudar({ endereco: e.target.value })}
+                placeholder="Rua e número"
+                autoComplete="off"
+                maxLength={150}
+                aria-invalid={erros.endereco ? true : undefined}
+                aria-describedby={erros.endereco ? `${idForm}-erro-endereco` : undefined}
+              />
+              <span className="md-icone-campo" aria-hidden="true">
+                <img src={iconePin} alt="" width="20" height="20" />
+              </span>
+            </div>
+            {erros.endereco && (
+              <p id={`${idForm}-erro-endereco`} className="md-erro-campo">
+                {erros.endereco}
+              </p>
+            )}
+          </div>
+
+          <Campo
+            rotulo="Bairro (opcional)"
+            value={valores.bairro}
+            onChange={(e) => mudar({ bairro: e.target.value })}
+            erro={erros.bairro}
+            placeholder="Ex.: Centro"
+            maxLength={80}
+            autoComplete="off"
+          />
+
+          {/* Foto: abre a tela 15 */}
+          <div className="d-flex flex-column gap-2">
+            <button
+              ref={botaoFotoRef}
+              type="button"
+              className="md-opcao"
+              onClick={() => abrir('foto', botaoFotoRef)}
+              aria-invalid={erros.imagemUrl ? true : undefined}
+            >
+              <img src={iconeCamera} alt="" width="24" height="24" />
+              {valores.imagemUrl ? 'Trocar a foto' : 'Adicionar foto do problema'}
+            </button>
+            {valores.imagemUrl && (
+              <div className="md-foto-anexada">
+                <img
+                  src={valores.imagemUrl}
+                  alt={`Foto ilustrativa: ${descricaoDaFoto(valores.imagemUrl)}`}
+                  className="md-foto-previa"
+                />
+                <button
+                  type="button"
+                  className="md-acao-texto"
+                  onClick={() => {
+                    mudar({ imagemUrl: '' });
+                    botaoFotoRef.current?.focus();
+                  }}
+                >
+                  Remover foto
+                </button>
+              </div>
+            )}
+            {erros.imagemUrl && <p className="md-erro-campo">{erros.imagemUrl}</p>}
+          </div>
+
+          <div className="d-flex flex-column md-grupo" style={{ gap: 12 }}>
+            <Mensagem>{mensagem}</Mensagem>
+            <button type="submit" className="md-botao md-botao-primario" disabled={enviando}>
+              {enviando ? 'Enviando…' : editando ? 'Salvar alterações' : 'Publicar denúncia'}
+            </button>
+            <p className="md-legenda">Não inclua rostos ou dados de outras pessoas.</p>
+          </div>
+        </form>
+      </div>
     </Tela>
   );
 }
