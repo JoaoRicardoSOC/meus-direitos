@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="56" height="56" viewBox="0 0 56 56" role="img" aria-label="Perfil">
+  <rect width="56" height="56" rx="16" fill="#E8F0E8"/>
+  <g transform="translate(16 15)" fill="none" stroke="#075E4A" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M16 8C16 10.21 14.21 12 12 12C9.79 12 8 10.21 8 8C8 5.79 9.79 4 12 4C14.21 4 16 5.79 16 8Z"/>
+    <path d="M4 21V18C4 16.41 4.84 14.88 6.34 13.76C7.84 12.63 9.88 12 12 12C14.12 12 16.16 12.63 17.66 13.76C19.16 14.88 20 16.41 20 18V21"/>
+  </g>
+</svg>

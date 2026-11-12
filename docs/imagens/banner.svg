@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="400" viewBox="0 0 1280 400" role="img" aria-labelledby="titulo descricao">
+  <title id="titulo">Meus Direitos</title>
+  <desc id="descricao">Sua voz melhora a cidade. Seus direitos abrem caminhos. Projeto da FIAP Global Solution 2026/2, CitizenTech.</desc>
+  <defs>
+    <clipPath id="recorte">
+      <rect width="1280" height="400" rx="24"/>
+    </clipPath>
+  </defs>
+  <g clip-path="url(#recorte)">
+    <!-- fundo: o verde principal do app (token md-verde) -->
+    <rect width="1280" height="400" fill="#075E4A"/>
+
+    <!-- ilustração da cidade usada nas boas-vindas (comunidade.svg), ampliada -->
+    <g transform="translate(720 18) scale(1.62)">
+      <path d="M277 112C315.66 112 347 80.66 347 42C347 3.34 315.66 -28 277 -28C238.34 -28 207 3.34 207 42C207 80.66 238.34 112 277 112Z" fill="#D9F480"/>
+      <path d="M30 172V89H95V172M107 172V50H182V172M194 172V107H249V172M261 172V128H311V172" stroke-width="3" stroke="#D9F480" fill="none"/>
+      <path d="M128 74H138M153 74H163M128 97H138M153 97H163M128 120H138M153 120H163M45 110H58M71 110H81M45 133H58M71 133H81" stroke-width="5" stroke="#FFFFFF"/>
+      <path d="M48 179H306" stroke-width="2" stroke="#FFFFFF"/>
+      <path d="M268 118C274.63 118 280 112.63 280 106C280 99.37 274.63 94 268 94C261.37 94 256 99.37 256 106C256 112.63 261.37 118 268 118Z" fill="#FFFFFF"/>
+      <path d="M250 161V133C250 115 286 115 286 133V161" fill="#FFFFFF"/>
+      <path d="M258 158V184M278 158V184" stroke-width="8" stroke="#FFFFFF"/>
+    </g>
+
+    <!-- marca: o escudo com check do app -->
+    <g transform="translate(72 72) scale(1.75)" fill="none" stroke="#D9F480" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M16 4L26.67 8V16C26.67 22.67 16 28 16 28C16 28 5.33 22.67 5.33 16V8L16 4Z"/>
+      <path d="M10.67 16L14.67 20L21.33 12"/>
+    </g>
+    <text x="140" y="113" fill="#D9F480" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="17" font-weight="700" letter-spacing="2.5">FIAP · GLOBAL SOLUTION 2026/2 · CITIZENTECH</text>
+
+    <text x="72" y="210" fill="#FFFFFF" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="78" font-weight="800" letter-spacing="-2">Meus Direitos</text>
+
+    <text font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="27" fill="#FFFFFF">
+      <tspan x="72" y="268">Sua voz melhora a cidade.</tspan>
+      <tspan x="72" y="305" fill="#D9F480" font-weight="700">Seus direitos abrem caminhos.</tspan>
+    </text>
+
+    <text x="72" y="356" fill="#CFE3D9" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="17">Zeladoria urbana colaborativa  ·  Orientação sobre direitos sociais  ·  ODS 10 e 11</text>
+  </g>
+</svg>

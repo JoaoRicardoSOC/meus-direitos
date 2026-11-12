@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="56" height="56" viewBox="0 0 56 56" role="img" aria-label="Cidade">
+  <rect width="56" height="56" rx="16" fill="#E8F0E8"/>
+  <g transform="translate(16 16)" fill="none" stroke="#075E4A" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M3 10L12 3L21 10V20H3V10Z"/>
+    <path d="M9 20V13H15V20"/>
+  </g>
+</svg>
