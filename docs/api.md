@@ -651,5 +651,5 @@ Ajustes em relação ao Figma, combinados com o grupo. **Todos foram atendidos n
 | 11/11/2026 | Cadastro na primeira conta de uma cidade caiu de ~7,5 s para ~1–2 s (conteúdo de exemplo gravado em lote). Sem mudança de contrato. |
 | 11/11/2026 | Robustez: `imagemUrl` validada, `busca` até 100 caracteres, escrita no catálogo de direitos exige `X-Chave-Admin`. |
 | 11/11/2026 | Cidade comparada sem acento, maiúsculas e espaços repetidos em feed, busca, relatórios e confirmação ("Sao Paulo" = "São Paulo"). Coleção do Insomnia em `docs/insomnia/`. |
-| 12/11/2026 | `database/script.sql` com as tabelas e o catálogo inicial de 9 temas de direitos (`GET /direitos` deixa de vir vazio num banco novo). Erros 405 e 415 na tabela da seção 6. Sem mudança de contrato. |
+| 12/11/2026 | `database/script.sql` com as tabelas e o catálogo inicial de 5 temas de direitos, iguais ao schema do Oracle da FIAP; o script só cria o que falta e não apaga nada. Erros 405 e 415 na tabela da seção 6. Sem mudança de contrato. |
 | 12/11/2026 | Front-end concluído e testado de ponta a ponta contra a API e o Oracle (inclusive com o `index.html` aberto por `file://`). Todos os pedidos da seção 11 atendidos. Sem mudança de contrato. |
