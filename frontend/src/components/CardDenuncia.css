@@ -1,0 +1,46 @@
+/* Voto registrado (telas 08 e 09): fundo verde e ícone branco */
+.md-acao.ativo {
+  background: var(--md-verde);
+  color: var(--md-branco);
+}
+
+.md-acao.ativo img {
+  filter: brightness(0) invert(1);
+}
+
+/* Sem login ou na própria denúncia o placar aparece, mas não é clicável */
+.md-acao:disabled {
+  cursor: default;
+  opacity: 1;
+}
+
+.md-acao-comentarios {
+  min-width: 116px;
+}
+
+.md-card-link {
+  text-decoration: none;
+}
+
+.md-card-link:hover .md-subtitulo {
+  text-decoration: underline;
+}
+
+/* No feed, a descrição fica em até 3 linhas */
+.md-card-resumo {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* Selos pedidos no guia da API (seções 8.5 e 8.10) */
+.md-selo-exemplo {
+  background: #fff4d6;
+  color: #7a5200;
+}
+
+.md-selo-para-voce {
+  background: var(--md-verde);
+  color: var(--md-branco);
+}
