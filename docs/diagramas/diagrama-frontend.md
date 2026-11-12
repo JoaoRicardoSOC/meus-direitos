@@ -64,19 +64,21 @@ flowchart TB
     Telas --> Comp["components/<br/>Tela · Cabecalho · Campo · CardDenuncia · NavegacaoPrincipal · Mensagem/Toast …"]
     Telas --> Utils["utils/<br/>validacao · formatos · foco"]
     Telas --> Sessao["contexts/SessaoContext<br/>useSessao(): usuario, entrar, sair"]
-    Telas --> Api["services/api.js<br/>fetch + X-Usuario-Id + ErroApi"]
+    Telas --> Api["services/api.js<br/>fetch + Authorization: Bearer + ErroApi"]
     Comp --> Api
     Sessao --> Arm["services/sessao.js<br/>localStorage (com cópia em memória)"]
     Api --> Arm
     Api -- "HTTP JSON" --> Backend[("API REST<br/>localhost:8080/api")]
-    Telas -. "tela 32" .-> Externos["OpenStreetMap · Wikidata · Google Maps"]
+    Telas --> Loc["services/localizacao.js<br/>geolocalização + Nominatim/Wikidata"]
+    Loc -. "tela 32 e nova denúncia" .-> Externos["OpenStreetMap · Wikidata · Google Maps"]
+    Utils --> Novidades["utils/novidades.js<br/>retrato das minhas denúncias no localStorage"]
 ```
 
 | Pasta | Responsabilidade |
 |---|---|
 | `pages/` | Uma pasta por seção do Figma (`inicio`, `cidade`, `denuncias`, `perfil`, `direitos`), com as telas e os subcomponentes de cada uma |
 | `components/` | Peças reutilizadas em várias telas, sem chamar regras de uma tela específica |
-| `services/` | Comunicação com a API (`api.js`) e sessão do usuário (`sessao.js`) |
+| `services/` | Comunicação com a API (`api.js`), sessão do usuário (`sessao.js`) e localização (`localizacao.js`: navegador e OpenStreetMap) |
 | `contexts/` | Estado global de sessão |
-| `utils/` | Funções puras: validação (as mesmas regras do back-end), formatação e foco |
+| `utils/` | Funções puras: validação (as mesmas regras do back-end), formatação, foco e novidades das minhas denúncias (`novidades.js`, com o retrato no `localStorage`) |
 | `styles/tema.css` | Tokens e classes do Figma, movimento e acessibilidade |

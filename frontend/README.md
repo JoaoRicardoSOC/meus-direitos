@@ -51,7 +51,7 @@ O projeto já está preparado para isso:
 cors.origens=http://localhost:5173,null
 ```
 
-Isso só é necessário para a avaliação com o `index.html` aberto do disco. A identificação vai num cabeçalho (`X-Usuario-Id`), não num cookie, então liberar `null` não permite que outra página use a sessão de alguém.
+Isso só é necessário para a avaliação com o `index.html` aberto do disco. A sessão vai num cabeçalho (`Authorization: Bearer <token>`), não num cookie, então liberar `null` não permite que outra página use a sessão de alguém.
 
 ## 4. Tecnologias
 
@@ -71,8 +71,8 @@ src/
   main.jsx              entrada: Bootstrap, tema, HashRouter e sessão
   App.jsx               mapa de rotas (com o número de cada tela do Figma)
   styles/tema.css       cores, tipografia e componentes do Figma (classes md-*)
-  services/api.js       cliente da API: X-Usuario-Id, erros padronizados (ErroApi)
-  services/sessao.js    login guardado no localStorage
+  services/api.js       cliente da API: token (Authorization), erros padronizados (ErroApi)
+  services/sessao.js    token e usuário guardados no localStorage
   contexts/             useSessao(): usuário logado em qualquer tela
   utils/                formatação ("há 2 h", iniciais) e validação dos formulários
   components/           peças reutilizadas: Tela, Cabecalho, Campo, CardDenuncia, NavegacaoPrincipal…
@@ -90,7 +90,7 @@ public/img/demo/        fotos de demonstração das denúncias (caminho enviado 
 
 - **Fiel ao Figma, com os ajustes combinados no guia da API** (seção 11 do `docs/api.md`): aba "Para você" no feed, cidade e UF separados, endereço e bairro separados, pergunta do CadÚnico no questionário, botões de resolução pela comunidade, "Números da cidade", trocar senha e excluir conta.
 - **Validação em JavaScript antes de chamar a API**, com as mesmas regras do back-end. Os erros que ainda vierem da API aparecem ao lado de cada campo.
-- **Sessão**: o login guarda o id do usuário no `localStorage` e o envia no cabeçalho `X-Usuario-Id`. Uma resposta 401 encerra a sessão e volta para "Entrar".
+- **Sessão**: o cadastro e o login devolvem um token assinado pela API (válido por 7 dias). O front guarda o token e o usuário no `localStorage` e envia o token no cabeçalho `Authorization: Bearer`. Uma resposta 401 encerra a sessão e volta para "Entrar"; o 429 (muitas tentativas de login) aparece na tela de entrar sem apagar o que foi digitado.
 - **Coluna de celular**: o protótipo é mobile (390 px). A partir de 768 px o app aparece como uma folha de 430 px com moldura; a partir de 1100 px, com um painel de apresentação do projeto ao lado.
 - **Fonte Inter no próprio projeto** (`src/assets/fontes`, licença OFL): funciona offline e no `file://`, sem enviar o IP de quem usa a terceiros.
 - **Acessibilidade**: foco visível em tudo, a cada tela nova a página volta ao topo e o foco vai para o título, erros de formulário com um resumo único e foco no primeiro campo, alvos de toque de 44 px, contraste AA (inclusive bordas dos campos) e suporte a "reduzir movimento".
