@@ -25,6 +25,7 @@ public class SemeaduraCidadeDaoJdbc implements SemeaduraCidadeDao {
                     + "VALUES (?, ?, ?, ?, ?)";
     private static final String SQL_BUSCAR =
             "SELECT " + COLUNAS + " FROM tb_semeadura_cidade WHERE nm_cidade_chave = ? AND sg_uf = ?";
+    private static final String SQL_BUSCAR_PARA_ATUALIZAR = SQL_BUSCAR + " FOR UPDATE";
     private static final String SQL_PULSO =
             "UPDATE tb_semeadura_cidade SET dt_ultimo_pulso = ?, qt_eventos = qt_eventos + ? "
                     + "WHERE nm_cidade_chave = ? AND sg_uf = ?";
@@ -56,7 +57,16 @@ public class SemeaduraCidadeDaoJdbc implements SemeaduraCidadeDao {
 
     @Override
     public SemeaduraCidade buscar(String cidadeChave, String uf) throws SQLException {
-        try (PreparedStatement stmt = conexao.prepareStatement(SQL_BUSCAR)) {
+        return buscar(SQL_BUSCAR, cidadeChave, uf);
+    }
+
+    @Override
+    public SemeaduraCidade buscarParaAtualizar(String cidadeChave, String uf) throws SQLException {
+        return buscar(SQL_BUSCAR_PARA_ATUALIZAR, cidadeChave, uf);
+    }
+
+    private SemeaduraCidade buscar(String sql, String cidadeChave, String uf) throws SQLException {
+        try (PreparedStatement stmt = conexao.prepareStatement(sql)) {
             stmt.setString(1, cidadeChave);
             stmt.setString(2, uf);
             try (ResultSet rs = stmt.executeQuery()) {

@@ -227,7 +227,8 @@ public class SimulacaoService {
         String siglaUf = uf.trim().toUpperCase();
         return Transacao.executar(con -> {
             SemeaduraCidadeDaoJdbc semeaduraDao = new SemeaduraCidadeDaoJdbc(con);
-            SemeaduraCidade semeadura = semeaduraDao.buscar(chave, siglaUf);
+            // Trava a linha da cidade: quem chegar junto espera e já encontra o pulso registrado
+            SemeaduraCidade semeadura = semeaduraDao.buscarParaAtualizar(chave, siglaUf);
             LocalDateTime agora = LocalDateTime.now().truncatedTo(ChronoUnit.SECONDS);
             if (semeadura == null || (!forcar
                     && semeadura.dataUltimoPulso().plusMinutes(MINUTOS_ENTRE_PULSOS).isAfter(agora))) {

@@ -22,6 +22,14 @@ public interface SemeaduraCidadeDao {
     /** @return o registro da cidade, ou null se ela nunca foi semeada */
     SemeaduraCidade buscar(String cidadeChave, String uf) throws SQLException;
 
+    /**
+     * Igual a {@link #buscar}, mas trava a linha da cidade até o fim da transação (SELECT ... FOR UPDATE).
+     * Usado no pulso de atividade: duas aberturas simultâneas do feed não geram eventos em dobro.
+     *
+     * @return o registro da cidade, ou null se ela nunca foi semeada
+     */
+    SemeaduraCidade buscarParaAtualizar(String cidadeChave, String uf) throws SQLException;
+
     /** Atualiza a data do último pulso e soma os eventos gerados. */
     void registrarPulso(String cidadeChave, String uf, LocalDateTime quando, int eventos) throws SQLException;
 
