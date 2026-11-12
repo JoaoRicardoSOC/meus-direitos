@@ -1,0 +1,48 @@
+/* 28–32 · Seus direitos */
+
+/* Card que é um link inteiro: temas (tela 28) e canais externos (tela 32) */
+.md-direito-card {
+  color: inherit;
+  text-decoration: none;
+  transition: border-color 0.15s ease;
+}
+
+.md-direito-card:hover {
+  color: inherit;
+  border-color: var(--md-verde);
+}
+
+.md-direito-card:focus-visible {
+  outline: 3px solid var(--bs-focus-ring-color);
+  outline-offset: 2px;
+}
+
+/* Ícone de 22 ou 24 px numa caixa fixa de 24 px, alinhado ao título */
+.md-direito-icone {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+}
+
+.md-direito-link {
+  color: var(--md-verde);
+}
+
+/* "Por onde começar" (telas 29–31): passos numerados sem o marcador do navegador */
+.md-direito-passos {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.md-direito-passos li {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
