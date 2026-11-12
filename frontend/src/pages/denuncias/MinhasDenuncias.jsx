@@ -6,6 +6,8 @@ import CardDenuncia from '../../components/CardDenuncia.jsx';
 import Mensagem, { Carregando } from '../../components/Mensagem.jsx';
 import { api } from '../../services/api.js';
 import ConfirmarExclusao from './ConfirmarExclusao.jsx';
+import iconeEditar from '../../assets/icones/editar.svg';
+import iconeExcluir from '../../assets/icones/excluir.svg';
 import './denuncias.css';
 
 function mensagemDeErro(erro) {
@@ -84,7 +86,6 @@ export default function MinhasDenuncias() {
   if (excluir) {
     return (
       <ConfirmarExclusao
-        denuncia={excluir}
         excluindo={ocupada === excluir.id}
         erro={erroExclusao}
         aoConfirmar={confirmarExclusao}
@@ -122,32 +123,37 @@ export default function MinhasDenuncias() {
         </section>
       )}
 
-      {!carregando &&
-        !erro &&
-        denuncias.map((denuncia) => (
-          <section key={denuncia.id} className="d-flex flex-column gap-3" aria-label={`Gerenciar: ${denuncia.titulo}`}>
-            <CardDenuncia key={`${denuncia.id}-${denuncia.atualizadaEm}`} denuncia={denuncia} />
-            <Resolucao
-              denuncia={denuncia}
-              ocupada={ocupada === denuncia.id}
-              erro={errosAcao[denuncia.id]}
-              aoMudarStatus={() => mudarStatus(denuncia)}
-            />
-            <div className="d-flex gap-2" role="group" aria-label="Gerenciar denúncia">
-              <Link to={`/denuncias/${denuncia.id}/editar`} className="md-acao md-acao-gerenciar">
-                Editar
-              </Link>
-              <button
-                type="button"
-                className="md-acao md-acao-gerenciar perigo"
-                onClick={() => setExcluir(denuncia)}
-                disabled={ocupada === denuncia.id}
-              >
-                Excluir
-              </button>
-            </div>
-          </section>
-        ))}
+      {!carregando && !erro && denuncias.length > 0 && (
+        <div className="md-lista-gerenciar">
+          {denuncias.map((denuncia) => (
+            <section key={denuncia.id} className="md-bloco-gerenciar" aria-label={`Gerenciar: ${denuncia.titulo}`}>
+              <CardDenuncia key={`${denuncia.id}-${denuncia.atualizadaEm}`} denuncia={denuncia} />
+              {/* Figma: "Gerenciar denúncia" logo abaixo do card */}
+              <div className="d-flex gap-3" role="group" aria-label="Gerenciar denúncia">
+                <Link to={`/denuncias/${denuncia.id}/editar`} className="md-acao md-acao-gerenciar">
+                  <img src={iconeEditar} alt="" width="20" height="20" />
+                  Editar
+                </Link>
+                <button
+                  type="button"
+                  className="md-acao md-acao-gerenciar"
+                  onClick={() => setExcluir(denuncia)}
+                  disabled={ocupada === denuncia.id}
+                >
+                  <img src={iconeExcluir} alt="" width="20" height="20" />
+                  Excluir
+                </button>
+              </div>
+              <Resolucao
+                denuncia={denuncia}
+                ocupada={ocupada === denuncia.id}
+                erro={errosAcao[denuncia.id]}
+                aoMudarStatus={() => mudarStatus(denuncia)}
+              />
+            </section>
+          ))}
+        </div>
+      )}
     </Tela>
   );
 }
