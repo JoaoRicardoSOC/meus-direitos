@@ -136,6 +136,26 @@ erDiagram
 | Passos numerados de 1 a 10 | `CHECK (nr_ordem BETWEEN 1 AND 10)` em `tb_direito_passo` |
 | Booleanos | `CHAR(1)` com `CHECK IN ('S', 'N')` |
 
+## Índices
+
+As chaves primárias e únicas já criam os seus índices (`PK_*`, `UK_USUARIO_EMAIL`, `UK_DIREITO_TITULO`). O script cria também estes, cada um só se ainda não existir:
+
+| Índice | Tabela (colunas) | Para quê |
+|---|---|---|
+| `IX_COMENTARIO_DENUNCIA` | `TB_COMENTARIO (CD_DENUNCIA)` | Listar e contar os comentários de uma denúncia |
+| `IX_COMENTARIO_USUARIO` | `TB_COMENTARIO (CD_USUARIO)` | Apagar os comentários de quem exclui a conta |
+| `IX_CONFRES_DENUNCIA` | `TB_CONFIRMACAO_RESOLUCAO (CD_DENUNCIA)` | Contar as confirmações de resolução de uma denúncia |
+| `IX_DENUNCIA_CIDADE` | `TB_DENUNCIA (NM_CIDADE, SG_UF)` | Consultas pela cidade exata |
+| `IX_DENUNCIA_USUARIO` | `TB_DENUNCIA (CD_USUARIO)` | "Minhas denúncias" e exclusão da conta |
+| `IX_DIREITO_TAG` | `TB_DIREITO_TAG (TP_TAG)` | Temas aplicáveis a um perfil (`/direitos/meus`) |
+| `IX_USUARIO_SIMULADO` | `TB_USUARIO (ST_SIMULADO, SG_UF)` | Separar moradores de exemplo das pessoas reais |
+| `IX_VOTO_DENUNCIA` | `TB_VOTO_DENUNCIA (CD_DENUNCIA)` | Placar de votos de uma denúncia |
+| `IX_REPORTE_COMENTARIO` | `TB_REPORTE_COMENTARIO (CD_COMENTARIO)` | Contar os reportes de um comentário (ocultar com 3) |
+| `IX_DENUNCIA_CIDADE_CHAVE` | `TB_DENUNCIA (TRANSLATE(UPPER(TRIM(nm_cidade)), …), SG_UF)` | Feed, busca e relatórios pela cidade, sem acento nem maiúsculas (baseado em função) |
+| `IX_USUARIO_CIDADE_CHAVE` | `TB_USUARIO (TRANSLATE(UPPER(TRIM(nm_cidade)), …), SG_UF)` | Contar usuários da cidade e achar os moradores de exemplo dela (baseado em função) |
+
+Os dois últimos usam exatamente a expressão gerada por `JdbcUtil.cidadeIgual` no back-end (o teste `IndiceCidadeScriptTest` confere isso). Se o Oracle recusar um deles, o script só registra o aviso e continua: a API funciona igual, sem o índice.
+
 ## Decisões
 
 - **Script que só cria o que falta.** O `database/script.sql` reproduz exatamente as tabelas do schema usado no Oracle da FIAP e nunca apaga nem altera nada: cada tabela, sequence e índice só é criado se ainda não existir, e cada tema do catálogo só é inserido se o título ainda não estiver cadastrado. Assim ele pode rodar num schema compartilhado com outros projetos.
