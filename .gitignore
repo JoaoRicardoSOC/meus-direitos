@@ -10,6 +10,8 @@ backend/db.properties
 # ===== Node / Vite (frontend) =====
 node_modules/
 dist/
+# A FIAP pede a pasta dist/ do front-end na entrega (o index.html abre direto no navegador)
+!frontend/dist/
 .vite/
 npm-debug.log*
 yarn-debug.log*
