@@ -31,27 +31,27 @@ export const ICONE_CATEGORIA = {
 
 /**
  * Imagens de demonstração em public/img/demo (docs/api.md, 8.10), três por categoria.
- * asfalto-1 vem do Figma; as demais, do Wikimedia Commons (créditos no frontend/README.md).
+ * Fotos do Wikimedia Commons e do Flickr (créditos no frontend/README.md), com miniaturas em img/demo/mini.
  */
 export const FOTOS_DEMO = [
-  { caminho: 'img/demo/asfalto-1.jpg', categoria: 'ASFALTO', descricao: 'Asfalto danificado' },
-  { caminho: 'img/demo/asfalto-2.jpg', categoria: 'ASFALTO', descricao: 'Buraco com água na rua' },
-  { caminho: 'img/demo/asfalto-3.jpg', categoria: 'ASFALTO', descricao: 'Rua com vários buracos' },
-  { caminho: 'img/demo/iluminacao-1.jpg', categoria: 'ILUMINACAO', descricao: 'Postes de iluminação pública' },
-  { caminho: 'img/demo/iluminacao-2.jpg', categoria: 'ILUMINACAO', descricao: 'Rua à noite com postes acesos' },
-  { caminho: 'img/demo/iluminacao-3.jpg', categoria: 'ILUMINACAO', descricao: 'Luminária de rua acesa' },
-  { caminho: 'img/demo/calcada-acessibilidade-1.jpg', categoria: 'CALCADA_ACESSIBILIDADE', descricao: 'Calçada levantada por raiz de árvore' },
-  { caminho: 'img/demo/calcada-acessibilidade-2.jpg', categoria: 'CALCADA_ACESSIBILIDADE', descricao: 'Calçada rachada' },
-  { caminho: 'img/demo/calcada-acessibilidade-3.jpg', categoria: 'CALCADA_ACESSIBILIDADE', descricao: 'Rampa de acessibilidade danificada' },
-  { caminho: 'img/demo/seguranca-1.jpg', categoria: 'SEGURANCA', descricao: 'Rua pouco iluminada à noite' },
-  { caminho: 'img/demo/seguranca-2.jpg', categoria: 'SEGURANCA', descricao: 'Viela à noite' },
-  { caminho: 'img/demo/seguranca-3.jpg', categoria: 'SEGURANCA', descricao: 'Beco estreito à noite' },
-  { caminho: 'img/demo/limpeza-urbana-1.jpg', categoria: 'LIMPEZA_URBANA', descricao: 'Sacos de lixo espalhados na rua' },
-  { caminho: 'img/demo/limpeza-urbana-2.jpg', categoria: 'LIMPEZA_URBANA', descricao: 'Lixo acumulado na calçada' },
-  { caminho: 'img/demo/limpeza-urbana-3.jpg', categoria: 'LIMPEZA_URBANA', descricao: 'Lixo descartado em terreno' },
-  { caminho: 'img/demo/outros-1.jpg', categoria: 'OUTROS', descricao: 'Árvore caída sobre a grade' },
-  { caminho: 'img/demo/outros-2.jpg', categoria: 'OUTROS', descricao: 'Vazamento de água na rua' },
-  { caminho: 'img/demo/outros-3.jpg', categoria: 'OUTROS', descricao: 'Árvore caída bloqueando a passagem' },
+  { caminho: 'img/demo/asfalto-1.jpg', categoria: 'ASFALTO', descricao: 'Buracos remendados de forma precária no asfalto de uma rodovia, com um caminhão estacionado ao fundo' },
+  { caminho: 'img/demo/asfalto-2.jpg', categoria: 'ASFALTO', descricao: 'Buraco fundo e cheio de água da chuva no asfalto de uma rua' },
+  { caminho: 'img/demo/asfalto-3.jpg', categoria: 'ASFALTO', descricao: 'Trecho de estrada com grandes buracos e asfalto desgastado' },
+  { caminho: 'img/demo/iluminacao-1.jpg', categoria: 'ILUMINACAO', descricao: 'Poste de iluminação derrubado e quebrado sobre o canteiro, ao lado de um banco' },
+  { caminho: 'img/demo/iluminacao-2.jpg', categoria: 'ILUMINACAO', descricao: 'Rua residencial à noite, mal iluminada, com poucos postes acesos e trechos no escuro' },
+  { caminho: 'img/demo/iluminacao-3.jpg', categoria: 'ILUMINACAO', descricao: 'Poste de luz caído no chão, à beira de um caminho de terra, perto de um lago' },
+  { caminho: 'img/demo/calcada-acessibilidade-1.jpg', categoria: 'CALCADA_ACESSIBILIDADE', descricao: 'Calçada de mosaico com pedras soltas, buracos e tampas danificadas' },
+  { caminho: 'img/demo/calcada-acessibilidade-2.jpg', categoria: 'CALCADA_ACESSIBILIDADE', descricao: 'Calçada rachada e desnivelada junto ao meio-fio, com um carro estacionado' },
+  { caminho: 'img/demo/calcada-acessibilidade-3.jpg', categoria: 'CALCADA_ACESSIBILIDADE', descricao: 'Calçada quebrada com entulho e piso tátil interrompido junto a um muro' },
+  { caminho: 'img/demo/seguranca-1.jpg', categoria: 'SEGURANCA', descricao: 'Sobrado abandonado e em ruínas, cercado por tapume na calçada' },
+  { caminho: 'img/demo/seguranca-2.jpg', categoria: 'SEGURANCA', descricao: 'Rua vazia com portas de aço fechadas e paredes pichadas' },
+  { caminho: 'img/demo/seguranca-3.jpg', categoria: 'SEGURANCA', descricao: 'Rua escura e vazia à noite, iluminada por poucos postes' },
+  { caminho: 'img/demo/limpeza-urbana-1.jpg', categoria: 'LIMPEZA_URBANA', descricao: 'Sacos de lixo, caixas e entulho acumulados na calçada ao lado de carros estacionados' },
+  { caminho: 'img/demo/limpeza-urbana-2.jpg', categoria: 'LIMPEZA_URBANA', descricao: 'Lixo, pneus velhos e entulho descartados junto a um muro na beira da rua' },
+  { caminho: 'img/demo/limpeza-urbana-3.jpg', categoria: 'LIMPEZA_URBANA', descricao: 'Lixo espalhado em um terreno baldio com mato alto' },
+  { caminho: 'img/demo/outros-1.jpg', categoria: 'OUTROS', descricao: 'Árvore caída arrancada pela raiz em uma praça' },
+  { caminho: 'img/demo/outros-2.jpg', categoria: 'OUTROS', descricao: 'Rua alagada com água barrenta cobrindo as calçadas' },
+  { caminho: 'img/demo/outros-3.jpg', categoria: 'OUTROS', descricao: 'Vazamento de água escorrendo pelo asfalto de uma rua' },
 ];
 
 /** Fotos da categoria escolhida; sem categoria, todas. */
