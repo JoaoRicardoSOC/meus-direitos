@@ -1,7 +1,7 @@
 # Guia de integração — API Meus Direitos
 
 > **Para:** front-end (React + Vite). **Mantido por:** equipe de back-end.
-> **Última atualização:** 11/11/2026. Este guia acompanha cada entrega do backend; consulte a seção [Histórico](#13-histórico-de-mudanças) para ver o que mudou.
+> **Última atualização:** 12/11/2026. Este guia acompanha cada entrega do backend; consulte a seção [Histórico](#13-histórico-de-mudanças) para ver o que mudou.
 
 ## Sumário
 
@@ -651,3 +651,4 @@ Ajustes em relação ao Figma, combinados com o grupo:
 | 11/11/2026 | Cadastro na primeira conta de uma cidade caiu de ~7,5 s para ~1–2 s (conteúdo de exemplo gravado em lote). Sem mudança de contrato. |
 | 11/11/2026 | Robustez: `imagemUrl` validada, `busca` até 100 caracteres, escrita no catálogo de direitos exige `X-Chave-Admin`. |
 | 11/11/2026 | Cidade comparada sem acento, maiúsculas e espaços repetidos em feed, busca, relatórios e confirmação ("Sao Paulo" = "São Paulo"). Coleção do Insomnia em `docs/insomnia/`. |
+| 12/11/2026 | `database/script.sql` com as tabelas e o catálogo inicial de 9 temas de direitos (`GET /direitos` deixa de vir vazio num banco novo). Erros 405 e 415 na tabela da seção 6. Sem mudança de contrato. |
