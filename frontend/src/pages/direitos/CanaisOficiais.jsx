@@ -138,29 +138,35 @@ export default function CanaisOficiais() {
           Onde buscar a prefeitura e o CRAS?
         </h2>
 
-        {/* Os três estados ocupam a mesma célula: o card mantém a altura da escolha e os cards de baixo não pulam */}
+        {/*
+          Os estados ocupam a mesma célula. Enquanto escolhe e enquanto busca, a escolha continua ali (invisível
+          durante a busca) e segura a altura: os cards de baixo não pulam. Com o resultado, ela sai e o card
+          encolhe para o tamanho do conteúdo, no mesmo momento em que os cards de baixo viram links.
+        */}
         <div className="md-canais-estados">
-          <div className="md-canais-estado" inert={Boolean(modo)} data-oculto={modo ? '' : undefined}>
-            <p className="md-legenda">Com a localização atual, mostramos os canais de onde você está agora.</p>
-            <button type="button" className="md-botao md-botao-primario" onClick={() => escolher(MODO.POSICAO)}>
-              Usar minha localização atual
-            </button>
-            <div className="d-flex flex-column gap-1">
-              <button
-                type="button"
-                className="md-botao md-botao-secundario"
-                onClick={() => escolher(MODO.CADASTRO)}
-                aria-describedby={cidadeCadastro ? 'canais-cidade-cadastro' : undefined}
-              >
-                Usar a cidade do cadastro
+          {!canais && (
+            <div className="md-canais-estado" inert={Boolean(modo)} data-oculto={modo ? '' : undefined}>
+              <p className="md-legenda">Com a localização atual, mostramos os canais de onde você está agora.</p>
+              <button type="button" className="md-botao md-botao-primario" onClick={() => escolher(MODO.POSICAO)}>
+                Usar minha localização atual
               </button>
-              {cidadeCadastro && (
-                <p id="canais-cidade-cadastro" className="md-legenda text-center">
-                  {cidadeCadastro}
-                </p>
-              )}
+              <div className="d-flex flex-column gap-1">
+                <button
+                  type="button"
+                  className="md-botao md-botao-secundario"
+                  onClick={() => escolher(MODO.CADASTRO)}
+                  aria-describedby={cidadeCadastro ? 'canais-cidade-cadastro' : undefined}
+                >
+                  Usar a cidade do cadastro
+                </button>
+                {cidadeCadastro && (
+                  <p id="canais-cidade-cadastro" className="md-legenda text-center">
+                    {cidadeCadastro}
+                  </p>
+                )}
+              </div>
             </div>
-          </div>
+          )}
 
           {buscando && (
             <div className="md-canais-estado">
