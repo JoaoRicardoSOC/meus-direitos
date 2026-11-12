@@ -1,9 +1,17 @@
 import { useState } from 'react';
 import fotoAsfalto from '../assets/imagens/asfalto-danificado.jpg';
 
-/** Foto padrão por categoria, usada quando a denúncia não tem imagem ou a imagem não carrega. */
+/**
+ * Foto padrão por categoria, usada quando a denúncia não tem imagem ou a imagem não carrega.
+ * A de asfalto vai no pacote do app; as outras são as fotos de demonstração de public/img/demo.
+ */
 const FOTO_PADRAO = {
   ASFALTO: fotoAsfalto,
+  ILUMINACAO: 'img/demo/iluminacao-1.jpg',
+  CALCADA_ACESSIBILIDADE: 'img/demo/calcada-acessibilidade-1.jpg',
+  SEGURANCA: 'img/demo/seguranca-1.jpg',
+  LIMPEZA_URBANA: 'img/demo/limpeza-urbana-1.jpg',
+  OUTROS: 'img/demo/outros-1.jpg',
 };
 
 /**
