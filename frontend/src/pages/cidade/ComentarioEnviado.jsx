@@ -29,7 +29,7 @@ export default function ComentarioEnviado({ comentario, aoVoltar }) {
           {comentario.autor.nome} · {haQuantoTempo(comentario.criadoEm)}
         </p>
         <p className="md-corpo">{comentario.texto}</p>
-        <span className="md-selo md-selo-enviado">Enviado</span>
+        <span className="md-selo">Enviado</span>
       </article>
 
       <button type="button" className="md-botao md-botao-primario" onClick={aoVoltar}>

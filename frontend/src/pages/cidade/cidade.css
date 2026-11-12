@@ -99,12 +99,6 @@
   color: var(--md-erro);
 }
 
-/* 11 · Selo "ENVIADO" */
-.md-selo-enviado {
-  background: var(--md-verde);
-  color: var(--md-branco);
-}
-
 /* Progresso da confirmação pela comunidade (seção 8.7) */
 .md-progresso-resolucao .md-progresso-etapa {
   height: 6px;
