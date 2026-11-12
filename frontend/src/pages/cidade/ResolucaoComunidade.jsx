@@ -2,16 +2,14 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { api } from '../../services/api.js';
 import { useSessao } from '../../contexts/SessaoContext.jsx';
-
-/** "São Paulo" e "sao paulo" são a mesma cidade: compara sem acento e sem maiúsculas. */
-function normalizar(texto) {
-  return (texto ?? '').normalize('NFD').replace(/[̀-ͯ]/g, '').trim().toLowerCase();
-}
+import Mensagem from '../../components/Mensagem.jsx';
+import { chaveTexto } from '../../utils/formatos.js';
 
 /**
- * Resolução pela comunidade (seção 8.7 do guia, sem tela no Figma).
+ * Resolução pela comunidade (seção 8.7 do guia, sem tela no Figma), logo abaixo do card no detalhe.
  * Mostra "X de 3 moradores confirmaram que foi resolvido" e o botão "Já foi resolvido" /
- * "Retirar confirmação" para moradores da mesma cidade que não são o autor.
+ * "Retirar confirmação" para moradores da mesma cidade que não são o autor. Quem não pode
+ * confirmar vê o porquê.
  */
 export default function ResolucaoComunidade({ denuncia, aoAtualizar }) {
   const { usuario } = useSessao();
@@ -20,10 +18,12 @@ export default function ResolucaoComunidade({ denuncia, aoAtualizar }) {
 
   const { confirmacoes = 0, necessarias = 3, euConfirmei = false } = denuncia.resolucao ?? {};
   const resolvida = denuncia.status?.codigo === 'RESOLVIDA';
-  const ehAutor = usuario && denuncia.autor.id === usuario.id;
+  const ehAutor = Boolean(usuario) && denuncia.autor.id === usuario.id;
   const mesmaCidade =
-    usuario && normalizar(usuario.cidade) === normalizar(denuncia.cidade) && normalizar(usuario.uf) === normalizar(denuncia.uf);
-  const podeConfirmar = usuario && !ehAutor && mesmaCidade && !resolvida;
+    Boolean(usuario) &&
+    chaveTexto(usuario.cidade) === chaveTexto(denuncia.cidade) &&
+    chaveTexto(usuario.uf) === chaveTexto(denuncia.uf);
+  const podeConfirmar = Boolean(usuario) && !ehAutor && mesmaCidade && !resolvida;
 
   async function alternarConfirmacao() {
     setEnviando(true);
@@ -38,10 +38,25 @@ export default function ResolucaoComunidade({ denuncia, aoAtualizar }) {
     }
   }
 
+  let porque = null;
+  if (resolvida) {
+    porque = confirmacoes >= necessarias ? 'Resolvida pela comunidade.' : 'Esta denúncia foi marcada como resolvida.';
+  } else if (!usuario) {
+    porque = 'Entre na sua conta para confirmar.';
+  } else if (ehAutor) {
+    porque = (
+      <>
+        Você registrou esta denúncia: marque como resolvida em <Link to="/minhas">Minhas denúncias</Link>.
+      </>
+    );
+  } else if (!mesmaCidade) {
+    porque = `Só moradores de ${denuncia.cidade} podem confirmar.`;
+  }
+
   return (
     <section className="md-card" aria-labelledby="resolucao-titulo">
-      <h2 id="resolucao-titulo" className="md-sobretitulo">
-        {resolvida ? 'Problema resolvido' : 'Já foi resolvido?'}
+      <h2 id="resolucao-titulo" className="md-negrito">
+        Já foi resolvido?
       </h2>
 
       {!resolvida && (
@@ -58,7 +73,13 @@ export default function ResolucaoComunidade({ denuncia, aoAtualizar }) {
         </>
       )}
 
-      {resolvida && <p className="md-corpo">Esta denúncia foi marcada como resolvida.</p>}
+      {porque && <p className={resolvida ? 'md-corpo-tinta' : 'md-legenda'}>{porque}</p>}
+
+      {resolvida && ehAutor && (
+        <p className="md-legenda">
+          Precisa reabrir? Acesse <Link to="/minhas">Minhas denúncias</Link>.
+        </p>
+      )}
 
       {podeConfirmar && (
         <button
@@ -71,18 +92,7 @@ export default function ResolucaoComunidade({ denuncia, aoAtualizar }) {
         </button>
       )}
 
-      {ehAutor && (
-        <p className="md-legenda">
-          {resolvida ? 'Precisa reabrir? ' : 'O problema acabou? '}
-          Acesse <Link to="/minhas">Minhas denúncias</Link> para {resolvida ? 'reabrir' : 'marcar como resolvida'}.
-        </p>
-      )}
-
-      {erro && (
-        <p className="md-erro-campo" role="alert">
-          {erro}
-        </p>
-      )}
+      <Mensagem>{erro}</Mensagem>
     </section>
   );
 }
