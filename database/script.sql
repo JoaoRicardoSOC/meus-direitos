@@ -13,7 +13,8 @@
 --
 -- Objetos deste projeto (e somente estes):
 --   tabelas    TB_USUARIO, TB_PERFIL_DEMOGRAFICO, TB_DENUNCIA, TB_COMENTARIO, TB_VOTO_DENUNCIA,
---              TB_CONFIRMACAO_RESOLUCAO, TB_DIREITO, TB_DIREITO_PASSO, TB_DIREITO_TAG, TB_SEMEADURA_CIDADE
+--              TB_CONFIRMACAO_RESOLUCAO, TB_REPORTE_COMENTARIO, TB_DIREITO, TB_DIREITO_PASSO, TB_DIREITO_TAG,
+--              TB_SEMEADURA_CIDADE
 --   sequences  SEQ_USUARIO, SEQ_DENUNCIA, SEQ_COMENTARIO, SEQ_DIREITO
 --
 -- As definições abaixo são as mesmas do schema usado no Oracle da FIAP (extraídas com DBMS_METADATA).
@@ -259,6 +260,31 @@ BEGIN
 END;
 /
 
+-- Reporte de comentário ofensivo. A chave composta garante um reporte por pessoa em cada comentário;
+-- com 3 reportes o comentário deixa de aparecer na API (ComentarioService.REPORTES_PARA_OCULTAR).
+DECLARE
+  existe NUMBER;
+BEGIN
+  SELECT COUNT(*) INTO existe FROM user_tables WHERE table_name = 'TB_REPORTE_COMENTARIO';
+  IF existe = 0 THEN
+    EXECUTE IMMEDIATE q'[
+    CREATE TABLE TB_REPORTE_COMENTARIO
+       (    CD_USUARIO NUMBER(10,0) NOT NULL,
+        CD_COMENTARIO NUMBER(10,0) NOT NULL,
+        DT_REPORTE TIMESTAMP (6) DEFAULT SYSTIMESTAMP NOT NULL,
+         CONSTRAINT PK_REPORTE_COMENTARIO PRIMARY KEY (CD_USUARIO, CD_COMENTARIO),
+         CONSTRAINT FK_REPORTE_USUARIO FOREIGN KEY (CD_USUARIO)
+          REFERENCES TB_USUARIO (CD_USUARIO),
+         CONSTRAINT FK_REPORTE_COMENTARIO FOREIGN KEY (CD_COMENTARIO)
+          REFERENCES TB_COMENTARIO (CD_COMENTARIO)
+       )]';
+    DBMS_OUTPUT.PUT_LINE('Criada a tabela TB_REPORTE_COMENTARIO');
+  ELSE
+    DBMS_OUTPUT.PUT_LINE('TB_REPORTE_COMENTARIO já existe: mantida como está');
+  END IF;
+END;
+/
+
 -- Catálogo de temas de direitos (tela "Meus Direitos").
 DECLARE
   existe NUMBER;
@@ -449,6 +475,18 @@ BEGIN
   END IF;
 END;
 /
+
+DECLARE
+  existe NUMBER;
+BEGIN
+  SELECT COUNT(*) INTO existe FROM user_indexes WHERE index_name = 'IX_REPORTE_COMENTARIO';
+  IF existe = 0 THEN
+    EXECUTE IMMEDIATE q'[CREATE INDEX IX_REPORTE_COMENTARIO ON TB_REPORTE_COMENTARIO (CD_COMENTARIO)]';
+    DBMS_OUTPUT.PUT_LINE('Criado o índice IX_REPORTE_COMENTARIO');
+  END IF;
+END;
+/
+
 
 -- =====================================================================================
 -- 4. Carga inicial: catálogo de direitos

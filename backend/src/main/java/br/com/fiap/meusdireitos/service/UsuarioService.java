@@ -181,6 +181,7 @@ public class UsuarioService {
             UsuarioDao dao = new UsuarioDaoJdbc(con);
             exigirSenhaCorreta(dao.buscarPorId(idUsuario), req.senha(), "senha", "Senha incorreta.");
             new ConfirmacaoResolucaoDaoJdbc(con).excluirDoUsuario(idUsuario);
+            new br.com.fiap.meusdireitos.dao.jdbc.ReporteComentarioDaoJdbc(con).excluirDoUsuario(idUsuario);
             new ComentarioDaoJdbc(con).excluirDoUsuario(idUsuario);
             new VotoDenunciaDaoJdbc(con).excluirDoUsuario(idUsuario);
             new DenunciaDaoJdbc(con).excluirDoAutor(idUsuario);

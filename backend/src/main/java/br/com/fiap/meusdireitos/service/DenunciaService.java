@@ -6,6 +6,7 @@ import br.com.fiap.meusdireitos.dao.Transacao;
 import br.com.fiap.meusdireitos.dao.jdbc.ComentarioDaoJdbc;
 import br.com.fiap.meusdireitos.dao.jdbc.ConfirmacaoResolucaoDaoJdbc;
 import br.com.fiap.meusdireitos.dao.jdbc.DenunciaDaoJdbc;
+import br.com.fiap.meusdireitos.dao.jdbc.ReporteComentarioDaoJdbc;
 import br.com.fiap.meusdireitos.dao.jdbc.UsuarioDaoJdbc;
 import br.com.fiap.meusdireitos.dao.jdbc.VotoDenunciaDaoJdbc;
 import br.com.fiap.meusdireitos.dto.request.DenunciaRequest;
@@ -121,12 +122,13 @@ public class DenunciaService {
         });
     }
 
-    /** Exclui a denúncia com seus comentários, votos e confirmações, numa única transação. */
+    /** Exclui a denúncia com seus comentários (e reportes deles), votos e confirmações, numa única transação. */
     public void excluir(Long idUsuario, Long id) {
         Transacao.executarSemRetorno(con -> {
             DenunciaDao dao = new DenunciaDaoJdbc(con);
             exigirAutor(dao.buscarPorId(id), idUsuario, "excluí-la");
             new ConfirmacaoResolucaoDaoJdbc(con).excluirPorDenuncia(id);
+            new ReporteComentarioDaoJdbc(con).excluirPorDenuncia(id);
             new ComentarioDaoJdbc(con).excluirPorDenuncia(id);
             new VotoDenunciaDaoJdbc(con).excluirPorDenuncia(id);
             dao.excluir(id);

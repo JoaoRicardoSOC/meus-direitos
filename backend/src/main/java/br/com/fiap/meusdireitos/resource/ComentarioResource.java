@@ -7,6 +7,7 @@ import br.com.fiap.meusdireitos.service.ComentarioService;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.DELETE;
 import jakarta.ws.rs.HeaderParam;
+import jakarta.ws.rs.POST;
 import jakarta.ws.rs.PUT;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.PathParam;
@@ -15,7 +16,7 @@ import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 
 /**
- * Edição e exclusão de um comentário pelo próprio autor.
+ * Edição e exclusão de um comentário pelo próprio autor, e reporte de comentário ofensivo por outra pessoa.
  * (Listar e criar ficam em /denuncias/{id}/comentarios.)
  */
 @Path("comentarios")
@@ -38,6 +39,15 @@ public class ComentarioResource {
     public Response excluir(@HeaderParam(UsuarioResource.CABECALHO_USUARIO) String usuarioId,
                             @PathParam("id") Long id) {
         service.excluir(autenticacao.idDoUsuarioLogado(usuarioId), id);
+        return Response.noContent().build();
+    }
+
+    /** Reporta o comentário como ofensivo: 204 (também se já tinha reportado). */
+    @POST
+    @Path("{id: \\d+}/reporte")
+    public Response reportar(@HeaderParam(UsuarioResource.CABECALHO_USUARIO) String usuarioId,
+                             @PathParam("id") Long id) {
+        service.reportar(autenticacao.idDoUsuarioLogado(usuarioId), id);
         return Response.noContent().build();
     }
 }

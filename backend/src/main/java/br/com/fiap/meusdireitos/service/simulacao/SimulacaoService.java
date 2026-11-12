@@ -9,6 +9,7 @@ import br.com.fiap.meusdireitos.dao.jdbc.ComentarioDaoJdbc;
 import br.com.fiap.meusdireitos.dao.jdbc.ConfirmacaoResolucaoDaoJdbc;
 import br.com.fiap.meusdireitos.dao.jdbc.DenunciaDaoJdbc;
 import br.com.fiap.meusdireitos.dao.jdbc.PerfilDemograficoDaoJdbc;
+import br.com.fiap.meusdireitos.dao.jdbc.ReporteComentarioDaoJdbc;
 import br.com.fiap.meusdireitos.dao.jdbc.SemeaduraCidadeDaoJdbc;
 import br.com.fiap.meusdireitos.dao.jdbc.UsuarioDaoJdbc;
 import br.com.fiap.meusdireitos.dao.jdbc.VotoDenunciaDaoJdbc;
@@ -323,6 +324,7 @@ public class SimulacaoService {
             for (Usuario morador : simulados) {
                 Long id = morador.getId();
                 new ConfirmacaoResolucaoDaoJdbc(con).excluirDoUsuario(id);
+                new ReporteComentarioDaoJdbc(con).excluirDoUsuario(id);
                 new ComentarioDaoJdbc(con).excluirDoUsuario(id);
                 new VotoDenunciaDaoJdbc(con).excluirDoUsuario(id);
                 new DenunciaDaoJdbc(con).excluirDoAutor(id);

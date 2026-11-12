@@ -15,6 +15,7 @@ import java.util.List;
 
 /**
  * Implementação JDBC de {@link ComentarioDao}. As leituras trazem o nome do autor (INNER JOIN).
+ * A listagem por denúncia omite os comentários ocultos por reportes (ver {@link ReporteComentarioDaoJdbc}).
  */
 public class ComentarioDaoJdbc implements ComentarioDao {
 
@@ -28,7 +29,8 @@ public class ComentarioDaoJdbc implements ComentarioDao {
     private static final String SQL_BUSCAR_POR_ID = SELECT + "WHERE c.cd_comentario = ?";
     private static final String SQL_LISTAR = SELECT + "ORDER BY c.dt_criacao, c.cd_comentario";
     private static final String SQL_LISTAR_POR_DENUNCIA =
-            SELECT + "WHERE c.cd_denuncia = ? ORDER BY c.dt_criacao, c.cd_comentario";
+            SELECT + "WHERE c.cd_denuncia = ? AND " + ReporteComentarioDaoJdbc.naoOculto("c.cd_comentario")
+                    + " ORDER BY c.dt_criacao, c.cd_comentario";
     private static final String SQL_ATUALIZAR =
             "UPDATE tb_comentario SET ds_comentario = ?, dt_edicao = ? WHERE cd_comentario = ?";
     private static final String SQL_EXCLUIR = "DELETE FROM tb_comentario WHERE cd_comentario = ?";

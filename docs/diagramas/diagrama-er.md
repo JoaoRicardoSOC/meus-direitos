@@ -15,6 +15,8 @@ erDiagram
     TB_DENUNCIA ||--o{ TB_COMENTARIO : "recebe"
     TB_DENUNCIA ||--o{ TB_VOTO_DENUNCIA : "recebe"
     TB_DENUNCIA ||--o{ TB_CONFIRMACAO_RESOLUCAO : "recebe"
+    TB_USUARIO ||--o{ TB_REPORTE_COMENTARIO : "reporta"
+    TB_COMENTARIO ||--o{ TB_REPORTE_COMENTARIO : "recebe"
     TB_DIREITO ||--|{ TB_DIREITO_PASSO : "tem"
     TB_DIREITO ||--|{ TB_DIREITO_TAG : "aplica-se a"
 
@@ -77,6 +79,12 @@ erDiagram
         TIMESTAMP dt_confirmacao
     }
 
+    TB_REPORTE_COMENTARIO {
+        NUMBER cd_usuario PK,FK
+        NUMBER cd_comentario PK,FK
+        TIMESTAMP dt_reporte
+    }
+
     TB_DIREITO {
         NUMBER cd_direito PK
         VARCHAR2 ds_titulo UK
@@ -120,6 +128,7 @@ erDiagram
 | Um e-mail por conta | `UNIQUE (ds_email)` em `tb_usuario` (a API responde 409) |
 | Um voto por pessoa em cada denúncia | Chave primária `(cd_usuario, cd_denuncia)` em `tb_voto_denuncia` |
 | Uma confirmação de resolução por pessoa | Chave primária `(cd_usuario, cd_denuncia)` em `tb_confirmacao_resolucao` |
+| Um reporte por pessoa em cada comentário | Chave primária `(cd_usuario, cd_comentario)` em `tb_reporte_comentario` (reportar de novo não conta duas vezes) |
 | Questionário opcional, no máximo um por usuário | `cd_usuario` é a chave primária e estrangeira de `tb_perfil_demografico` |
 | Título de tema sem repetição | `UNIQUE (ds_titulo)` em `tb_direito` (a API também compara sem diferenciar maiúsculas antes de gravar) |
 | Uma semeadura por cidade | Chave primária `(nm_cidade_chave, sg_uf)` em `tb_semeadura_cidade` |
@@ -130,6 +139,7 @@ erDiagram
 ## Decisões
 
 - **Script que só cria o que falta.** O `database/script.sql` reproduz exatamente as tabelas do schema usado no Oracle da FIAP e nunca apaga nem altera nada: cada tabela, sequence e índice só é criado se ainda não existir, e cada tema do catálogo só é inserido se o título ainda não estiver cadastrado. Assim ele pode rodar num schema compartilhado com outros projetos.
+- **Comentário oculto por reportes, sem apagar.** Com 3 linhas em `tb_reporte_comentario` o comentário deixa de aparecer na API e de contar nos totais, mas continua no banco (a contagem é uma subconsulta, sem coluna de status).
 - **Datas com hora em `TIMESTAMP`** com `DEFAULT SYSTIMESTAMP`; a data de nascimento é `DATE`.
 - **Textos em `VARCHAR2` com o limite padrão do schema (em bytes).** A API valida os tamanhos em caracteres. Um texto no limite máximo e cheio de acentos pode passar de bytes: nesse caso o Oracle recusa (ORA-12899) e a API responde 400 indicando o campo.
 - **Sem `ON DELETE CASCADE`.** A API apaga as tabelas filhas antes da tabela mãe, na mesma transação. Se algo escapar, o Oracle recusa a exclusão (ORA-02292) e a API responde 409 em vez de apagar dados em silêncio.

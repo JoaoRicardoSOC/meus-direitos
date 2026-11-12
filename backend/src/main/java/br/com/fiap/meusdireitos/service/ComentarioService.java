@@ -4,9 +4,11 @@ import br.com.fiap.meusdireitos.dao.ComentarioDao;
 import br.com.fiap.meusdireitos.dao.Transacao;
 import br.com.fiap.meusdireitos.dao.jdbc.ComentarioDaoJdbc;
 import br.com.fiap.meusdireitos.dao.jdbc.DenunciaDaoJdbc;
+import br.com.fiap.meusdireitos.dao.jdbc.ReporteComentarioDaoJdbc;
 import br.com.fiap.meusdireitos.dto.request.ComentarioRequest;
 import br.com.fiap.meusdireitos.dto.response.ComentarioResponse;
 import br.com.fiap.meusdireitos.exception.AcessoNegadoException;
+import br.com.fiap.meusdireitos.exception.RegraNegocioException;
 import br.com.fiap.meusdireitos.model.Comentario;
 import br.com.fiap.meusdireitos.service.validacao.Validador;
 
@@ -15,8 +17,14 @@ import java.util.List;
 
 /**
  * "Conversa do bairro": comentários nas denúncias. Só o autor edita ou exclui o próprio comentário.
+ * <p>
+ * Moderação: qualquer pessoa logada pode reportar o comentário de outra; com {@link #REPORTES_PARA_OCULTAR} reportes ele some para todos
+ * (inclusive para o autor) e deixa de contar no total de comentários da denúncia.
  */
 public class ComentarioService {
+
+    /** Quantidade de reportes de pessoas diferentes que oculta um comentário. */
+    public static final int REPORTES_PARA_OCULTAR = 3;
 
     public List<ComentarioResponse> listar(Long idDenuncia, Long idLeitor) {
         return Transacao.consultar(con -> {
@@ -59,7 +67,23 @@ public class ComentarioService {
         Transacao.executarSemRetorno(con -> {
             ComentarioDao dao = new ComentarioDaoJdbc(con);
             exigirAutor(dao.buscarPorId(idComentario), idUsuario);
+            new ReporteComentarioDaoJdbc(con).excluirPorComentario(idComentario);
             dao.excluir(idComentario);
+        });
+    }
+
+    /**
+     * Reporta o comentário de outra pessoa como ofensivo. Reportar de novo não muda nada.
+     *
+     * @throws RegraNegocioException se o comentário for de quem está reportando (422)
+     */
+    public void reportar(Long idUsuario, Long idComentario) {
+        Transacao.executarSemRetorno(con -> {
+            Comentario comentario = new ComentarioDaoJdbc(con).buscarPorId(idComentario); // 404 se não existir
+            if (comentario.isAutor(idUsuario)) {
+                throw new RegraNegocioException("Você não pode denunciar o próprio comentário.");
+            }
+            new ReporteComentarioDaoJdbc(con).reportar(idUsuario, idComentario);
         });
     }
 
