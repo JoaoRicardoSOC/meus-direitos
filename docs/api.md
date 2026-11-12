@@ -485,8 +485,10 @@ Rotas **públicas**. A cidade vem de `?cidade=&uf=`; se você **não** enviar, a
 ```json
 { "cidade": "São Paulo", "uf": "SP", "usuarios": 4, "denuncias": 3, "abertas": 2, "emAndamento": 0,
   "resolvidas": 1, "percentualResolvidas": 33.3, "votos": 3, "comentarios": 0,
-  "confirmacoesDeResolucao": 0, "temasDeDireitos": 5 }
+  "confirmacoesDeResolucao": 0, "temasDeDireitos": 5, "denunciasSimuladas": 0 }
 ```
+
+`denunciasSimuladas` diz quantas das denúncias da cidade são conteúdo de exemplo (seção 8.10).
 
 `GET /relatorios/categorias`:
 
