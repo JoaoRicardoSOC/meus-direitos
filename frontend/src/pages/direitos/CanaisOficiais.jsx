@@ -24,7 +24,7 @@ export default function CanaisOficiais() {
       <h2 className="md-titulo">Confirme na fonte oficial.</h2>
       <p className="md-corpo">Escolha um canal para pesquisar os critérios.</p>
 
-      <ul className="d-flex flex-column gap-3 list-unstyled m-0">
+      <ul className="md-direito-canais list-unstyled m-0">
         {CANAIS.map((canal) => (
           <li key={canal.titulo}>
             <CardCanal {...canal} />
