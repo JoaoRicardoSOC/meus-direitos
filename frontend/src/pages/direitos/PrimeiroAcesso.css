@@ -1,0 +1,21 @@
+/* 22 · Direitos / Primeiro acesso */
+
+/* Espaço do Figma entre o cabeçalho e o cartão */
+.md-primeiro-acesso-espaco {
+  height: 15px;
+}
+
+/* Cartão verde "Informação que abre caminhos." */
+.md-primeiro-acesso-destaque {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 24px;
+  border-radius: 24px;
+  background: var(--md-verde);
+}
+
+.md-primeiro-acesso-destaque .md-titulo,
+.md-primeiro-acesso-destaque .md-corpo {
+  color: var(--md-branco);
+}
