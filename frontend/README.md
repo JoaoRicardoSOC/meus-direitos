@@ -73,12 +73,13 @@ src/
   styles/tema.css       cores, tipografia e componentes do Figma (classes md-*)
   services/api.js       cliente da API: token (Authorization), erros padronizados (ErroApi)
   services/sessao.js    token e usuário guardados no localStorage
+  services/localizacao.js  geolocalização, Nominatim/Wikidata (canais oficiais e "Usar minha localização")
   contexts/             useSessao(): usuário logado em qualquer tela
-  utils/                formatação ("há 2 h", iniciais) e validação dos formulários
+  utils/                formatação ("há 2 h", iniciais), validação dos formulários e novidades das minhas denúncias
   components/           peças reutilizadas: Tela, Cabecalho, Campo, CardDenuncia, NavegacaoPrincipal…
   pages/                uma pasta por seção do Figma
     inicio/             01 Boas-vindas, 02–05 Cadastro, 06 Entrar
-    cidade/             07–11 Feed, votos e detalhe com comentários
+    cidade/             07–11 Feed (com busca e filtros), votos, detalhe com comentários e o Painel da cidade
     denuncias/          12–18 Nova denúncia, minhas denúncias, excluir
     perfil/             19–21 Perfil, editar, trocar senha, excluir conta
     direitos/           22–33 Questionário e temas de direitos
@@ -102,6 +103,12 @@ public/img/demo/        fotos de demonstração das denúncias (caminho enviado 
   - *Atendimento presencial*: abre o Google Maps buscando "CRAS" em volta da posição.
   - Com a cidade do cadastro, ou se a localização for negada ou não vier, tudo usa a cidade do cadastro, e a tela explica o motivo.
   - A posição é enviada só ao OpenStreetMap (e, no link do CRAS, ao Google Maps, quando a pessoa clica); nada vai para a API do Meus Direitos. O resultado fica guardado na sessão do navegador para não repetir pedidos (a política do Nominatim é de no máximo 1 por segundo).
+
+- **Painel da cidade** (`/cidade/painel`, sem tela no Figma): aberto por "Ver painel completo" no bloco "Números da cidade". Junta os quatro relatórios da API (`/relatorios/resumo`, `/categorias`, `/bairros?minimo=1`, `/engajamento?limite=5`): resumo com o percentual de resolvidas em destaque, barras por categoria feitas em HTML/CSS (o número vem escrito; a barra é só visual), bairros com mais problemas e as denúncias com mais participação (links para o detalhe). Uma frase diz quantas denúncias são de demonstração (`denunciasSimuladas`). Se o resumo falhar, a tela mostra o erro com "Tentar novamente"; se só um bloco falhar, os outros continuam.
+- **Busca e filtros no feed**: texto (até 100 caracteres, aplicado ao tocar em "Buscar"), categoria e situação (aplicadas ao escolher). Com algum filtro ativo, as abas somem e a lista vem de `GET /denuncias?cidade=&uf=&busca=&categoria=&status=` na cidade do usuário, sempre da mais recente para a mais antiga, com o total anunciado ("N resultados"). Sem filtros, o feed continua com as abas. Os filtros e o último resultado ficam guardados como a posição do feed: ao voltar do detalhe, a busca, a lista e a rolagem voltam iguais.
+- **"Usar minha localização" na nova denúncia**: só quando a pessoa toca no botão, a posição vira "Rua, número" e bairro pelo Nominatim (reverso, zoom 18). Se a localização for negada ou não vier, aparece uma mensagem curta ao lado do campo e o que já foi digitado fica. A pessoa confere antes de publicar.
+- **Novidades em "Minhas denúncias"** (sem back-end novo): o app guarda no `localStorage`, por usuário, os números de cada denúncia da última visita (apoios, discordâncias, comentários, confirmações e status). Na visita seguinte, cada card mostra "Novidades: +2 apoios, +1 comentário, status mudou para Resolvida", e o Perfil mostra "N com novidades" na opção "Minhas denúncias" (sem marcar como visto). Fica só neste navegador.
+- **Compartilhar denúncia**: no detalhe, usa o menu de compartilhar do sistema quando existe; senão copia o link ("Link copiado."); sem área de transferência (ex.: `file://`), mostra o link num campo para copiar. O link abre a denúncia depois do login.
 
 ## 7. Créditos das imagens
 

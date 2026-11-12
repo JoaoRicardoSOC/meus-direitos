@@ -17,7 +17,8 @@ flowchart LR
     end
 
     subgraph cidade["Aba Cidade"]
-        FEED["/cidade · 07–09, 33 Feed"]
+        FEED["/cidade · 07–09, 33 Feed (abas ou busca e filtros)"]
+        PAINEL["/cidade/painel · Painel da cidade"]
         DET["/denuncias/:id · 10–11 Detalhe e conversa"]
         NOVA["/denuncias/nova?passo= · 12–16 Nova denúncia"]
         EDIT["/denuncias/:id/editar"]
@@ -41,6 +42,7 @@ flowchart LR
     BV --> CAD --> FEED
     BV --> ENT --> FEED
     FEED --> DET
+    FEED -- "Ver painel completo" --> PAINEL -- "denúncias com mais participação" --> DET
     FEED -- "botão Nova denúncia" --> NOVA --> DET
     MINHAS --> EDIT
     MINHAS --> DET
@@ -52,6 +54,8 @@ flowchart LR
     PERF --> MINHAS
     PERF -- "Sair da conta" --> BV
 ```
+
+> **Fluxos novos:** no feed, a busca e os filtros de categoria e situação trocam as abas por `GET /denuncias` com filtros (e voltam iguais do detalhe); o "Ver painel completo" leva ao Painel da cidade (relatórios da API). Na nova denúncia, "Usar minha localização" preenche endereço e bairro. Ao abrir "Minhas denúncias", cada card mostra o que mudou desde a última visita (o Perfil mostra quantas têm novidades). No detalhe, "Compartilhar" usa o menu do sistema, copia o link ou o mostra num campo.
 
 > Todas as telas logadas ficam dentro de `RotaProtegida` e mostram a navegação principal (Cidade · Meus Direitos · Perfil). Sem sessão, a rota protegida leva para "Entrar"; depois de sair ou excluir a conta, leva para as boas-vindas. As etapas do cadastro, da nova denúncia e do questionário ficam na URL (`?passo=`), por isso o "voltar" do celular volta uma etapa.
 
