@@ -139,4 +139,4 @@ Usamos o **Claude (Anthropic)**, via **Claude Code**, como apoio no front-end pa
 - buscar as fotos de demonstração em acervos abertos, conferindo licença e crédito de cada uma;
 - escrever os testes de ponta a ponta no navegador (contra a API e o Oracle reais) e esta documentação.
 
-O design é da equipe (protótipo da Marcela no Figma) e as mudanças em relação a ele foram aprovadas por ela. As decisões técnicas e as justificativas estão documentadas nesta página.
+O design é da equipe (protótipo da Marcela no Figma) e as mudanças em relação a ele foram aprovadas por ela. Todo o código foi revisado e compreendido pelos integrantes do front-end, e testado de ponta a ponta contra a API e o Oracle da FIAP. As decisões técnicas e as justificativas estão documentadas nesta página.
