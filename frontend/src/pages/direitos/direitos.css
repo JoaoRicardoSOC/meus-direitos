@@ -68,3 +68,27 @@
   flex-direction: column;
   gap: 12px;
 }
+
+/* Tela 32: de onde vêm os canais (localização ou cidade do cadastro) */
+.md-canais-local {
+  align-items: center;
+}
+
+/* Ação secundária em forma de link: "Usar minha localização" */
+.md-link-botao {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--md-verde);
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.45;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.md-link-botao:focus-visible {
+  outline: 3px solid var(--bs-focus-ring-color);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
