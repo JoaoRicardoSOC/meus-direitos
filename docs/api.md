@@ -73,29 +73,34 @@ cors.origens=http://localhost:5173,http://localhost:5174
 | **Valores de lista (enums)** | Enviados como código em MAIÚSCULAS: `"CALCADA_ACESSIBILIDADE"`. Nas respostas vêm como `{"codigo": "...", "descricao": "Calçada e acessibilidade"}` — **mostre a `descricao`, envie o `codigo`**. |
 | **Campos nulos** | ⚠️ **Não aparecem no JSON.** Ex.: `placar.meuVoto` só existe se a pessoa votou. Sempre trate a ausência: `denuncia.placar.meuVoto ?? null`. |
 | **IDs** | Números inteiros |
-| **Rotas com 🔒** | Exigem o cabeçalho `X-Usuario-Id` (ver seção 4) |
+| **Rotas com 🔒** | Exigem o cabeçalho `Authorization: Bearer <token>` (ver seção 4) |
+| **Cache** | Listas fixas da seção 8.1 vêm com `Cache-Control: public, max-age=86400`; as demais respostas, com `no-store` |
 
 ---
 
 ## 4. Sessão do usuário (login)
 
-A API não usa token: depois do cadastro ou do login, ela devolve o `id` do usuário, e o front envia esse id em **toda** chamada que precisa de login.
+A API usa **token**: o cadastro e o login devolvem o usuário com o campo `token`, e o front envia esse token em **toda** chamada que precisa de login. O cabeçalho `X-Usuario-Id` não é mais aceito.
 
 ```
 1. POST /api/usuarios  (cadastro)  ou  POST /api/auth/login
-2. resposta.id  →  localStorage.setItem('usuarioId', resposta.id)
-3. Toda chamada 🔒  →  cabeçalho  X-Usuario-Id: <id>
-4. "Sair da conta"  →  localStorage.removeItem('usuarioId')  (não existe rota de logout)
-5. Resposta 401 em qualquer rota  →  apague o id e mande para a tela "Entrar"
+2. resposta.token  →  localStorage.setItem('token', resposta.token)
+3. Toda chamada 🔒  →  cabeçalho  Authorization: Bearer <token>
+4. "Sair da conta"  →  localStorage.removeItem('token')  (não existe rota de logout)
+5. Resposta 401 em qualquer rota  →  apague o token e mande para a tela "Entrar"
 ```
 
-Guarde também o objeto do usuário (nome, cidade) se quiser exibi-lo sem chamar `/usuarios/me` toda hora.
+- O token **vale 7 dias**. Token ausente, inválido ou vencido → **401** (a pessoa entra de novo).
+- Só o cadastro e o login devolvem `token`. `GET` e `PUT /usuarios/me` devolvem o usuário **sem** token: ao atualizar o usuário guardado, mantenha o token que já estava salvo.
+- Guarde também o objeto do usuário (nome, cidade) — separado do token — se quiser exibi-lo sem chamar `/usuarios/me` toda hora.
+- O login pode responder **429** depois de muitas tentativas seguidas ("Muitas tentativas de login. Tente de novo em N minutos."): mostre a mensagem e não apague o que a pessoa digitou.
+- Quem tinha a sessão antiga (só o `usuarioId` guardado, sem token) precisa entrar de novo.
 
 ---
 
 ## 5. Cliente `fetch` recomendado
 
-Copie para algo como `src/services/api.js`. Usa apenas `fetch` (padrão do navegador).
+Copie para algo como `src/services/api.js`. Usa apenas `fetch` (padrão do navegador) e envia o token da seção 4 no cabeçalho `Authorization`.
 
 ```js
 const API_URL = 'http://localhost:8080/api';
@@ -111,8 +116,8 @@ export class ErroApi extends Error {
 
 export async function api(caminho, { metodo = 'GET', corpo } = {}) {
   const cabecalhos = { 'Content-Type': 'application/json' };
-  const usuarioId = localStorage.getItem('usuarioId');
-  if (usuarioId) cabecalhos['X-Usuario-Id'] = usuarioId;
+  const token = localStorage.getItem('token');
+  if (token) cabecalhos.Authorization = `Bearer ${token}`;
 
   let resposta;
   try {
@@ -128,7 +133,7 @@ export async function api(caminho, { metodo = 'GET', corpo } = {}) {
   if (resposta.status === 204) return null;               // sucesso sem corpo (DELETE)
   const dados = await resposta.json();
   if (!resposta.ok) {
-    if (resposta.status === 401) localStorage.removeItem('usuarioId');
+    if (resposta.status === 401) localStorage.removeItem('token');   // token ausente, inválido ou vencido
     throw new ErroApi(dados);
   }
   return dados;
@@ -188,13 +193,14 @@ Todo erro vem neste formato:
 | Status | Quando acontece | O que o front faz |
 |---|---|---|
 | 400 | Campo inválido, JSON mal formado, valor de lista inexistente | Mostra `mensagem` e cada item de `campos` ao lado do input |
-| 401 | Sem login, `X-Usuario-Id` inválido, e-mail/senha incorretos | Volta para "Entrar" (no login, mostra a mensagem) |
+| 401 | Sem login, token inválido ou vencido, e-mail/senha incorretos | Volta para "Entrar" (no login, mostra a mensagem) |
 | 403 | Ação de outra pessoa (ex.: editar denúncia alheia) | Mostra `mensagem` |
 | 404 | Recurso não existe; **em `GET /usuarios/perfil` significa "ainda não respondeu o questionário"** | Tela de vazio / questionário |
 | 405 | Método HTTP errado para a rota (ex.: `DELETE` onde só existe `GET`) | Erro de programação: confira a seção 8 |
 | 409 | E-mail já cadastrado, título repetido | Mostra `mensagem` no campo correspondente |
 | 415 | Corpo enviado sem `Content-Type: application/json` | Erro de programação: o cliente da seção 5 já envia o cabeçalho |
 | 422 | Regra do negócio (votar na própria denúncia, mudança de status inválida) | Mostra `mensagem` (toast/alerta) |
+| 429 | Login bloqueado depois de 5 tentativas erradas seguidas no mesmo e-mail (15 minutos) | Mostra `mensagem` sem apagar o que foi digitado |
 | 503 | Banco de dados fora do ar | "Serviço indisponível, tente novamente" |
 | 500 | Erro inesperado | Mensagem genérica |
 
@@ -256,7 +262,8 @@ Resposta **201** (`UsuarioResponse`):
 
 ```json
 { "id": 7, "nome": "Mariana Oliveira", "email": "mariana@exemplo.com", "cidade": "São Paulo", "uf": "SP",
-  "criadoEm": "2026-11-11T00:25:11", "perfilPreenchido": false }
+  "criadoEm": "2026-11-11T00:25:11", "perfilPreenchido": false,
+  "token": "NzoxNzk...Q.k3Jx...9w" }
 ```
 
 Regras: nome 3–100; e-mail válido (até 120, guardado em minúsculas); **senha 8–64 com pelo menos uma letra e um número**; cidade 2–80; `uf` = sigla de estado válida. E-mail já usado → **409**.
@@ -271,7 +278,7 @@ Regras: nome 3–100; e-mail válido (até 120, guardado em minúsculas); **senh
 { "email": "mariana@exemplo.com", "senha": "senha1234" }
 ```
 
-**200** → `UsuarioResponse` (o mesmo do cadastro). E-mail ou senha errados → **401** `"E-mail ou senha inválidos."`
+**200** → `UsuarioResponse` com `token` (como no cadastro). E-mail ou senha errados → **401** `"E-mail ou senha inválidos."` Depois de **5 erros seguidos** no mesmo e-mail → **429** por 15 minutos ("Muitas tentativas de login. Tente de novo em N minutos."); um login certo zera a contagem.
 
 | Método | Rota | Descrição |
 |---|---|---|
@@ -303,7 +310,7 @@ Regras: nome 3–100; e-mail válido (até 120, guardado em minúsculas); **senh
 { "senha": "senha1234" }
 ```
 
-- **204** → conta excluída. Apague o `usuarioId` do `localStorage` e volte para a tela inicial.
+- **204** → conta excluída. Apague o token e o usuário do `localStorage` e volte para a tela inicial.
 - Senha errada → **400** no campo `senha` ("Senha incorreta.").
 - **O que é apagado** (não tem volta): a conta, o questionário, as denúncias da pessoa e, junto com elas, votos, comentários e confirmações que estavam nelas, além dos votos, comentários e confirmações que a pessoa fez em denúncias de outros.
 - É `POST` (e não `DELETE`) porque a senha vai no corpo.
@@ -317,8 +324,10 @@ Regras: nome 3–100; e-mail válido (até 120, guardado em minúsculas); **senh
 
 ```json
 { "dataNascimento": "1958-03-12", "racaCor": "NAO_INFORMADO", "deficiencia": "FISICA",
-  "percursoEscolar": "ESCOLA_PUBLICA", "baixaRenda": true }
+  "percursoEscolar": "ESCOLA_PUBLICA", "baixaRenda": true, "consentimento": true }
 ```
+
+**Consentimento (LGPD):** se qualquer resposta vier preenchida, envie `"consentimento": true` (a pessoa marcou "Concordo em compartilhar…"). Sem ele → **400** no campo `consentimento` ("Para salvar estes dados, confirme que concorda em compartilhá-los para receber orientações."). Se tudo foi pulado, não é exigido. O consentimento não é gravado: vale para aquele envio.
 
 Resposta **200** (`PerfilCompletoResponse`):
 
@@ -384,7 +393,7 @@ Valores de `icone`: `TRANSPORTE`, `PRIORIDADE`, `MUNICIPIO`, `EDUCACAO`, `SAUDE`
 ```
 
 - **Cidade e UF não são enviadas**: a denúncia fica na cidade do usuário.
-- Regras: título 5–120; descrição 10–1000; categoria obrigatória; endereço 5–150; bairro até 80 (opcional); `imagemUrl` opcional, até 300: endereço `https://` **ou** caminho do front como `img/demo/asfalto-1.jpg` (recusa `javascript:`, `data:` e `..` → **400** no campo).
+- Regras: título 5–120; descrição 10–1000; categoria obrigatória; endereço 5–150; bairro até 80 (opcional); `imagemUrl` opcional, até 300: **só fotos de demonstração do front**, no formato `img/demo/<nome>.jpg|jpeg|png|webp` (endereços externos, `..` e outros caminhos → **400** no campo: "Escolha uma das fotos de demonstração.").
 - Resposta **201** com `DenunciaResponse` (seção 9). Use **`protocolo`** na tela 16 ("PROTOCOLO DEMO · #2026-0142").
 
 | Método | Rota | Descrição |
@@ -392,7 +401,7 @@ Valores de `icone`: `TRANSPORTE`, `PRIORIDADE`, `MUNICIPIO`, `EDUCACAO`, `SAUDE`
 | GET 🔒 | `/denuncias/feed?ordem=&pagina=&tamanho=` | **Feed da cidade do usuário** (`PaginaResponse`). `ordem`: `PARA_VOCE` (padrão), `RECENTES`, `MAIS_VOTADOS` |
 | GET | `/denuncias?cidade=&uf=&categoria=&status=&busca=&pagina=&tamanho=` | Listagem pública com filtros opcionais, da mais recente para a mais antiga. `busca` até 100 caracteres |
 | GET 🔒 | `/denuncias/minhas` | Denúncias do usuário (lista simples, sem paginação) |
-| GET | `/denuncias/{id}` | Detalhe. Se enviar `X-Usuario-Id`, vem `meuVoto` e `euConfirmei` |
+| GET | `/denuncias/{id}` | Detalhe. Se enviar o token, vem `meuVoto` e `euConfirmei` |
 | PUT 🔒 | `/denuncias/{id}` | Mesmo corpo do POST. **Só o autor** (403) |
 | PATCH 🔒 | `/denuncias/{id}/status` | `{ "status": "RESOLVIDA" }`. **Só o autor**. Ver 8.7 |
 | DELETE 🔒 | `/denuncias/{id}` | **Só o autor**. Apaga votos, comentários e confirmações junto → 204 |
@@ -458,7 +467,7 @@ Quando mostrar o botão "Já foi resolvido": usuário logado, **não** é o auto
 
 | Método | Rota | Descrição |
 |---|---|---|
-| GET | `/denuncias/{id}/comentarios` | Lista do mais antigo ao mais novo. Com `X-Usuario-Id`, cada item indica `meu` |
+| GET | `/denuncias/{id}/comentarios` | Lista do mais antigo ao mais novo. Com o token, cada item indica `meu` |
 | POST 🔒 | `/denuncias/{id}/comentarios` | `{ "texto": "Também notei esse problema." }` (2–500 caracteres) → 201 |
 | PUT 🔒 | `/comentarios/{id}` | Editar o próprio comentário (403 se for de outra pessoa) |
 | DELETE 🔒 | `/comentarios/{id}` | Excluir o próprio comentário → 204 |
@@ -473,7 +482,7 @@ Quando mostrar o botão "Já foi resolvido": usuário logado, **não** é o auto
 
 ### 8.9 Relatórios da cidade
 
-Rotas **públicas**. A cidade vem de `?cidade=&uf=`; se você **não** enviar, a API usa a cidade do usuário logado (pelo `X-Usuario-Id`). Sem nenhum dos dois → **400**.
+Rotas **públicas**. A cidade vem de `?cidade=&uf=`; se você **não** enviar, a API usa a cidade do usuário logado (pelo token). Sem nenhum dos dois → **400**.
 
 | Método | Rota | Para quê |
 |---|---|---|
@@ -596,7 +605,7 @@ Para o sistema nunca parecer vazio — inclusive quando o avaliador se cadastrar
 
 | Objeto | Campos |
 |---|---|
-| `UsuarioResponse` | `id, nome, email, cidade, uf, criadoEm, perfilPreenchido, cidadePreparada?` (no cadastro e quando a cidade muda em `PUT /usuarios/me`) |
+| `UsuarioResponse` | `id, nome, email, cidade, uf, criadoEm, perfilPreenchido, cidadePreparada?` (no cadastro e quando a cidade muda em `PUT /usuarios/me`), `token?` (só no cadastro e no login) |
 | `AutorResponse` (em denúncias e comentários) | `id, nome, simulado` |
 | `PlacarResponse` | `upvotes, downvotes, saldo, meuVoto?` |
 | `ComentarioResponse` | `id, idDenuncia, texto, autor {id, nome, simulado}, meu, criadoEm, editadoEm?` |
@@ -655,3 +664,4 @@ Ajustes em relação ao Figma, combinados com o grupo. **Todos foram atendidos n
 | 12/11/2026 | `database/script.sql` com as tabelas e o catálogo inicial de 5 temas de direitos, iguais ao schema do Oracle da FIAP; o script só cria o que falta e não apaga nada. Erros 405 e 415 na tabela da seção 6. Sem mudança de contrato. |
 | 12/11/2026 | Mudar de cidade no perfil prepara a "cidade viva" da cidade nova; `GET /usuarios/{id}` responde 404 para morador de exemplo; o pulso de atividade não roda em dobro com acessos simultâneos. |
 | 12/11/2026 | Front-end concluído e testado de ponta a ponta contra a API e o Oracle (inclusive com o `index.html` aberto por `file://`). Todos os pedidos da seção 11 atendidos. Sem mudança de contrato. |
+| 12/11/2026 | **Mudança de contrato (segurança):** `X-Usuario-Id` substituído por token assinado (`Authorization: Bearer`, 7 dias), devolvido no cadastro e no login; login bloqueado por 15 min após 5 erros (429); `imagemUrl` só aceita fotos `img/demo/`; questionário exige `consentimento` quando há dado preenchido; cabeçalhos `nosniff`, `no-referrer`, `DENY` e `Cache-Control`. |
