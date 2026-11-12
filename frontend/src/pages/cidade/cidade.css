@@ -25,6 +25,61 @@
   scroll-snap-align: start;
 }
 
+/* Busca e filtros do feed: campo + "Buscar" numa linha, categoria e situação lado a lado */
+.md-busca {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.md-busca-linha {
+  display: flex;
+  gap: 8px;
+}
+
+.md-busca-linha .md-entrada {
+  flex: 1;
+  min-width: 0;
+}
+
+/* Sem o "x" e a lupa nativos do type=search: o "Limpar" faz esse papel */
+.md-busca-linha input[type='search']::-webkit-search-cancel-button,
+.md-busca-linha input[type='search']::-webkit-search-decoration {
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.md-busca-botao.md-botao {
+  width: auto;
+  flex-shrink: 0;
+}
+
+.md-busca-filtros {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.md-busca-filtro {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+.md-busca-rotulo {
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.3;
+  color: var(--md-tinta);
+  margin: 0;
+}
+
+/* "12 resultados · mais recentes primeiro": a linha existe sempre (é o anúncio do leitor de tela) */
+.md-busca-total:empty {
+  margin-bottom: -12px; /* não soma um espaço vazio ao gap da tela */
+}
+
 /* Troca de aba: a lista anterior fica esmaecida até a nova chegar */
 .md-feed-lista {
   transition: opacity var(--md-dur-cor) ease;
