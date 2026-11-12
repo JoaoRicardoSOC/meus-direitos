@@ -312,10 +312,6 @@ summary,
   transition: color var(--md-dur-cor) ease;
 }
 
-.md-acao-texto:hover {
-  color: var(--md-tinta);
-}
-
 /* Iniciar uma exclusão: vermelho com lixeira (a confirmação final usa .md-botao-perigo) */
 .md-acao-texto.md-perigo,
 .md-acao-texto.md-perigo:hover {
@@ -916,6 +912,10 @@ button.md-acao {
 
   .md-voltar:hover {
     background: var(--md-suave);
+  }
+
+  .md-acao-texto:not(.md-perigo):hover {
+    color: var(--md-tinta);
   }
 
   .md-acao:not(:disabled):not([aria-disabled='true']):hover {
