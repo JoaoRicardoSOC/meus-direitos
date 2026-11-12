@@ -14,7 +14,7 @@ Ela grava e lê os dados de um banco **Oracle** via **JDBC**.
 | Ferramenta | Versão |
 |---|---|
 | JDK | 17 ou superior (o projeto compila com `release 17`) |
-| Maven | 3.8 ou superior |
+| Maven | 3.9 ou superior |
 | Oracle Database | Acesso a um schema (ex.: o Oracle da FIAP) com as tabelas do `database/script.sql` criadas |
 
 ## 2. Configuração
