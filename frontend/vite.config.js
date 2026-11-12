@@ -26,6 +26,8 @@ export default defineConfig({
   build: {
     // Um único script (exigido pelo file://) com React, Bootstrap e o app: ~520 kB, ~120 kB com gzip
     chunkSizeWarningLimit: 800,
+    // CSS num arquivo próprio (<link> no index.html): a tela já aparece estilizada antes de o JS rodar
+    cssCodeSplit: false,
     rollupOptions: {
       output: {
         format: 'iife',
