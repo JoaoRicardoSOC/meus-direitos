@@ -1,10 +1,11 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
-import { aoMudarSessao, encerrarSessao, iniciarSessao, lerUsuario, lerUsuarioId } from '../services/sessao.js';
+import { aoMudarSessao, encerrarSessao, iniciarSessao, lerToken, lerUsuario } from '../services/sessao.js';
 
 const SessaoContext = createContext(null);
 
+/** Logado = há token e usuário guardados. */
 function lerEstado() {
-  return lerUsuarioId() ? lerUsuario() : null;
+  return lerToken() ? lerUsuario() : null;
 }
 
 /** Deixa o usuário logado disponível para todas as telas (useSessao). */

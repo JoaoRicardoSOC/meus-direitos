@@ -1,8 +1,8 @@
 /**
  * Cliente da API Meus Direitos (contrato em docs/api.md).
- * Usa apenas fetch. Envia o X-Usuario-Id da sessão e transforma qualquer erro no mesmo formato.
+ * Usa apenas fetch. Envia o token da sessão (Authorization: Bearer) e transforma qualquer erro no mesmo formato.
  */
-import { lerUsuarioId, encerrarSessao } from './sessao.js';
+import { lerToken, encerrarSessao } from './sessao.js';
 
 export const API_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:8080/api';
 
@@ -22,8 +22,8 @@ export class ErroApi extends Error {
 
 export async function api(caminho, { metodo = 'GET', corpo } = {}) {
   const cabecalhos = { 'Content-Type': 'application/json' };
-  const usuarioId = lerUsuarioId();
-  if (usuarioId) cabecalhos['X-Usuario-Id'] = usuarioId;
+  const token = lerToken();
+  if (token) cabecalhos.Authorization = `Bearer ${token}`;
 
   let resposta;
   try {
@@ -46,6 +46,7 @@ export async function api(caminho, { metodo = 'GET', corpo } = {}) {
   }
 
   if (!resposta.ok) {
+    // token ausente, inválido ou vencido (7 dias): a sessão acabou
     if (resposta.status === 401) encerrarSessao();
     throw new ErroApi(dados ?? { status: resposta.status, mensagem: 'Algo deu errado. Tente novamente.' });
   }

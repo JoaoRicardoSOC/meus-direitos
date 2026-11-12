@@ -5,7 +5,7 @@ import Cabecalho from '../../components/Cabecalho.jsx';
 import Progresso from '../../components/Progresso.jsx';
 import Mensagem, { Carregando } from '../../components/Mensagem.jsx';
 import { api } from '../../services/api.js';
-import { lerUsuarioId } from '../../services/sessao.js';
+import { lerUsuario } from '../../services/sessao.js';
 import { focarPrimeiroErro, irParaOTopo } from '../../utils/foco.js';
 import { CampoData, CampoEscolha, ListaOpcoes, PerguntaSimNao } from './QuestionarioCampos.jsx';
 import iconeInfo from '../../assets/icones/info.svg';
@@ -48,7 +48,7 @@ const LISTAS = {
 
 /** Respostas em andamento ficam na sessão da aba: reabrir o questionário retoma de onde parou. */
 function chaveRascunho() {
-  return `md-questionario-rascunho-${lerUsuarioId() ?? 'anonimo'}`;
+  return `md-questionario-rascunho-${lerUsuario()?.id ?? 'anonimo'}`;
 }
 
 function lerRascunho() {

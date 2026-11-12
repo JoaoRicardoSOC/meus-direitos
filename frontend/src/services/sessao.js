@@ -1,9 +1,11 @@
 /**
- * Sessão do usuário (docs/api.md, seção 4): a API não usa token.
- * Depois do cadastro ou login guardamos o id (enviado no cabeçalho X-Usuario-Id) e o usuário.
+ * Sessão do usuário (docs/api.md, seção 4). Depois do cadastro ou login guardamos o token
+ * (enviado no cabeçalho Authorization: Bearer) e, separado dele, o usuário.
  */
-const CHAVE_ID = 'usuarioId';
+const CHAVE_TOKEN = 'token';
 const CHAVE_USUARIO = 'usuario';
+/** Chave da versão antiga (sessão por X-Usuario-Id): não vale mais como credencial. */
+const CHAVE_ID_ANTIGA = 'usuarioId';
 const EVENTO = 'md:sessao';
 
 /**
@@ -40,8 +42,18 @@ function apagar(chave) {
   }
 }
 
-export function lerUsuarioId() {
-  return ler(CHAVE_ID);
+/**
+ * Migração: quem tinha só a sessão antiga (o id, sem token) passa a estar deslogado.
+ * Roda uma vez, ao carregar o módulo.
+ */
+(function migrarSessaoAntiga() {
+  if (ler(CHAVE_ID_ANTIGA) === null) return;
+  apagar(CHAVE_ID_ANTIGA);
+  if (ler(CHAVE_TOKEN) === null) apagar(CHAVE_USUARIO);
+})();
+
+export function lerToken() {
+  return ler(CHAVE_TOKEN);
 }
 
 export function lerUsuario() {
@@ -54,17 +66,22 @@ export function lerUsuario() {
   }
 }
 
-/** Guarda o usuário devolvido por POST /usuarios, POST /auth/login ou PUT /usuarios/me. */
-export function iniciarSessao(usuario) {
-  gravar(CHAVE_ID, String(usuario.id));
+/**
+ * Guarda o usuário devolvido por POST /usuarios, POST /auth/login, GET ou PUT /usuarios/me.
+ * O token só vem no cadastro e no login: se não vier, o token já guardado continua valendo.
+ * O usuário é salvo sem o token.
+ */
+export function iniciarSessao({ token, ...usuario }) {
+  if (token) gravar(CHAVE_TOKEN, token);
   gravar(CHAVE_USUARIO, JSON.stringify(usuario));
   window.dispatchEvent(new Event(EVENTO));
 }
 
 /** "Sair da conta", conta excluída ou resposta 401. */
 export function encerrarSessao() {
-  apagar(CHAVE_ID);
+  apagar(CHAVE_TOKEN);
   apagar(CHAVE_USUARIO);
+  apagar(CHAVE_ID_ANTIGA);
   window.dispatchEvent(new Event(EVENTO));
 }
 
