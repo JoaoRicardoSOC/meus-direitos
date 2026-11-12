@@ -8,7 +8,7 @@ import { cidadeUf } from '../../utils/formatos.js';
 import {
   PORTAL_GOV_BR, buscaDaPrefeitura, buscaDeCras, cidadePorNome, cidadePorPosicao, gravarCache, lerCache,
   obterPosicao, portalDaPrefeitura,
-} from './localizacao.js';
+} from '../../services/localizacao.js';
 import iconeSetaDireita from '../../assets/icones/seta-direita.svg';
 import './direitos.css';
 
