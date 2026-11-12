@@ -6,6 +6,17 @@
   gap: 20px;
 }
 
+/* Grupos da etapa (título e texto → perguntas → ações); entre eles, .md-grupo dá o respiro maior */
+.md-questionario-bloco {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.md-questionario-acoes {
+  gap: 12px;
+}
+
 /* Campo que abre a lista de opções (componente "MD/Campo-342-Ícone/down") */
 .md-questionario-escolha {
   display: flex;
@@ -14,7 +25,7 @@
   width: 100%;
   min-height: 52px;
   padding: 14px;
-  border: 1px solid var(--md-linha);
+  border: 1px solid var(--md-borda-campo);
   border-radius: 12px;
   background: var(--md-branco);
   font-size: 16px;
@@ -22,12 +33,7 @@
   color: var(--md-tinta);
   text-align: left;
   cursor: pointer;
-}
-
-.md-questionario-escolha:focus-visible {
-  outline: 0;
-  border-color: var(--md-verde);
-  box-shadow: 0 0 0 3px var(--bs-focus-ring-color);
+  touch-action: manipulation;
 }
 
 .md-questionario-escolha.is-invalid {
@@ -40,6 +46,31 @@
 
 .md-questionario-escolha-vazio {
   color: var(--md-apagado);
+}
+
+/* Data de nascimento: Dia | Mês | Ano lado a lado, cada um com o seu rótulo */
+.md-questionario-data-partes {
+  display: flex;
+  gap: 8px;
+}
+
+.md-questionario-data-partes > div {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.md-questionario-data-dia {
+  flex: 0 0 72px;
+}
+
+.md-questionario-data-mes {
+  flex: 1 1 auto;
+}
+
+.md-questionario-data-ano {
+  flex: 0 0 92px;
 }
 
 /* Opções selecionáveis das telas 24, 26 e 27 (e Sim/Não da renda): cartão branco, raio 18, 20 px entre elas */
@@ -55,10 +86,11 @@
 .md-questionario-opcao {
   display: flex;
   align-items: center;
+  gap: 12px;
   width: 100%;
   min-height: 53px;
   padding: 16px;
-  border: 1px solid var(--md-linha);
+  border: 1px solid var(--md-borda-campo);
   border-radius: 18px;
   background: var(--md-branco);
   font-size: 16px;
@@ -69,21 +101,37 @@
   cursor: pointer;
   margin: 0;
   position: relative;
+  touch-action: manipulation;
+  transition: border-color var(--md-dur-cor) ease;
 }
 
-.md-questionario-opcao:hover {
-  border-color: var(--md-verde);
+.md-questionario-opcao-texto {
+  flex: 1;
+  min-width: 0;
 }
 
-/* O Figma não desenha a opção escolhida: borda verde e fundo verde-claro, com as cores do tema */
+/* Escolhida: borda de 2 px verde, fundo verde-claro e o check à direita (não depende só da cor).
+   O padding perde 1 px para a borda mais grossa não empurrar o texto. */
 .md-questionario-opcao.selecionada {
-  border-color: var(--md-verde);
+  padding: 15px;
+  border: 2px solid var(--md-verde);
   background: var(--md-suave);
   color: var(--md-verde);
 }
 
-.md-questionario-opcao:focus-visible,
+.md-questionario-opcao-check {
+  flex-shrink: 0;
+}
+
+/* O rádio fica escondido: o contorno de foco vai para o cartão */
 .md-questionario-opcao:has(input:focus-visible) {
-  outline: 3px solid var(--bs-focus-ring-color);
+  outline: 2px solid var(--md-foco);
   outline-offset: 2px;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .md-questionario-escolha:not(.is-invalid):hover,
+  .md-questionario-opcao:hover {
+    border-color: var(--md-verde);
+  }
 }
