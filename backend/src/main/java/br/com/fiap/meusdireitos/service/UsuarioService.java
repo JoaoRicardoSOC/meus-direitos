@@ -15,6 +15,7 @@ import br.com.fiap.meusdireitos.dto.request.ExclusaoContaRequest;
 import br.com.fiap.meusdireitos.dto.response.UsuarioPublicoResponse;
 import br.com.fiap.meusdireitos.dto.response.UsuarioResponse;
 import br.com.fiap.meusdireitos.exception.ConflitoException;
+import br.com.fiap.meusdireitos.exception.EntidadeNaoEncontradaException;
 import br.com.fiap.meusdireitos.exception.ErroCampo;
 import br.com.fiap.meusdireitos.exception.ValidacaoException;
 import br.com.fiap.meusdireitos.model.Usuario;
@@ -127,11 +128,17 @@ public class UsuarioService {
         });
     }
 
-    /** Dados públicos de um usuário, com o total de denúncias registradas. */
+    /**
+     * Dados públicos de um usuário, com o total de denúncias registradas.
+     * Moradores de exemplo da "cidade viva" não são pessoas: ficam fora da consulta pública, como na lista.
+     */
     public UsuarioPublicoResponse buscarPublico(Long idUsuario) {
         return Transacao.consultar(con -> {
             UsuarioDao dao = new UsuarioDaoJdbc(con);
             Usuario usuario = dao.buscarPorId(idUsuario);
+            if (usuario.isSimulado()) {
+                throw new EntidadeNaoEncontradaException("Usuário não encontrado.");
+            }
             return UsuarioPublicoResponse.de(usuario, dao.contarDenuncias(idUsuario));
         });
     }
