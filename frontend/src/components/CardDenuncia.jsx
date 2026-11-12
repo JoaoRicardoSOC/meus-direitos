@@ -1,80 +1,117 @@
-import { useState } from 'react';
+import { useId, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { api } from '../services/api.js';
 import { useSessao } from '../contexts/SessaoContext.jsx';
-import { cidadeUf, haQuantoTempo } from '../utils/formatos.js';
+import { cidadeUf, haQuantoTempo, numero, plural } from '../utils/formatos.js';
 import Avatar from './Avatar.jsx';
 import ImagemDenuncia from './ImagemDenuncia.jsx';
 import iconeUp from '../assets/icones/up.svg';
 import iconeDown from '../assets/icones/down.svg';
 import iconeChat from '../assets/icones/chat.svg';
 import iconePin from '../assets/icones/pin-pequeno.svg';
+import iconeCheck from '../assets/icones/check-pequeno.svg';
 import './CardDenuncia.css';
+
+/** Placar previsto logo após o toque (voto otimista): a API confirma ou o voto volta atrás. */
+function preverPlacar(placar, tipo, desmarcar) {
+  const proximo = { ...placar };
+  const contar = (t, delta) => {
+    if (t === 'UP') proximo.upvotes += delta;
+    if (t === 'DOWN') proximo.downvotes += delta;
+  };
+  if (placar.meuVoto) contar(placar.meuVoto, -1);
+  if (!desmarcar) contar(tipo, 1);
+  proximo.meuVoto = desmarcar ? undefined : tipo;
+  proximo.saldo = proximo.upvotes - proximo.downvotes;
+  return proximo;
+}
+
+/** Selo do status com a cor do estado; "Resolvida" leva um check. */
+export function SeloStatus({ status }) {
+  return (
+    <span className={`md-selo md-selo-status-${status.codigo}`}>
+      {status.codigo === 'RESOLVIDA' && <img src={iconeCheck} alt="" width="14" height="14" />}
+      {status.descricao}
+    </span>
+  );
+}
 
 /**
  * Card de denúncia (componente "MD/Denuncia" do Figma).
- * - resumo (feed): título e foto levam ao detalhe;
- * - completo (detalhe): foto maior e endereço.
- * Os votos seguem a seção 8.6 do guia: clicar no voto atual desmarca (DELETE); senão, PUT.
+ * - resumo (feed): título e foto levam ao detalhe; foto em 16:9;
+ * - completo (detalhe): título maior, texto na cor principal, foto em 4:3 e endereço.
+ * Votos (docs/api.md, 8.6): tocar no voto atual desmarca (DELETE); senão, PUT. O placar muda na hora
+ * do toque e volta ao anterior se a API recusar.
  */
-export default function CardDenuncia({ denuncia, completo = false, aoMudarPlacar }) {
+export default function CardDenuncia({ denuncia, completo = false, aoMudarPlacar, ocultarParaVoce = false }) {
   const { usuario } = useSessao();
+  const idTitulo = useId();
   const [placar, setPlacar] = useState(denuncia.placar);
   const [enviando, setEnviando] = useState(false);
   const [erro, setErro] = useState('');
 
-  const ehAutor = usuario && denuncia.autor.id === usuario.id;
-  const podeVotar = usuario && !ehAutor;
+  const ehAutor = Boolean(usuario) && denuncia.autor.id === usuario.id;
+  const podeVotar = Boolean(usuario) && !ehAutor;
   const linkDetalhe = `/denuncias/${denuncia.id}`;
+  const { confirmacoes = 0, necessarias = 3 } = denuncia.resolucao ?? {};
+  const mostrarConfirmacoes = denuncia.status.codigo !== 'RESOLVIDA' && confirmacoes > 0;
 
   async function votar(tipo) {
     if (!podeVotar || enviando) return;
+    const anterior = placar;
+    const desmarcar = placar.meuVoto === tipo;
+    setPlacar(preverPlacar(placar, tipo, desmarcar));
     setEnviando(true);
     setErro('');
     try {
-      const desmarcar = placar.meuVoto === tipo;
       const novo = await api(`/denuncias/${denuncia.id}/voto`, desmarcar
         ? { metodo: 'DELETE' }
         : { metodo: 'PUT', corpo: { tipo } });
       setPlacar(novo);
       aoMudarPlacar?.(novo);
     } catch (e) {
-      setErro(e.message);
+      setPlacar(anterior);
+      setErro(`Não foi possível registrar o voto. ${e.message}`);
     } finally {
       setEnviando(false);
     }
   }
 
-  const titulo = <h2 className="md-subtitulo">{denuncia.titulo}</h2>;
-  const foto = <ImagemDenuncia imagemUrl={denuncia.imagemUrl} categoria={denuncia.categoria} altura={completo ? 190 : 120} />;
+  const meta = [cidadeUf(denuncia.cidade, denuncia.uf), haQuantoTempo(denuncia.criadaEm)];
+  if (denuncia.autor.simulado) meta.push('exemplo');
+
+  const titulo = (
+    <h2 id={idTitulo} className={completo ? 'md-titulo-detalhe' : 'md-subtitulo'}>
+      {denuncia.titulo}
+    </h2>
+  );
+  const foto = (
+    <ImagemDenuncia imagemUrl={denuncia.imagemUrl} categoria={denuncia.categoria} proporcao={completo ? '4 / 3' : '16 / 9'} />
+  );
 
   return (
-    <article className="md-card" aria-label={denuncia.titulo}>
+    <article className="md-card" aria-labelledby={idTitulo}>
       <div className="d-flex gap-2 align-items-start">
         <Avatar nome={denuncia.autor.nome} />
         <div className="d-flex flex-column gap-1 flex-grow-1" style={{ minWidth: 0 }}>
-          <p className="md-negrito d-flex align-items-center gap-2 flex-wrap">
-            {denuncia.autor.nome}
-            {denuncia.autor.simulado && <span className="md-selo md-selo-exemplo">Exemplo</span>}
-          </p>
-          <p className="md-legenda">
-            {cidadeUf(denuncia.cidade, denuncia.uf)} · {haQuantoTempo(denuncia.criadaEm)}
-          </p>
+          <p className="md-negrito">{denuncia.autor.nome}</p>
+          <p className="md-legenda">{meta.join(' · ')}</p>
         </div>
       </div>
 
-      <div className="d-flex gap-2 flex-wrap">
-        <span className="md-selo">
-          {denuncia.categoria.descricao} · {denuncia.status.descricao}
-        </span>
-        {denuncia.relevanteParaMim && <span className="md-selo md-selo-para-voce">Para você</span>}
+      <div className="d-flex gap-2 align-items-center flex-wrap">
+        <SeloStatus status={denuncia.status} />
+        <span className="md-legenda md-card-categoria">{denuncia.categoria.descricao}</span>
+        {denuncia.relevanteParaMim && !ocultarParaVoce && (
+          <span className="md-legenda md-card-para-voce">· Relevante para você</span>
+        )}
       </div>
 
       {completo ? foto : <Link to={linkDetalhe} className="d-block" tabIndex={-1} aria-hidden="true">{foto}</Link>}
 
       {completo ? titulo : <Link to={linkDetalhe} className="md-card-link">{titulo}</Link>}
 
-      <p className={`md-corpo ${completo ? '' : 'md-card-resumo'}`}>{denuncia.descricao}</p>
+      <p className={completo ? 'md-corpo-tinta' : 'md-corpo md-card-resumo'}>{denuncia.descricao}</p>
 
       {completo && (
         <p className="md-legenda d-flex gap-2 align-items-start">
@@ -83,19 +120,26 @@ export default function CardDenuncia({ denuncia, completo = false, aoMudarPlacar
         </p>
       )}
 
+      {mostrarConfirmacoes && !completo && (
+        <p className="md-legenda md-card-confirmacoes">
+          {confirmacoes} de {necessarias} moradores confirmaram que foi resolvido
+        </p>
+      )}
+
       <div className="d-flex gap-2 flex-wrap">
         <BotaoVoto tipo="UP" icone={iconeUp} total={placar.upvotes} ativo={placar.meuVoto === 'UP'}
           habilitado={podeVotar} ocupado={enviando} aoClicar={votar} rotulo="Apoiar" />
         <BotaoVoto tipo="DOWN" icone={iconeDown} total={placar.downvotes} ativo={placar.meuVoto === 'DOWN'}
           habilitado={podeVotar} ocupado={enviando} aoClicar={votar} rotulo="Discordar" />
-        <Link to={`${linkDetalhe}#conversa`} className="md-acao md-acao-comentarios"
-          aria-label={`${denuncia.comentarios} comentários`}>
+        <Link to={`${linkDetalhe}#conversa`} className="md-acao"
+          aria-label={plural(denuncia.comentarios, 'comentário', 'comentários')}>
           <img src={iconeChat} alt="" width="20" height="20" />
-          {denuncia.comentarios}
+          {numero(denuncia.comentarios)}
         </Link>
       </div>
 
-      {ehAutor && <p className="md-legenda">Você registrou esta denúncia.</p>}
+      {ehAutor && <p className="md-legenda">Você registrou esta denúncia. Os votos são dos outros moradores.</p>}
+      {!usuario && <p className="md-legenda">Entre na sua conta para votar.</p>}
       {erro && <p className="md-erro-campo" role="alert">{erro}</p>}
     </article>
   );
@@ -107,12 +151,15 @@ function BotaoVoto({ tipo, icone, total, ativo, habilitado, ocupado, aoClicar, r
       type="button"
       className={`md-acao ${ativo ? 'ativo' : ''}`}
       onClick={() => aoClicar(tipo)}
-      disabled={!habilitado || ocupado}
-      aria-pressed={ativo}
-      aria-label={`${rotulo}: ${total}`}
+      disabled={!habilitado}
+      aria-busy={ocupado || undefined}
+      aria-pressed={habilitado ? ativo : undefined}
+      aria-label={`${rotulo}: ${numero(total)}`}
     >
       <img src={icone} alt="" width="20" height="20" />
-      {total}
+      <span aria-hidden="true">
+        {rotulo} {numero(total)}
+      </span>
     </button>
   );
 }

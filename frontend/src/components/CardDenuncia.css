@@ -1,6 +1,7 @@
 /* Voto registrado (telas 08 e 09): fundo verde e ícone branco */
 .md-acao.ativo {
   background: var(--md-verde);
+  border-color: var(--md-verde);
   color: var(--md-branco);
 }
 
@@ -8,22 +9,33 @@
   filter: brightness(0) invert(1);
 }
 
-/* Sem login ou na própria denúncia o placar aparece, mas não é clicável */
+/* Sem login ou na própria denúncia: o placar aparece, mas não parece um botão */
 .md-acao:disabled {
+  border-color: transparent;
+  background: var(--md-fundo);
+  color: var(--md-apagado);
   cursor: default;
   opacity: 1;
-}
-
-.md-acao-comentarios {
-  min-width: 116px;
 }
 
 .md-card-link {
   text-decoration: none;
 }
 
-.md-card-link:hover .md-subtitulo {
-  text-decoration: underline;
+/* Título da denúncia no detalhe: maior que o título da barra, para liderar a tela */
+.md-titulo-detalhe {
+  font-size: 24px;
+  font-weight: 700;
+  line-height: 1.2;
+  color: var(--md-tinta);
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .md-card-link:hover .md-subtitulo {
+    text-decoration: underline;
+  }
 }
 
 /* No feed, a descrição fica em até 3 linhas */
@@ -34,13 +46,18 @@
   overflow: hidden;
 }
 
-/* Selos pedidos no guia da API (seções 8.5 e 8.10) */
-.md-selo-exemplo {
-  background: #fff4d6;
-  color: #7a5200;
+.md-card-categoria {
+  font-weight: 700;
+  color: var(--md-tinta);
 }
 
-.md-selo-para-voce {
-  background: var(--md-verde);
-  color: var(--md-branco);
+.md-card-para-voce {
+  font-weight: 700;
+  color: var(--md-verde);
+}
+
+/* Resolução pela comunidade, o que só este app tem, já no card do feed */
+.md-card-confirmacoes {
+  color: var(--md-verde);
+  font-weight: 700;
 }
