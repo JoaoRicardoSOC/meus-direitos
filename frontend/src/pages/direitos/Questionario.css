@@ -42,7 +42,7 @@
   color: var(--md-apagado);
 }
 
-/* Opções selecionáveis das telas 24, 26 e 27 (e Sim/Não da renda) */
+/* Opções selecionáveis das telas 24, 26 e 27 (e Sim/Não da renda): cartão branco, raio 18, 20 px entre elas */
 .md-questionario-opcoes {
   display: flex;
   flex-direction: column;
@@ -59,7 +59,7 @@
   min-height: 53px;
   padding: 16px;
   border: 1px solid var(--md-linha);
-  border-radius: 12px;
+  border-radius: 18px;
   background: var(--md-branco);
   font-size: 16px;
   font-weight: 700;
@@ -75,6 +75,7 @@
   border-color: var(--md-verde);
 }
 
+/* O Figma não desenha a opção escolhida: borda verde e fundo verde-claro, com as cores do tema */
 .md-questionario-opcao.selecionada {
   border-color: var(--md-verde);
   background: var(--md-suave);

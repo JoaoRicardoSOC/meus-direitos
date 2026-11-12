@@ -22,7 +22,7 @@ export const CampoEscolha = forwardRef(function CampoEscolha({ rotulo, valor, er
         aria-describedby={erro ? `${id}-erro` : undefined}
       >
         <span id={`${id}-valor`} className={`md-questionario-escolha-valor ${valor ? '' : 'md-questionario-escolha-vazio'}`}>
-          {valor ?? 'Selecionar'}
+          {valor ?? 'Selecione uma categoria'}
         </span>
         <img src={iconeSeta} alt="" width="20" height="20" />
       </button>
@@ -70,7 +70,7 @@ export function PerguntaSimNao({ rotulo, valor, erro, aoMudar }) {
   ];
   return (
     <fieldset className="md-campo border-0 p-0 m-0" aria-describedby={erro ? `${id}-erro` : undefined}>
-      <legend className="md-campo-rotulo mb-2">{rotulo}</legend>
+      <legend className="md-campo-rotulo mb-0">{rotulo}</legend>
       <div className="md-questionario-opcoes">
         {opcoes.map((opcao) => (
           <label key={opcao.texto} className={`md-questionario-opcao ${valor === opcao.valor ? 'selecionada' : ''}`}>
