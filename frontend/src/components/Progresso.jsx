@@ -1,7 +1,7 @@
 /** Barra de etapas do cadastro e do questionário ("Etapa 1 de 4"). */
 export default function Progresso({ etapa, total }) {
   return (
-    <div className="d-flex flex-column gap-3">
+    <div className="d-flex flex-column" style={{ gap: 20 }}>
       <div
         className="md-progresso"
         role="progressbar"
