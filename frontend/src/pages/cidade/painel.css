@@ -1,0 +1,179 @@
+/* Painel da cidade (/cidade/painel): cards brancos com borda, números em tinta; verde só no destaque */
+
+.md-painel-titulo {
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 1.3;
+  color: var(--md-tinta);
+  margin: 0;
+}
+
+/* "33% das denúncias foram resolvidas": o único número em verde da tela */
+.md-painel-destaque {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 8px;
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.45;
+  color: var(--md-apagado);
+}
+
+.md-painel-destaque strong {
+  font-size: 34px;
+  font-weight: 700;
+  line-height: 1.1;
+  color: var(--md-verde);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Totais em duas colunas, separados por linhas finas */
+.md-painel-grade {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px 16px;
+  margin: 0;
+  padding-top: 12px;
+  border-top: 1px solid var(--md-linha-suave);
+}
+
+.md-painel-item {
+  display: flex;
+  flex-direction: column-reverse;
+  justify-content: flex-end; /* em column-reverse, alinha o número no topo da linha */
+  gap: 2px;
+  min-width: 0;
+}
+
+.md-painel-item dd {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 1.2;
+  color: var(--md-tinta);
+  font-variant-numeric: tabular-nums;
+}
+
+.md-painel-item dt {
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 1.35;
+  color: var(--md-apagado);
+}
+
+/* Barras por categoria: rótulo e número escritos, barra chapada em tinta sobre trilho claro */
+.md-barras {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.md-barra-linha {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.md-barra-texto {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.35;
+  color: var(--md-tinta);
+}
+
+.md-barra-rotulo {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.md-barra-valor {
+  flex-shrink: 0;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.md-barra {
+  display: block;
+  height: 10px;
+  border-radius: 5px;
+  background: var(--md-linha-suave);
+  overflow: hidden;
+}
+
+.md-barra-preenchida {
+  display: block;
+  height: 100%;
+  min-width: 4px;
+  border-radius: 5px;
+  background: var(--md-tinta);
+}
+
+/* Rankings (bairros e participação): lista numerada com divisores */
+.md-painel-ranking {
+  margin: 0;
+  padding-left: 1.4em;
+}
+
+.md-painel-ranking li {
+  padding: 10px 0;
+}
+
+.md-painel-ranking li::marker {
+  color: var(--md-apagado);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.md-painel-ranking li + li {
+  border-top: 1px solid var(--md-linha-suave);
+}
+
+.md-painel-ranking li:first-child {
+  padding-top: 0;
+}
+
+.md-painel-ranking li:last-child {
+  padding-bottom: 0;
+}
+
+.md-painel-ranking li > span {
+  display: block;
+  margin-top: 2px;
+}
+
+.md-painel-ranking li > a {
+  display: flex;
+}
+
+.md-painel-ranking li > :first-child {
+  margin-top: 0;
+}
+
+/* Título da denúncia como link: alvo de 44 px de altura */
+.md-painel-link {
+  align-items: center;
+  min-height: var(--md-alvo-minimo);
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 1.3;
+  color: var(--md-tinta);
+  text-decoration: underline;
+  text-decoration-color: var(--md-linha);
+  text-underline-offset: 3px;
+  overflow-wrap: anywhere;
+  transition: text-decoration-color var(--md-dur-cor) ease;
+}
+
+.md-painel-link:hover {
+  color: var(--md-tinta);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .md-painel-link:hover {
+    text-decoration-color: var(--md-tinta);
+  }
+}

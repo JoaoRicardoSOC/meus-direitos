@@ -8,6 +8,7 @@ import Cadastro from './pages/inicio/Cadastro.jsx';
 import Entrar from './pages/inicio/Entrar.jsx';
 import Feed from './pages/cidade/Feed.jsx';
 import DetalheDenuncia from './pages/cidade/DetalheDenuncia.jsx';
+import PainelCidade from './pages/cidade/PainelCidade.jsx';
 import NovaDenuncia from './pages/denuncias/NovaDenuncia.jsx';
 import MinhasDenuncias from './pages/denuncias/MinhasDenuncias.jsx';
 import Perfil from './pages/perfil/Perfil.jsx';
@@ -37,6 +38,7 @@ export default function App() {
           <Route element={<RotaProtegida />}>
             {/* 02 · Sua cidade */}
             <Route path="/cidade" element={<Feed />} />
+            <Route path="/cidade/painel" element={<PainelCidade />} />
             <Route path="/denuncias/:id" element={<DetalheDenuncia />} />
 
             {/* 03 · Participe */}

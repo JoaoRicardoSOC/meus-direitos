@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { api } from '../../services/api.js';
 import { numero } from '../../utils/formatos.js';
 
@@ -8,7 +9,7 @@ let resumoEmCache = null;
 /**
  * Faixa "Números da cidade" (pedido 8 do guia, sem tela no Figma): GET /relatorios/resumo.
  * Sem ?cidade=&uf=, a API usa a cidade do usuário logado. Enquanto carrega, a faixa já ocupa
- * a altura final (o feed não pula); se falhar, ela some.
+ * a altura final (o feed não pula); se falhar, ela some. "Ver painel completo" abre /cidade/painel.
  */
 export default function NumerosCidade() {
   const [resumo, setResumo] = useState(resumoEmCache);
@@ -39,9 +40,14 @@ export default function NumerosCidade() {
 
   return (
     <section className="md-card md-numeros-cidade" aria-labelledby="numeros-cidade" aria-busy={!resumo || undefined}>
-      <h2 id="numeros-cidade" className="md-numeros-titulo">
-        Números da cidade
-      </h2>
+      <div className="md-numeros-cabecalho">
+        <h2 id="numeros-cidade" className="md-numeros-titulo">
+          Números da cidade
+        </h2>
+        <Link to="/cidade/painel" className="md-acao-texto">
+          Ver painel completo
+        </Link>
+      </div>
       <dl className="md-numeros">
         {valores.map(([valor, rotulo]) => (
           <div key={rotulo} className="md-numero">

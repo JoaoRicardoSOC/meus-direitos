@@ -63,6 +63,19 @@
   margin: 0;
 }
 
+/* "Ver painel completo" no bloco Números da cidade do feed */
+.md-numeros-cabecalho {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.md-numeros-cabecalho .md-acao-texto {
+  margin-right: -4px;
+  font-size: 13px;
+}
+
 .md-numeros-cidade {
   gap: 8px;
 }
