@@ -4,7 +4,15 @@
 --
 -- Como executar: no SQL Developer, abra este arquivo e use "Executar Script" (F5),
 -- conectado ao schema que a API usa (db.usuario do backend/db.properties).
--- O script pode ser executado de novo: ele apaga e recria tudo (os dados são perdidos).
+-- O script pode ser executado de novo: ele apaga e recria as tabelas do projeto (os dados delas são perdidos).
+--
+-- ATENÇÃO, schema compartilhado: o script mexe SOMENTE nestes objetos, pelo nome, e em nenhum outro:
+--   tabelas    TB_USUARIO, TB_PERFIL_DEMOGRAFICO, TB_DENUNCIA, TB_COMENTARIO, TB_VOTO_DENUNCIA,
+--              TB_CONFIRMACAO_RESOLUCAO, TB_DIREITO, TB_DIREITO_PASSO, TB_DIREITO_TAG, TB_SEMEADURA_CIDADE
+--   sequences  SEQ_USUARIO, SEQ_DENUNCIA, SEQ_COMENTARIO, SEQ_DIREITO
+-- Antes de rodar num schema que já tenha tabelas, confira que nenhum outro projeto usa esses nomes
+-- (SELECT table_name FROM user_tables). Se as tabelas deste projeto já existem com dados que você quer
+-- manter, NÃO rode este script.
 --
 -- Convenções (as mesmas do back-end, em dao.jdbc.JdbcUtil):
 --   * prefixos: tb_ tabela, cd_ código, ds_ descrição, nm_ nome, sg_ sigla, dt_ data,
