@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import fotoAsfalto from '../assets/imagens/asfalto-danificado.png';
+import fotoAsfalto from '../assets/imagens/asfalto-danificado.jpg';
 
 /** Foto padrão por categoria, usada quando a denúncia não tem imagem ou a imagem não carrega. */
 const FOTO_PADRAO = {
