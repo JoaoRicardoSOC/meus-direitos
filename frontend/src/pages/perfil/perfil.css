@@ -71,6 +71,12 @@
   flex: 1;
 }
 
+/* "2 com novidades" ao lado de Minhas denúncias */
+.md-opcao-conta-aviso {
+  align-self: center;
+  flex-shrink: 0;
+}
+
 .md-opcao-conta img {
   flex-shrink: 0;
 }

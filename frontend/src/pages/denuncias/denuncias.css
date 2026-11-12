@@ -199,6 +199,27 @@
   gap: 12px;
 }
 
+/* 17 · "Novidades: +2 apoios, +1 comentário" desde a última visita, logo acima do card */
+.md-novidades {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 8px;
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.45;
+  color: var(--md-tinta);
+}
+
+.md-novidades .md-selo {
+  align-self: baseline;
+}
+
+.md-novidades > span:last-child {
+  flex: 1 1 12em;
+  min-width: 0;
+}
+
 /* 17 · Editar e Excluir em texto, lado a lado */
 .md-acoes-gerenciar {
   display: flex;

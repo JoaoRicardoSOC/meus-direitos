@@ -4,7 +4,8 @@ import Tela from '../../components/Tela.jsx';
 import Mensagem, { Carregando } from '../../components/Mensagem.jsx';
 import { api } from '../../services/api.js';
 import { useSessao } from '../../contexts/SessaoContext.jsx';
-import { cidadeUf, iniciais } from '../../utils/formatos.js';
+import { cidadeUf, iniciais, numero } from '../../utils/formatos.js';
+import { contarComNovidades } from '../../utils/novidades.js';
 import iconeSeta from '../../assets/icones/seta-direita.svg';
 import iconeLixeira from '../../assets/icones/lixeira.svg';
 import './perfil.css';
@@ -20,6 +21,8 @@ export default function Perfil() {
   const aviso = local.state?.aviso ?? '';
   const [carregando, setCarregando] = useState(true);
   const [erro, setErro] = useState('');
+  const [comNovidades, setComNovidades] = useState(0);
+  const usuarioId = usuario?.id;
 
   useEffect(() => {
     let ativo = true;
@@ -37,6 +40,19 @@ export default function Perfil() {
       ativo = false;
     };
   }, [entrar]);
+
+  // "N com novidades" em Minhas denúncias: compara com o retrato da última visita, sem atualizá-lo
+  // (ele só muda quando a pessoa abre a lista). Se falhar, a opção aparece sem o aviso.
+  useEffect(() => {
+    if (!usuarioId) return undefined;
+    let ativo = true;
+    api('/denuncias/minhas')
+      .then((lista) => ativo && setComNovidades(contarComNovidades(usuarioId, Array.isArray(lista) ? lista : [])))
+      .catch(() => {});
+    return () => {
+      ativo = false;
+    };
+  }, [usuarioId]);
 
   function sairDaConta() {
     sair();
@@ -89,7 +105,11 @@ export default function Perfil() {
 
       <nav aria-label="Mais opções da conta">
         <ul className="md-card md-opcoes-conta">
-          <OpcaoConta para="/minhas" rotulo="Minhas denúncias" />
+          <OpcaoConta
+            para="/minhas"
+            rotulo="Minhas denúncias"
+            aviso={comNovidades > 0 ? `${numero(comNovidades)} com novidades` : ''}
+          />
           <OpcaoConta para="/perfil/senha" rotulo="Trocar senha" />
           <OpcaoConta para="/perfil/excluir" rotulo="Excluir minha conta" perigo />
         </ul>
@@ -98,12 +118,18 @@ export default function Perfil() {
   );
 }
 
-function OpcaoConta({ para, rotulo, perigo = false }) {
+function OpcaoConta({ para, rotulo, perigo = false, aviso = '' }) {
   return (
     <li>
       <Link to={para} className={`md-opcao-conta ${perigo ? 'md-opcao-conta-perigo' : ''}`}>
         {perigo && <img src={iconeLixeira} alt="" width="20" height="20" />}
         <span className="md-opcao-conta-rotulo">{rotulo}</span>
+        {aviso && (
+          <span className="md-selo md-opcao-conta-aviso">
+            <span className="md-oculto-visualmente">: </span>
+            {aviso}
+          </span>
+        )}
         <img src={iconeSeta} alt="" width="20" height="20" />
       </Link>
     </li>

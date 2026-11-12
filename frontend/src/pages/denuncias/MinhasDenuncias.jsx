@@ -5,7 +5,9 @@ import Cabecalho from '../../components/Cabecalho.jsx';
 import CardDenuncia from '../../components/CardDenuncia.jsx';
 import Mensagem, { Carregando, Toast } from '../../components/Mensagem.jsx';
 import { api } from '../../services/api.js';
+import { useSessao } from '../../contexts/SessaoContext.jsx';
 import { irParaOTopo } from '../../utils/foco.js';
+import { gravarRetrato, novidadesPorDenuncia } from '../../utils/novidades.js';
 import ConfirmarExclusao from './ConfirmarExclusao.jsx';
 import iconeEditar from '../../assets/icones/editar.svg';
 import iconeLixeira from '../../assets/icones/lixeira.svg';
@@ -19,11 +21,16 @@ function mensagemDeErro(erro) {
  * 17 · Minha denúncia: lista do usuário (GET /denuncias/minhas) com as ações do autor —
  * Editar, Excluir (abre a 18 · Excluir denúncia) e Marcar como resolvida / Reabrir (docs/api.md, 8.7).
  * O resultado de cada ação aparece num aviso temporário (Toast) perto da navegação.
+ * Novidades desde a última visita (apoios, comentários, status) aparecem em cada card (utils/novidades.js).
  */
 export default function MinhasDenuncias() {
   const local = useLocation();
   const navegar = useNavigate();
+  const { usuario } = useSessao();
+  const usuarioId = usuario?.id;
   const [denuncias, setDenuncias] = useState([]);
+  const [novidades, setNovidades] = useState({}); // { [id]: ["+2 apoios", ...] }
+  const novidadesCalculadas = useRef(false);
   const [carregando, setCarregando] = useState(true);
   const [erro, setErro] = useState('');
   const [aviso, setAviso] = useState(() => ({ texto: local.state?.aviso ?? '', chave: Date.now() }));
@@ -44,13 +51,21 @@ export default function MinhasDenuncias() {
     setErro('');
     try {
       const lista = await api('/denuncias/minhas');
-      setDenuncias(Array.isArray(lista) ? lista : []);
+      const itens = Array.isArray(lista) ? lista : [];
+      // Compara com a visita anterior só na primeira carga da tela: as recargas depois de uma ação
+      // da própria pessoa (resolver, reabrir) não viram "novidade". Em todas, o retrato é atualizado.
+      if (!novidadesCalculadas.current) {
+        novidadesCalculadas.current = true;
+        setNovidades(novidadesPorDenuncia(usuarioId, itens));
+      }
+      gravarRetrato(usuarioId, itens);
+      setDenuncias(itens);
     } catch (e) {
       setErro(mensagemDeErro(e));
     } finally {
       setCarregando(false);
     }
-  }, []);
+  }, [usuarioId]);
 
   useEffect(() => {
     carregar();
@@ -158,6 +173,12 @@ export default function MinhasDenuncias() {
         <div className="md-lista-gerenciar">
           {denuncias.map((denuncia) => (
             <section key={denuncia.id} className="md-bloco-gerenciar" aria-label={`Gerenciar: ${denuncia.titulo}`}>
+              {novidades[denuncia.id] && (
+                <p className="md-novidades">
+                  <span className="md-selo">Novidades</span>
+                  <span>{novidades[denuncia.id].join(', ')}</span>
+                </p>
+              )}
               <CardDenuncia key={`${denuncia.id}-${denuncia.atualizadaEm}`} denuncia={denuncia} />
               <div className="md-acoes-gerenciar" role="group" aria-label="Gerenciar denúncia">
                 <Link to={`/denuncias/${denuncia.id}/editar`} className="md-acao-texto">
