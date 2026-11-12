@@ -549,8 +549,6 @@ Para o sistema nunca parecer vazio — inclusive quando o avaliador se cadastrar
 
 > Para a equipe: existem rotas de preparo/reset da demonstração em `/api/simulacao/*`, protegidas por uma chave configurada no `db.properties` (`simulacao.chave`). **O front não usa essas rotas.**
 
-Este guia será atualizado quando ficarem prontas.
-
 ---
 
 ## 9. Objetos devolvidos pela API
