@@ -33,7 +33,7 @@ export async function api(caminho, { metodo = 'GET', corpo } = {}) {
       body: corpo === undefined ? undefined : JSON.stringify(corpo),
     });
   } catch {
-    throw new ErroApi({ status: 0, mensagem: 'Não foi possível conectar ao servidor. Verifique se a API está rodando.' });
+    throw new ErroApi({ status: 0, mensagem: 'Sem conexão no momento. Verifique sua internet e tente de novo.' });
   }
 
   if (resposta.status === 204) return null; // sucesso sem corpo (DELETE)
