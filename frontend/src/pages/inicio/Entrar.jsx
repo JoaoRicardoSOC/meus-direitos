@@ -56,8 +56,14 @@ export default function Entrar() {
       entrar(usuario);
       navegar(local.state?.voltarPara ?? '/cidade', { replace: true });
     } catch (erro) {
-      setErros(erro.porCampo());
       setMensagem(erro.message);
+      // 429: muitas tentativas. A mensagem vai só no resumo (role="alert"), sem apontar campo,
+      // e o que foi digitado continua nos campos para tentar de novo depois.
+      if (erro.status === 429) {
+        setErros({});
+        return;
+      }
+      setErros(erro.porCampo());
       focarPrimeiroErro(formulario.current);
     } finally {
       setEnviando(false);
