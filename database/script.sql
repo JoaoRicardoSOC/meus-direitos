@@ -216,3 +216,159 @@ CREATE INDEX ix_usuario_uf           ON tb_usuario (sg_uf);
 
 -- Título de tema único, sem diferenciar maiúsculas (a API responde 409 ao repetir)
 CREATE UNIQUE INDEX uk_direito_titulo ON tb_direito (UPPER(ds_titulo));
+
+
+-- =====================================================================================
+-- 5. Carga inicial: catálogo de direitos
+-- =====================================================================================
+-- Linguagem cautelosa: cada tema indica uma possibilidade a verificar e o caminho oficial.
+-- O tema aparece em GET /direitos/meus quando uma das suas tags bate com o perfil da pessoa
+-- (TODOS aparece para qualquer perfil respondido). Revise as regras antes de cada entrega:
+-- valores e critérios de programas sociais mudam com frequência.
+
+SET DEFINE OFF;
+
+-- 1. Transporte e mobilidade
+INSERT INTO tb_direito (cd_direito, ds_titulo, ds_resumo, ds_direito, ds_aviso, ds_base_legal, ds_link_oficial, tp_icone, nr_ordem)
+VALUES (seq_direito.NEXTVAL, 'Transporte e mobilidade',
+        'Saiba onde consultar gratuidades e programas de transporte.',
+        'Passe Livre e outros programas de transporte. Pessoas a partir de 65 anos podem ter gratuidade no transporte coletivo urbano, e muitas cidades estendem o benefício a partir dos 60. Pessoas com deficiência de baixa renda podem ter o Passe Livre interestadual. Exemplos para pesquisa.',
+        'Os critérios variam por programa e localidade. Confirme as regras no órgão responsável.',
+        'Lei 10.741/2003 (Estatuto da Pessoa Idosa), arts. 39 e 40; Lei 8.899/1994',
+        'https://www.gov.br/pt-br/servicos/obter-o-passe-livre-interestadual', 'TRANSPORTE', 1);
+INSERT INTO tb_direito_passo (cd_direito, nr_ordem, ds_titulo, ds_passo) VALUES (seq_direito.CURRVAL, 1, 'Identifique o programa',
+        'Verifique se o deslocamento é municipal, intermunicipal ou interestadual.');
+INSERT INTO tb_direito_passo (cd_direito, nr_ordem, ds_titulo, ds_passo) VALUES (seq_direito.CURRVAL, 2, 'Consulte o órgão responsável',
+        'Procure o portal oficial do serviço de transporte e confira os critérios atuais.');
+INSERT INTO tb_direito_passo (cd_direito, nr_ordem, ds_titulo, ds_passo) VALUES (seq_direito.CURRVAL, 3, 'Separe os documentos',
+        'Em geral pedem documento com foto e, conforme o programa, comprovante de residência, laudo médico ou inscrição no CadÚnico.');
+INSERT INTO tb_direito_tag (cd_direito, tp_tag) VALUES (seq_direito.CURRVAL, 'IDOSO');
+INSERT INTO tb_direito_tag (cd_direito, tp_tag) VALUES (seq_direito.CURRVAL, 'PCD');
+INSERT INTO tb_direito_tag (cd_direito, tp_tag) VALUES (seq_direito.CURRVAL, 'PCD_MOBILIDADE');
+
+-- 2. Atendimento prioritário
+INSERT INTO tb_direito (cd_direito, ds_titulo, ds_resumo, ds_direito, ds_aviso, ds_base_legal, ds_link_oficial, tp_icone, nr_ordem)
+VALUES (seq_direito.NEXTVAL, 'Atendimento prioritário',
+        'Filas e atendimento preferencial em órgãos públicos, bancos e serviços.',
+        'Pessoas idosas (60+) e pessoas com deficiência podem ter atendimento preferencial em repartições públicas, bancos, serviços de saúde e no comércio. A partir dos 80 anos, a prioridade pode ser ainda maior, à frente das demais pessoas idosas.',
+        'Cada local organiza a prioridade de um jeito. Se ela não for respeitada, procure a ouvidoria do serviço.',
+        'Lei 10.048/2000; Lei 10.741/2003 (Estatuto da Pessoa Idosa), art. 3º; Lei 13.146/2015 (Estatuto da Pessoa com Deficiência), art. 9º',
+        'https://www.planalto.gov.br/ccivil_03/leis/l10048.htm', 'PRIORIDADE', 2);
+INSERT INTO tb_direito_passo (cd_direito, nr_ordem, ds_titulo, ds_passo) VALUES (seq_direito.CURRVAL, 1, 'Leve um documento',
+        'Tenha em mãos um documento com foto que comprove a idade ou, se for o caso, um documento que indique a deficiência.');
+INSERT INTO tb_direito_passo (cd_direito, nr_ordem, ds_titulo, ds_passo) VALUES (seq_direito.CURRVAL, 2, 'Procure a fila ou o guichê preferencial',
+        'Se não houver sinalização, peça atendimento preferencial a um funcionário.');
+INSERT INTO tb_direito_passo (cd_direito, nr_ordem, ds_titulo, ds_passo) VALUES (seq_direito.CURRVAL, 3, 'Registre a reclamação',
+        'Se o direito não for respeitado, registre na ouvidoria do órgão ou do banco, ou no Procon da sua cidade.');
+INSERT INTO tb_direito_tag (cd_direito, tp_tag) VALUES (seq_direito.CURRVAL, 'IDOSO');
+INSERT INTO tb_direito_tag (cd_direito, tp_tag) VALUES (seq_direito.CURRVAL, 'PCD');
+
+-- 3. BPC
+INSERT INTO tb_direito (cd_direito, ds_titulo, ds_resumo, ds_direito, ds_aviso, ds_base_legal, ds_link_oficial, tp_icone, nr_ordem)
+VALUES (seq_direito.NEXTVAL, 'Benefício de Prestação Continuada (BPC)',
+        'Um salário mínimo por mês para pessoa idosa ou com deficiência de família de baixa renda.',
+        'O BPC pode ser concedido a pessoas a partir de 65 anos ou a pessoas com deficiência de qualquer idade, quando a renda da família é baixa. Não é aposentadoria e não exige ter contribuído com o INSS. A inscrição no CadÚnico é obrigatória.',
+        'Os limites de renda e as regras de avaliação mudam. Confirme os critérios atuais no CRAS ou no INSS.',
+        'Lei 8.742/1993 (Lei Orgânica da Assistência Social), art. 20',
+        'https://www.planalto.gov.br/ccivil_03/leis/l8742.htm', 'RENDA', 3);
+INSERT INTO tb_direito_passo (cd_direito, nr_ordem, ds_titulo, ds_passo) VALUES (seq_direito.CURRVAL, 1, 'Atualize o CadÚnico',
+        'Procure o CRAS da sua região para fazer ou atualizar a inscrição da família no Cadastro Único.');
+INSERT INTO tb_direito_passo (cd_direito, nr_ordem, ds_titulo, ds_passo) VALUES (seq_direito.CURRVAL, 2, 'Faça o pedido no INSS',
+        'O pedido pode ser feito pelo aplicativo ou site Meu INSS, ou pela central 135.');
+INSERT INTO tb_direito_passo (cd_direito, nr_ordem, ds_titulo, ds_passo) VALUES (seq_direito.CURRVAL, 3, 'Acompanhe as avaliações',
+        'Para pessoas com deficiência há avaliação médica e social. Acompanhe o andamento e as convocações pelo Meu INSS.');
+INSERT INTO tb_direito_tag (cd_direito, tp_tag) VALUES (seq_direito.CURRVAL, 'BAIXA_RENDA');
+
+-- 4. Tarifa Social de Energia Elétrica
+INSERT INTO tb_direito (cd_direito, ds_titulo, ds_resumo, ds_direito, ds_aviso, ds_base_legal, ds_link_oficial, tp_icone, nr_ordem)
+VALUES (seq_direito.NEXTVAL, 'Tarifa Social de Energia Elétrica',
+        'Desconto na conta de luz para famílias inscritas no CadÚnico.',
+        'Famílias de baixa renda inscritas no CadÚnico, ou com alguém que recebe o BPC, podem ter desconto na conta de luz. Em muitos casos o desconto é aplicado automaticamente quando os dados do CadÚnico estão atualizados.',
+        'As faixas de desconto e os critérios mudam. Confirme com a distribuidora de energia da sua cidade.',
+        'Lei 12.212/2010',
+        'https://www.planalto.gov.br/ccivil_03/_ato2007-2010/2010/lei/l12212.htm', 'RENDA', 4);
+INSERT INTO tb_direito_passo (cd_direito, nr_ordem, ds_titulo, ds_passo) VALUES (seq_direito.CURRVAL, 1, 'Confira o CadÚnico',
+        'Verifique no CRAS se a inscrição da família está ativa e atualizada.');
+INSERT INTO tb_direito_passo (cd_direito, nr_ordem, ds_titulo, ds_passo) VALUES (seq_direito.CURRVAL, 2, 'Fale com a distribuidora',
+        'Informe o NIS e o número da instalação à distribuidora de energia e pergunte se o desconto já está aplicado.');
+INSERT INTO tb_direito_tag (cd_direito, tp_tag) VALUES (seq_direito.CURRVAL, 'BAIXA_RENDA');
+
+-- 5. ID Jovem
+INSERT INTO tb_direito (cd_direito, ds_titulo, ds_resumo, ds_direito, ds_aviso, ds_base_legal, ds_link_oficial, tp_icone, nr_ordem)
+VALUES (seq_direito.NEXTVAL, 'Identidade Jovem (ID Jovem)',
+        'Viagens interestaduais gratuitas ou com desconto e meia-entrada para jovens de baixa renda.',
+        'Jovens de 15 a 29 anos de famílias inscritas no CadÚnico podem emitir a ID Jovem, que dá acesso a vagas gratuitas ou com desconto no transporte interestadual e à meia-entrada em eventos culturais e esportivos.',
+        'É preciso ter de 15 a 29 anos e CadÚnico atualizado. Confirme as regras no canal oficial da ID Jovem.',
+        'Lei 12.852/2013 (Estatuto da Juventude), arts. 23 e 32; Decreto 8.537/2015',
+        'https://www.planalto.gov.br/ccivil_03/_ato2015-2018/2015/decreto/d8537.htm', 'TRANSPORTE', 5);
+INSERT INTO tb_direito_passo (cd_direito, nr_ordem, ds_titulo, ds_passo) VALUES (seq_direito.CURRVAL, 1, 'Tenha o NIS em mãos',
+        'O NIS é o número da inscrição no CadÚnico. Se não souber, pergunte no CRAS.');
+INSERT INTO tb_direito_passo (cd_direito, nr_ordem, ds_titulo, ds_passo) VALUES (seq_direito.CURRVAL, 2, 'Emita a carteira',
+        'Emita a ID Jovem pelo aplicativo oficial ou pelo portal gov.br e guarde a versão digital.');
+INSERT INTO tb_direito_passo (cd_direito, nr_ordem, ds_titulo, ds_passo) VALUES (seq_direito.CURRVAL, 3, 'Reserve com antecedência',
+        'As vagas gratuitas no transporte interestadual são limitadas: procure a empresa de ônibus antes da viagem.');
+INSERT INTO tb_direito_tag (cd_direito, tp_tag) VALUES (seq_direito.CURRVAL, 'BAIXA_RENDA');
+
+-- 6. Cotas no ensino superior
+INSERT INTO tb_direito (cd_direito, ds_titulo, ds_resumo, ds_direito, ds_aviso, ds_base_legal, ds_link_oficial, tp_icone, nr_ordem)
+VALUES (seq_direito.NEXTVAL, 'Cotas no ensino superior',
+        'Reserva de vagas em universidades e institutos federais.',
+        'Metade das vagas das universidades e institutos federais é reservada a quem cursou todo o ensino médio em escola pública. Dentro dessa reserva há vagas para pessoas pretas, pardas e indígenas, quilombolas, pessoas com deficiência e estudantes de baixa renda.',
+        'Cada edital (Sisu, vestibular próprio) detalha os documentos e as comissões de verificação. Leia o edital da instituição.',
+        'Lei 12.711/2012 (Lei de Cotas), atualizada pela Lei 14.723/2023',
+        'https://www.planalto.gov.br/ccivil_03/_ato2011-2014/2012/lei/l12711.htm', 'EDUCACAO', 6);
+INSERT INTO tb_direito_passo (cd_direito, nr_ordem, ds_titulo, ds_passo) VALUES (seq_direito.CURRVAL, 1, 'Confira se você se enquadra',
+        'Veja no edital qual modalidade de cota corresponde ao seu percurso escolar, renda, raça/cor ou deficiência.');
+INSERT INTO tb_direito_passo (cd_direito, nr_ordem, ds_titulo, ds_passo) VALUES (seq_direito.CURRVAL, 2, 'Reúna os documentos',
+        'Histórico escolar do ensino médio, comprovantes de renda da família e, se for o caso, autodeclaração ou laudo.');
+INSERT INTO tb_direito_passo (cd_direito, nr_ordem, ds_titulo, ds_passo) VALUES (seq_direito.CURRVAL, 3, 'Escolha a modalidade na inscrição',
+        'No Sisu ou no vestibular, marque a modalidade de cota correta e acompanhe os prazos de matrícula.');
+INSERT INTO tb_direito_tag (cd_direito, tp_tag) VALUES (seq_direito.CURRVAL, 'ESCOLA_PUBLICA');
+INSERT INTO tb_direito_tag (cd_direito, tp_tag) VALUES (seq_direito.CURRVAL, 'PPI');
+INSERT INTO tb_direito_tag (cd_direito, tp_tag) VALUES (seq_direito.CURRVAL, 'PCD');
+
+-- 7. Meia-entrada
+INSERT INTO tb_direito (cd_direito, ds_titulo, ds_resumo, ds_direito, ds_aviso, ds_base_legal, ds_link_oficial, tp_icone, nr_ordem)
+VALUES (seq_direito.NEXTVAL, 'Meia-entrada em cultura e esporte',
+        'Pague metade do ingresso em cinemas, shows, teatros e eventos esportivos.',
+        'Têm direito à meia-entrada: pessoas a partir de 60 anos, estudantes, pessoas com deficiência (e o acompanhante, quando necessário) e jovens de 15 a 29 anos de baixa renda com a ID Jovem.',
+        'Os eventos podem limitar a quantidade de ingressos com meia-entrada. Leve o documento que comprova o direito.',
+        'Lei 12.933/2013; Lei 10.741/2003 (Estatuto da Pessoa Idosa), art. 23',
+        'https://www.planalto.gov.br/ccivil_03/_ato2011-2014/2013/lei/l12933.htm', 'OUTRO', 7);
+INSERT INTO tb_direito_passo (cd_direito, nr_ordem, ds_titulo, ds_passo) VALUES (seq_direito.CURRVAL, 1, 'Separe o comprovante',
+        'Documento com foto (idade), carteira estudantil, ID Jovem ou documento que indique a deficiência.');
+INSERT INTO tb_direito_passo (cd_direito, nr_ordem, ds_titulo, ds_passo) VALUES (seq_direito.CURRVAL, 2, 'Escolha meia-entrada na compra',
+        'Na bilheteria ou no site, selecione o ingresso de meia-entrada e apresente o comprovante na entrada.');
+INSERT INTO tb_direito_tag (cd_direito, tp_tag) VALUES (seq_direito.CURRVAL, 'IDOSO');
+INSERT INTO tb_direito_tag (cd_direito, tp_tag) VALUES (seq_direito.CURRVAL, 'PCD');
+INSERT INTO tb_direito_tag (cd_direito, tp_tag) VALUES (seq_direito.CURRVAL, 'JOVEM');
+INSERT INTO tb_direito_tag (cd_direito, tp_tag) VALUES (seq_direito.CURRVAL, 'BAIXA_RENDA');
+
+-- 8. Saúde
+INSERT INTO tb_direito (cd_direito, ds_titulo, ds_resumo, ds_direito, ds_aviso, ds_base_legal, ds_link_oficial, tp_icone, nr_ordem)
+VALUES (seq_direito.NEXTVAL, 'Saúde pública (SUS)',
+        'Atendimento gratuito, vacinas e medicamentos pelo SUS.',
+        'Qualquer pessoa pode ser atendida gratuitamente pelo SUS: consultas na Unidade Básica de Saúde (UBS), vacinas, exames, urgência e emergência. Alguns medicamentos são gratuitos ou têm desconto pelo programa Farmácia Popular.',
+        'A oferta de serviços varia por município. Procure a UBS mais próxima para saber o que está disponível.',
+        'Constituição Federal, art. 196; Lei 8.080/1990',
+        'https://www.planalto.gov.br/ccivil_03/leis/l8080.htm', 'SAUDE', 8);
+INSERT INTO tb_direito_passo (cd_direito, nr_ordem, ds_titulo, ds_passo) VALUES (seq_direito.CURRVAL, 1, 'Tenha o Cartão SUS',
+        'Faça o Cartão Nacional de Saúde na UBS ou consulte o número no aplicativo Meu SUS Digital.');
+INSERT INTO tb_direito_passo (cd_direito, nr_ordem, ds_titulo, ds_passo) VALUES (seq_direito.CURRVAL, 2, 'Procure a UBS da sua região',
+        'A UBS é a porta de entrada: ela agenda consultas e encaminha para especialistas e exames.');
+INSERT INTO tb_direito_tag (cd_direito, tp_tag) VALUES (seq_direito.CURRVAL, 'TODOS');
+
+-- 9. Benefícios municipais
+INSERT INTO tb_direito (cd_direito, ds_titulo, ds_resumo, ds_direito, ds_aviso, ds_base_legal, ds_link_oficial, tp_icone, nr_ordem)
+VALUES (seq_direito.NEXTVAL, 'Benefícios da sua cidade',
+        'Programas próprios da prefeitura: isenções, auxílios e serviços locais.',
+        'Muitas prefeituras têm programas próprios, como isenção de IPTU para pessoas idosas ou de baixa renda, auxílios emergenciais, cursos gratuitos e transporte especial para pessoas com deficiência. Os programas mudam de cidade para cidade.',
+        'Não há uma regra nacional: confirme no site oficial da prefeitura ou no CRAS.',
+        NULL, NULL, 'MUNICIPIO', 9);
+INSERT INTO tb_direito_passo (cd_direito, nr_ordem, ds_titulo, ds_passo) VALUES (seq_direito.CURRVAL, 1, 'Consulte o site da prefeitura',
+        'Procure a área de serviços ao cidadão ou de assistência social no site oficial da sua cidade.');
+INSERT INTO tb_direito_passo (cd_direito, nr_ordem, ds_titulo, ds_passo) VALUES (seq_direito.CURRVAL, 2, 'Pergunte no CRAS',
+        'O CRAS orienta sobre os programas sociais do município e ajuda na inscrição.');
+INSERT INTO tb_direito_tag (cd_direito, tp_tag) VALUES (seq_direito.CURRVAL, 'TODOS');
+
+COMMIT;
