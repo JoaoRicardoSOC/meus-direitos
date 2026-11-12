@@ -2,6 +2,13 @@
 
 As principais entregas do projeto, da mais recente para a mais antiga. O detalhe de cada mudança está no histórico do git (`git log`), e as mudanças de contrato da API estão na [§13 do `docs/api.md`](docs/api.md#13-histórico-de-mudanças).
 
+## 12/11/2026 · Correções da revisão da documentação
+
+- **"Apagar minhas respostas"** em Meus Direitos: apaga só o questionário (e o rascunho dele no navegador), como a caixa de consentimento promete.
+- Comentário oculto por 3 reportes não pode mais ser editado nem reportado de novo (404); o autor ainda pode excluí-lo.
+- Relatórios com só `cidade` ou só `uf` respondem 400 no campo que faltou, em vez de ignorar o valor.
+- Token de uma conta excluída passa a valer como visitante também nas rotas públicas.
+
 ## 12/11/2026 · Segurança, moderação, desempenho e funcionalidades novas
 
 **Segurança e privacidade**
