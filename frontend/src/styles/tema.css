@@ -972,21 +972,22 @@ button.md-acao {
 
 /* Telas largas: painel de apresentação do projeto ao lado do app */
 @media (min-width: 1100px) {
+  /* Painel e app formam um par centralizado na janela */
   .md-moldura {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) 430px minmax(0, 1fr);
-    gap: 48px;
+    grid-template-columns: 360px 430px;
+    justify-content: center;
+    gap: 64px;
     align-items: start;
   }
 
   .md-moldura > .md-app {
-    grid-column: 2;
     width: 430px;
+    margin-left: 0;
+    margin-right: 0;
   }
 
   .md-painel {
-    grid-column: 1;
-    justify-self: end;
     position: sticky;
     top: 24px;
     display: flex;
@@ -996,8 +997,13 @@ button.md-acao {
     margin-top: 24px;
   }
 
+  /* O par está centralizado: o app começa 212px à direita do centro (360 + 64 - 430, dividido por 2) */
   .md-fab {
-    right: calc(50% - 215px + var(--md-margem));
+    right: calc(50% - 427px + var(--md-margem));
+  }
+
+  .md-navegacao {
+    max-width: 430px;
   }
 }
 

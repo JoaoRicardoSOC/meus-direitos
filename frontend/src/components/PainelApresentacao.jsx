@@ -17,7 +17,8 @@ export default function PainelApresentacao() {
       <div style={{ background: 'var(--md-verde)', borderRadius: 28, overflow: 'hidden' }} aria-hidden="true">
         <img src={ilustracao} alt="" width="360" height="210" style={{ display: 'block', width: '100%', height: 'auto' }} />
       </div>
-      <p className="md-titulo">Sua voz melhora a cidade. Seus direitos abrem caminhos.</p>
+      <p className="md-titulo">Sua voz melhora a cidade.</p>
+      <p className="md-subtitulo">Seus direitos abrem caminhos.</p>
       <p className="md-corpo">
         Moradores registram problemas do bairro, votam, conversam e confirmam juntos quando algo foi resolvido. Um
         questionário opcional indica possibilidades de apoio e os canais oficiais para confirmá-las.
