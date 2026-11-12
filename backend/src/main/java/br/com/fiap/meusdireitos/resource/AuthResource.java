@@ -10,7 +10,9 @@ import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.MediaType;
 
 /**
- * Login por e-mail e senha.
+ * Login por e-mail e senha. A resposta traz o token de sessão ({@code token}), que o front envia
+ * em {@code Authorization: Bearer <token>} nas rotas protegidas. Após 5 falhas seguidas no mesmo
+ * e-mail, o login fica bloqueado por 15 minutos (HTTP 429).
  */
 @Path("auth")
 @Consumes(MediaType.APPLICATION_JSON)

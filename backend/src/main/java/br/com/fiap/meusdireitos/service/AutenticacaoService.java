@@ -4,6 +4,7 @@ import br.com.fiap.meusdireitos.dao.Transacao;
 import br.com.fiap.meusdireitos.dao.jdbc.UsuarioDaoJdbc;
 import br.com.fiap.meusdireitos.dto.request.LoginRequest;
 import br.com.fiap.meusdireitos.dto.response.UsuarioResponse;
+import br.com.fiap.meusdireitos.exception.MuitasTentativasException;
 import br.com.fiap.meusdireitos.exception.NaoAutenticadoException;
 import br.com.fiap.meusdireitos.model.Usuario;
 import br.com.fiap.meusdireitos.service.validacao.Validador;
@@ -15,7 +16,8 @@ import br.com.fiap.meusdireitos.util.TokenUtil;
  * <p>
  * O login (e o cadastro) devolvem um token assinado ({@link TokenUtil}), válido por 7 dias. O front-end
  * o envia no cabeçalho {@code Authorization: Bearer <token>}; cada rota protegida confere a assinatura,
- * a validade e se o usuário ainda existe.
+ * a validade e se o usuário ainda existe. Tentativas de login são limitadas por e-mail
+ * ({@link LimiteTentativasLogin}).
  */
 public class AutenticacaoService {
 
@@ -28,10 +30,14 @@ public class AutenticacaoService {
     /** Hash de uma senha aleatória, usado quando o e-mail não existe (ver {@link #entrar}). */
     private static final String HASH_FICTICIO = SenhaUtil.gerarHash(java.util.UUID.randomUUID().toString());
 
+    /** Compartilhado por todas as instâncias (cada resource cria a sua). */
+    private static final LimiteTentativasLogin LIMITE = new LimiteTentativasLogin();
+
     /**
      * Confere e-mail e senha e devolve a conta com o token de sessão.
      *
-     * @throws NaoAutenticadoException se o e-mail não existir ou a senha não conferir
+     * @throws NaoAutenticadoException   se o e-mail não existir ou a senha não conferir
+     * @throws MuitasTentativasException se o e-mail estiver bloqueado por excesso de falhas
      */
     public UsuarioResponse entrar(LoginRequest req) {
         Validador.corpoObrigatorio(req);
@@ -41,6 +47,8 @@ public class AutenticacaoService {
                 .lancarSeHouverErros();
 
         String email = Usuario.normalizarEmail(req.email());
+        LIMITE.verificar(email);
+
         UsuarioResponse resposta = Transacao.consultar(con -> {
             Usuario usuario = new UsuarioDaoJdbc(con).buscarPorEmail(email);
             // Calcula o hash mesmo sem usuário: o tempo de resposta não revela se o e-mail tem conta
@@ -52,8 +60,10 @@ public class AutenticacaoService {
             return UsuarioResponse.de(usuario, UsuarioService.possuiPerfil(con, usuario.getId()));
         });
         if (resposta == null) {
+            LIMITE.registrarFalha(email);
             throw new NaoAutenticadoException(MSG_LOGIN_INVALIDO);
         }
+        LIMITE.registrarSucesso(email);
         return resposta.comToken(TokenUtil.gerar(resposta.id()));
     }
 
