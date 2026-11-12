@@ -618,7 +618,7 @@ Para o sistema nunca parecer vazio — inclusive quando o avaliador se cadastrar
 
 ## 11. Pedidos do back-end para o front-end
 
-Ajustes em relação ao Figma, combinados com o grupo:
+Ajustes em relação ao Figma, combinados com o grupo. **Todos foram atendidos no front-end** (ver `frontend/README.md`):
 
 1. **Aba "Para você" no feed** (além de Recentes e Mais votados). É ela que mostra o cruzamento perfil × denúncia — o diferencial do projeto no vídeo.
 2. **Nova denúncia: separar "Endereço" e "Bairro"** em dois campos.
@@ -652,3 +652,4 @@ Ajustes em relação ao Figma, combinados com o grupo:
 | 11/11/2026 | Robustez: `imagemUrl` validada, `busca` até 100 caracteres, escrita no catálogo de direitos exige `X-Chave-Admin`. |
 | 11/11/2026 | Cidade comparada sem acento, maiúsculas e espaços repetidos em feed, busca, relatórios e confirmação ("Sao Paulo" = "São Paulo"). Coleção do Insomnia em `docs/insomnia/`. |
 | 12/11/2026 | `database/script.sql` com as tabelas e o catálogo inicial de 9 temas de direitos (`GET /direitos` deixa de vir vazio num banco novo). Erros 405 e 415 na tabela da seção 6. Sem mudança de contrato. |
+| 12/11/2026 | Front-end concluído e testado de ponta a ponta contra a API e o Oracle (inclusive com o `index.html` aberto por `file://`). Todos os pedidos da seção 11 atendidos. Sem mudança de contrato. |
