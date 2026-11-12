@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import Tela from '../../components/Tela.jsx';
+import iconeCheck from '../../assets/icones/check.svg';
 
 /**
  * 16 · Denúncia publicada: confirmação com o `protocolo` devolvido pelo POST /denuncias.
@@ -8,10 +9,14 @@ export default function DenunciaPublicada({ denuncia }) {
   return (
     <Tela titulo="Denúncia publicada" gap={20}>
       <div className="md-espaco-publicada" />
-      <section className="md-card md-confirmacao" aria-labelledby="titulo-publicada">
-        <span className="md-selo-check" aria-hidden="true">✓</span>
+      <section className="md-confirmacao" aria-labelledby="titulo-publicada">
+        <img src={iconeCheck} alt="" width="52" height="52" />
         <h1 id="titulo-publicada" className="md-titulo">Sua voz foi ouvida.</h1>
-        <p className="md-corpo">Denúncia publicada na comunidade.</p>
+        <p className="md-corpo">
+          Denúncia publicada
+          <br />
+          na comunidade.
+        </p>
         <span className="md-selo">PROTOCOLO DEMO · #{denuncia.protocolo}</span>
       </section>
       <p className="md-corpo">
