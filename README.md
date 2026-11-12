@@ -44,7 +44,9 @@ Plataforma colaborativa que une **zeladoria urbana** e **informação sobre dire
 | [`docs/api.md`](docs/api.md) | Contrato da API REST: rotas, corpos, respostas, erros e guia de integração do front-end |
 | [`docs/insomnia/meus-direitos.insomnia.json`](docs/insomnia/meus-direitos.insomnia.json) | Coleção do Insomnia com todas as rotas e uma pasta de erros tratados (importe em *Import → From File*) |
 | [`backend/README.md`](backend/README.md) | Arquitetura, decisões técnicas e limitações do back-end |
-| [`docs/diagramas/`](docs/diagramas/) | Diagrama de classes e modelo de dados |
+| [`docs/diagramas/diagrama-classes.md`](docs/diagramas/diagrama-classes.md) | Diagrama de classes do back-end (domínio, camadas e erros) |
+| [`docs/diagramas/diagrama-er.md`](docs/diagramas/diagrama-er.md) | Modelo de dados (diagrama ER) e regras garantidas pelo banco |
+| [`database/script.sql`](database/script.sql) | Criação das tabelas no Oracle e carga inicial do catálogo de direitos |
 
 ## Integrantes
 
