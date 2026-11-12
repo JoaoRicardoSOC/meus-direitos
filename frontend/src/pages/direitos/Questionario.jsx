@@ -155,6 +155,11 @@ export default function Questionario() {
   const lista = campoNaUrl && ETAPA_DA_LISTA[campoNaUrl] === etapa ? campoNaUrl : null;
   /** Esta entrada do histórico foi empilhada pelo próprio questionário: "voltar" = desempilhar. */
   const empilhada = local.state?.questionario === true;
+  /**
+   * Posição no histórico (history.state.idx do React Router) da primeira tela do questionário.
+   * Vai junto em cada etapa empilhada, para, ao salvar, sair de uma vez sem deixar etapas para trás.
+   */
+  const base = empilhada && Number.isInteger(local.state?.base) ? local.state.base : (window.history.state?.idx ?? 0);
 
   const [carregando, setCarregando] = useState(true);
   const [erroCarga, setErroCarga] = useState('');
@@ -246,7 +251,7 @@ export default function Questionario() {
 
   function irPara(passo, listaUrl) {
     const destino = listaUrl ? { passo: String(passo), lista: listaUrl } : { passo: String(passo) };
-    setParametros(destino, { state: { questionario: true } });
+    setParametros(destino, { state: { questionario: true, base } });
   }
 
   /** Volta uma posição: desempilha se fomos nós que empilhamos; senão (link direto), troca a URL. */
@@ -340,11 +345,38 @@ export default function Questionario() {
         corpo: { ...resto, dataNascimento: dataIso(nascimento) || null },
       });
       apagarRascunho();
-      navegar('/direitos', { replace: true, state: { perfilCompleto } });
+      sairDoQuestionario(perfilCompleto);
     } catch (erro) {
       mostrarErros(erro.porCampo(), erro.message);
     } finally {
       setEnviando(false);
+    }
+  }
+
+  /**
+   * Depois de salvar, tira todas as etapas do histórico: o "voltar" em Meus Direitos não reabre o
+   * questionário. Se havia uma tela do app antes dele, volta até ela e garante que é Meus Direitos;
+   * se o questionário foi aberto por link direto, volta à primeira etapa e a troca por Meus Direitos.
+   */
+  function sairDoQuestionario(perfilCompleto) {
+    const etapasEmpilhadas = Math.max(0, (window.history.state?.idx ?? 0) - base);
+    const irParaMeusDireitos = () => navegar('/direitos', { replace: true, state: { perfilCompleto } });
+
+    if (base > 0) {
+      window.addEventListener(
+        'popstate',
+        () => setTimeout(() => {
+          // a tela anterior costuma ser Meus Direitos; se não for, troca por ela
+          if (window.location.hash.split('?')[0] !== '#/direitos') window.location.replace('#/direitos');
+        }, 0),
+        { once: true },
+      );
+      window.history.go(-(etapasEmpilhadas + 1));
+    } else if (etapasEmpilhadas > 0) {
+      window.addEventListener('popstate', () => setTimeout(irParaMeusDireitos, 0), { once: true });
+      window.history.go(-etapasEmpilhadas);
+    } else {
+      irParaMeusDireitos();
     }
   }
 
