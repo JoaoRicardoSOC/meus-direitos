@@ -10,6 +10,7 @@ import br.com.fiap.meusdireitos.dto.response.ComentarioResponse;
 import br.com.fiap.meusdireitos.exception.AcessoNegadoException;
 import br.com.fiap.meusdireitos.exception.RegraNegocioException;
 import br.com.fiap.meusdireitos.model.Comentario;
+import br.com.fiap.meusdireitos.service.moderacao.FiltroTermosOfensivos;
 import br.com.fiap.meusdireitos.service.validacao.Validador;
 
 import java.util.ArrayList;
@@ -18,13 +19,16 @@ import java.util.List;
 /**
  * "Conversa do bairro": comentários nas denúncias. Só o autor edita ou exclui o próprio comentário.
  * <p>
- * Moderação: qualquer pessoa logada pode reportar o comentário de outra; com {@link #REPORTES_PARA_OCULTAR} reportes ele some para todos
+ * Moderação: textos com termos ofensivos são recusados (filtro simples), e qualquer pessoa logada pode
+ * reportar o comentário de outra; com {@link #REPORTES_PARA_OCULTAR} reportes ele some para todos
  * (inclusive para o autor) e deixa de contar no total de comentários da denúncia.
  */
 public class ComentarioService {
 
     /** Quantidade de reportes de pessoas diferentes que oculta um comentário. */
     public static final int REPORTES_PARA_OCULTAR = 3;
+
+    static final String MENSAGEM_TERMO_OFENSIVO = "Revise o texto: ele contém termos ofensivos.";
 
     public List<ComentarioResponse> listar(Long idDenuncia, Long idLeitor) {
         return Transacao.consultar(con -> {
@@ -97,6 +101,7 @@ public class ComentarioService {
         Validador.corpoObrigatorio(req);
         new Validador()
                 .obrigatorio("texto", req.texto()).tamanho("texto", req.texto(), 2, 500)
+                .regra(!FiltroTermosOfensivos.contemTermoOfensivo(req.texto()), "texto", MENSAGEM_TERMO_OFENSIVO)
                 .lancarSeHouverErros();
     }
 }
