@@ -1,11 +1,25 @@
-import { forwardRef, useState } from 'react';
+import { forwardRef, useEffect, useRef, useState } from 'react';
 import Campo from '../../components/Campo.jsx';
 import Mensagem from '../../components/Mensagem.jsx';
 import { api } from '../../services/api.js';
-import { haQuantoTempo } from '../../utils/formatos.js';
+import { haQuantoTempo, plural } from '../../utils/formatos.js';
 import { tamanho } from '../../utils/validacao.js';
+import { focarPrimeiroErro } from '../../utils/foco.js';
+import iconeEditar from '../../assets/icones/editar.svg';
+import iconeLixeira from '../../assets/icones/lixeira.svg';
 
-const validarTexto = (texto) => tamanho(texto, 2, 500);
+const LIMITE = 500;
+const validarTexto = (texto) => tamanho(texto, 2, LIMITE);
+const RESUMO_ERRO = 'Confira o comentário antes de enviar.';
+
+/** Contador discreto "N/500" abaixo da caixa de texto (o limite também vale no maxLength). */
+function Contador({ texto }) {
+  return (
+    <p className="md-legenda md-contador" aria-hidden="true">
+      {texto.length}/{LIMITE}
+    </p>
+  );
+}
 
 /**
  * Card "Conversa do bairro · N" da tela 10: lista de comentários (do mais antigo ao mais novo)
@@ -19,13 +33,19 @@ const ConversaBairro = forwardRef(function ConversaBairro(
   const [erroTexto, setErroTexto] = useState('');
   const [mensagem, setMensagem] = useState('');
   const [enviando, setEnviando] = useState(false);
+  const formulario = useRef(null);
+  const titulo = useRef(null);
 
   async function enviar(e) {
     e.preventDefault();
     setMensagem('');
     const problema = validarTexto(texto);
     setErroTexto(problema);
-    if (problema) return;
+    if (problema) {
+      setMensagem(RESUMO_ERRO);
+      focarPrimeiroErro(formulario.current);
+      return;
+    }
 
     setEnviando(true);
     try {
@@ -34,17 +54,27 @@ const ConversaBairro = forwardRef(function ConversaBairro(
       aoEnviar(novo);
     } catch (erro) {
       const porCampo = erro.porCampo();
-      if (porCampo.texto) setErroTexto(porCampo.texto);
-      else setMensagem(erro.message);
+      if (porCampo.texto) {
+        setErroTexto(porCampo.texto);
+        setMensagem(RESUMO_ERRO);
+        focarPrimeiroErro(formulario.current);
+      } else setMensagem(erro.message);
     } finally {
       setEnviando(false);
     }
   }
 
+  // depois de excluir, o foco (que estava no comentário removido) vai para o título da conversa
+  function excluido(idComentario) {
+    aoExcluir(idComentario);
+    requestAnimationFrame(() => titulo.current?.focus({ preventScroll: true }));
+  }
+
   return (
     <section id="conversa" ref={ref} className="md-card md-conversa" aria-labelledby="conversa-titulo">
-      <h2 id="conversa-titulo" className="md-subtitulo">
-        Conversa do bairro · {comentarios.length}
+      <h2 id="conversa-titulo" ref={titulo} tabIndex={-1} className="md-subtitulo">
+        Conversa do bairro{' '}
+        <span className="md-conversa-contagem">· {plural(comentarios.length, 'comentário', 'comentários')}</span>
       </h2>
 
       {erroLista && <Mensagem>{erroLista}</Mensagem>}
@@ -56,25 +86,29 @@ const ConversaBairro = forwardRef(function ConversaBairro(
       {comentarios.length > 0 && (
         <ul className="list-unstyled m-0 d-flex flex-column gap-3">
           {comentarios.map((comentario) => (
-            <Comentario key={comentario.id} comentario={comentario} aoEditar={aoEditar} aoExcluir={aoExcluir} />
+            <Comentario key={comentario.id} comentario={comentario} aoEditar={aoEditar} aoExcluir={excluido} />
           ))}
         </ul>
       )}
 
-      <form className="d-flex flex-column gap-3" onSubmit={enviar} noValidate>
-        <Campo
-          tipo="textarea"
-          rotulo="Seu comentário"
-          rows={3}
-          value={texto}
-          onChange={(e) => {
-            setTexto(e.target.value);
-            setErroTexto('');
-          }}
-          erro={erroTexto}
-          placeholder="Também notei esse problema."
-          maxLength={500}
-        />
+      <form ref={formulario} className="d-flex flex-column gap-2" onSubmit={enviar} noValidate>
+        <div>
+          <Campo
+            tipo="textarea"
+            rotulo="Seu comentário"
+            rows={3}
+            value={texto}
+            onChange={(e) => {
+              setTexto(e.target.value);
+              setErroTexto('');
+              setMensagem('');
+            }}
+            erro={erroTexto}
+            placeholder="Também notei esse problema."
+            maxLength={LIMITE}
+          />
+          <Contador texto={texto} />
+        </div>
         <Mensagem>{mensagem}</Mensagem>
         <button type="submit" className="md-botao md-botao-primario" disabled={enviando}>
           {enviando ? 'Enviando…' : 'Comentar'}
@@ -86,19 +120,38 @@ const ConversaBairro = forwardRef(function ConversaBairro(
 
 export default ConversaBairro;
 
-/** Um comentário: autor, "há X", texto, selos e, se for meu, editar/excluir. */
+/** Um comentário: autor e "há X · editado · exemplo" numa linha, texto e, se for meu, editar/excluir. */
 function Comentario({ comentario, aoEditar, aoExcluir }) {
   const [modo, setModo] = useState('ver'); // 'ver' | 'editar' | 'excluir'
   const [texto, setTexto] = useState(comentario.texto);
   const [erroTexto, setErroTexto] = useState('');
   const [erro, setErro] = useState('');
   const [ocupado, setOcupado] = useState(false);
+  const formulario = useRef(null);
+  const cancelarExclusao = useRef(null);
+  const botaoEditar = useRef(null);
+  const botaoExcluir = useRef(null);
+  const devolverFoco = useRef(null); // ação que abriu o modo atual, para o foco voltar a ela
 
-  function editar() {
+  useEffect(() => {
+    if (modo === 'excluir') cancelarExclusao.current?.focus();
+    if (modo === 'ver' && devolverFoco.current) {
+      devolverFoco.current.current?.focus();
+      devolverFoco.current = null;
+    }
+  }, [modo]);
+
+  function abrir(novoModo) {
     setTexto(comentario.texto);
     setErroTexto('');
     setErro('');
-    setModo('editar');
+    setModo(novoModo);
+  }
+
+  function voltar() {
+    devolverFoco.current = modo === 'editar' ? botaoEditar : botaoExcluir;
+    setErro('');
+    setModo('ver');
   }
 
   async function salvar(e) {
@@ -106,17 +159,25 @@ function Comentario({ comentario, aoEditar, aoExcluir }) {
     setErro('');
     const problema = validarTexto(texto);
     setErroTexto(problema);
-    if (problema) return;
+    if (problema) {
+      setErro(RESUMO_ERRO);
+      focarPrimeiroErro(formulario.current);
+      return;
+    }
 
     setOcupado(true);
     try {
       const atualizado = await api(`/comentarios/${comentario.id}`, { metodo: 'PUT', corpo: { texto: texto.trim() } });
       aoEditar(atualizado);
+      devolverFoco.current = botaoEditar;
       setModo('ver');
     } catch (falha) {
       const porCampo = falha.porCampo();
-      if (porCampo.texto) setErroTexto(porCampo.texto);
-      else setErro(falha.message);
+      if (porCampo.texto) {
+        setErroTexto(porCampo.texto);
+        setErro(RESUMO_ERRO);
+        focarPrimeiroErro(formulario.current);
+      } else setErro(falha.message);
     } finally {
       setOcupado(false);
     }
@@ -134,74 +195,79 @@ function Comentario({ comentario, aoEditar, aoExcluir }) {
     }
   }
 
+  const meta = [haQuantoTempo(comentario.criadoEm)];
+  if (comentario.editadoEm) meta.push('editado');
+  if (comentario.autor.simulado) meta.push('exemplo');
+
   return (
     <li className="md-comentario d-flex flex-column gap-2">
-      <div className="d-flex align-items-center gap-2 flex-wrap">
-        <p className="md-negrito">
-          {comentario.autor.nome} · {haQuantoTempo(comentario.criadoEm)}
-        </p>
-        {comentario.autor.simulado && <span className="md-selo md-selo-exemplo">Exemplo</span>}
-        {comentario.editadoEm && <span className="md-legenda">editado</span>}
-      </div>
+      <p className="md-comentario-meta">
+        <span className="md-comentario-autor">{comentario.autor.nome}</span> · {meta.join(' · ')}
+      </p>
 
       {modo === 'editar' ? (
-        <form className="d-flex flex-column gap-2" onSubmit={salvar} noValidate>
-          <Campo
-            tipo="textarea"
-            rotulo="Editar comentário"
-            rows={3}
-            value={texto}
-            onChange={(e) => {
-              setTexto(e.target.value);
-              setErroTexto('');
-            }}
-            erro={erroTexto}
-            maxLength={500}
-            autoFocus
-          />
+        <form ref={formulario} className="d-flex flex-column gap-2" onSubmit={salvar} noValidate>
+          <div>
+            <Campo
+              tipo="textarea"
+              rotulo="Editar comentário"
+              rows={3}
+              value={texto}
+              onChange={(e) => {
+                setTexto(e.target.value);
+                setErroTexto('');
+                setErro('');
+              }}
+              erro={erroTexto}
+              maxLength={LIMITE}
+              autoFocus
+            />
+            <Contador texto={texto} />
+          </div>
+          <Mensagem>{erro}</Mensagem>
           <div className="d-flex gap-2">
             <button type="submit" className="md-botao md-botao-primario" disabled={ocupado}>
               {ocupado ? 'Salvando…' : 'Salvar'}
             </button>
-            <button type="button" className="md-botao md-botao-secundario" onClick={() => setModo('ver')} disabled={ocupado}>
+            <button type="button" className="md-botao md-botao-secundario" onClick={voltar} disabled={ocupado}>
               Cancelar
             </button>
           </div>
         </form>
       ) : (
-        <p className="md-corpo">{comentario.texto}</p>
+        <p className="md-corpo-tinta">{comentario.texto}</p>
       )}
 
       {comentario.meu && modo === 'ver' && (
-        <div className="d-flex gap-3">
-          <button type="button" className="md-link-acao" onClick={editar}>
+        <div className="d-flex gap-4">
+          <button type="button" ref={botaoEditar} className="md-acao-texto" onClick={() => abrir('editar')}>
+            <img src={iconeEditar} alt="" width="18" height="18" />
             Editar
           </button>
-          <button type="button" className="md-link-acao md-link-acao-perigo" onClick={() => setModo('excluir')}>
+          <button type="button" ref={botaoExcluir} className="md-acao-texto md-perigo" onClick={() => abrir('excluir')}>
+            <img src={iconeLixeira} alt="" width="18" height="18" />
             Excluir
           </button>
         </div>
       )}
 
       {modo === 'excluir' && (
-        <div className="d-flex flex-column gap-2" role="group" aria-label="Confirmar exclusão do comentário">
-          <p className="md-legenda">Excluir este comentário? Essa ação não pode ser desfeita.</p>
+        <div className="d-flex flex-column gap-2" role="group" aria-labelledby={`excluir-${comentario.id}`}>
+          <p id={`excluir-${comentario.id}`} className="md-legenda">
+            Excluir este comentário? Essa ação não pode ser desfeita.
+          </p>
           <div className="d-flex gap-2">
             <button type="button" className="md-botao md-botao-perigo" onClick={excluir} disabled={ocupado}>
               {ocupado ? 'Excluindo…' : 'Excluir'}
             </button>
-            <button type="button" className="md-botao md-botao-secundario" onClick={() => setModo('ver')} disabled={ocupado}>
+            <button type="button" ref={cancelarExclusao} className="md-botao md-botao-secundario" onClick={voltar} disabled={ocupado}>
               Cancelar
             </button>
           </div>
         </div>
       )}
 
-      {erro && (
-        <p className="md-erro-campo" role="alert">
-          {erro}
-        </p>
-      )}
+      {modo !== 'editar' && <Mensagem>{erro}</Mensagem>}
     </li>
   );
 }
