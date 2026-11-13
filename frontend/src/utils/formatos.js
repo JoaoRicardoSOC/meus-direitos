@@ -37,13 +37,6 @@ export function cidadeUf(cidade, uf) {
   return [cidade, uf].filter(Boolean).join(', ');
 }
 
-/** "2026-11-11" → "11/11/2026" */
-export function dataCurta(dataIso) {
-  if (!dataIso) return '';
-  const [ano, mes, dia] = dataIso.slice(0, 10).split('-');
-  return `${dia}/${mes}/${ano}`;
-}
-
 const numeros = new Intl.NumberFormat('pt-BR');
 
 /** 1234 → "1.234" */

@@ -4,8 +4,6 @@
  */
 const CHAVE_TOKEN = 'token';
 const CHAVE_USUARIO = 'usuario';
-/** Chave da versão antiga (sessão por X-Usuario-Id): não vale mais como credencial. */
-const CHAVE_ID_ANTIGA = 'usuarioId';
 const EVENTO = 'md:sessao';
 
 /**
@@ -42,16 +40,6 @@ function apagar(chave) {
   }
 }
 
-/**
- * Migração: quem tinha só a sessão antiga (o id, sem token) passa a estar deslogado.
- * Roda uma vez, ao carregar o módulo.
- */
-(function migrarSessaoAntiga() {
-  if (ler(CHAVE_ID_ANTIGA) === null) return;
-  apagar(CHAVE_ID_ANTIGA);
-  if (ler(CHAVE_TOKEN) === null) apagar(CHAVE_USUARIO);
-})();
-
 export function lerToken() {
   return ler(CHAVE_TOKEN);
 }
@@ -81,7 +69,6 @@ export function iniciarSessao({ token, ...usuario }) {
 export function encerrarSessao() {
   apagar(CHAVE_TOKEN);
   apagar(CHAVE_USUARIO);
-  apagar(CHAVE_ID_ANTIGA);
   window.dispatchEvent(new Event(EVENTO));
 }
 
