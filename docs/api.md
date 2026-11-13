@@ -56,10 +56,10 @@
 3. Abra <http://localhost:8080/api/health>. Deve aparecer `{"banco":"UP","status":"UP",...}`.
    - `"banco":"INDISPONIVEL"` → a API subiu, mas não conectou no Oracle (credenciais ou rede da FIAP).
 
-**CORS:** a API aceita chamadas do navegador vindas de `http://localhost:5173` (porta padrão do Vite). Se o seu Vite rodar em outra porta, adicione-a no `db.properties`:
+**CORS:** por padrão a API aceita chamadas do navegador vindas de `http://localhost:5173` (porta padrão do Vite) e da origem `null` (o `frontend/dist/index.html` aberto direto do disco). Se o seu Vite rodar em outra porta, adicione-a no `db.properties`, mantendo as outras:
 
 ```properties
-cors.origens=http://localhost:5173,http://localhost:5174
+cors.origens=http://localhost:5173,http://localhost:5174,null
 ```
 
 ---
@@ -691,3 +691,4 @@ Ajustes em relação ao Figma, combinados com o grupo. **Todos foram atendidos n
 | 12/11/2026 | Moderação: `POST /comentarios/{id}/reporte` (3 reportes ocultam o comentário) e filtro de termos ofensivos (400 em `texto`). Desempenho: pool de conexões, índices de cidade e API escutando também em IPv6 (`localhost` sem atraso no Windows). |
 | 12/11/2026 | Documentação revisada contra o código. **Sem mudança de contrato:** todas as rotas, métodos, 🔒 e campos dos DTOs conferem. Completado o que faltava no guia: 404 no `DELETE /usuarios/perfil` sem questionário; relatórios usam a cidade do token quando falta `cidade` **ou** `uf`; transição `EM_ANDAMENTO → ABERTA` (já aceita pela API) incluída na seção 8.7; exclusões de denúncia e de conta apagam também os reportes; limites de `pagina`, `minimo` e `limite`; mensagens de 401; token inválido ignorado nas rotas públicas; ordem alfabética das chaves no JSON; tabela das rotas `/simulacao/*`; objetos `UsuarioPublicoResponse`, `PerfilResponse`, `DireitoResponse`, `ResolucaoResponse`, `HealthResponse` e `ErroResponse` na seção 9; moderação e segurança na seção 1. |
 | 12/11/2026 | **Correções de contrato:** comentário oculto por 3 reportes responde 404 ao ser editado (`PUT /comentarios/{id}`) ou reportado de novo (o autor ainda pode excluí-lo); relatórios com só `cidade` ou só `uf` respondem 400 no campo que faltou (antes, o valor era ignorado e a API usava a cidade do login); token de conta excluída é tratado como visitante também nas rotas públicas. No app, "Apagar minhas respostas" em Meus Direitos usa `DELETE /usuarios/perfil`. |
+| 13/11/2026 | CORS libera por padrão a origem `null` (app aberto direto do disco), além de `http://localhost:5173`. Pool de conexões refeito sem proxy: a `Transacao` empresta e devolve a conexão explicitamente. **Sem mudança de contrato.** |

@@ -55,7 +55,7 @@ O projeto já está preparado para isso (ver `vite.config.js` e `main.jsx`):
 - o build gera **um único script comum** (`format: 'iife'`), porque o navegador recusa `<script type="module">` aberto por `file://`. Um plugin do próprio `vite.config.js` (`abrirDiretoNoNavegador`) troca `type="module" crossorigin` por `defer` no HTML final;
 - o CSS sai num arquivo só (`cssCodeSplit: false`), ligado por `<link>`: a tela já aparece estilizada antes de o JavaScript rodar.
 
-**CORS ao abrir por `file://`.** Nesse caso o navegador envia a origem `null`. Inclua `null` na lista de origens da API, no `backend/db.properties`:
+**CORS ao abrir por `file://`.** Nesse caso o navegador envia a origem `null`, que a API já libera por padrão. Se você mudar `cors.origens` no `backend/db.properties`, mantenha o `null` na lista:
 
 ```properties
 cors.origens=http://localhost:5173,null

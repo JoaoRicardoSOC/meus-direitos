@@ -28,7 +28,7 @@ Ela grava e lê os dados de um banco **Oracle** via **JDBC**.
 | `db.usuario` | `MD_DB_USUARIO` | **sim** | — |
 | `db.senha` | `MD_DB_SENHA` | **sim** | — |
 | `server.uri` | `MD_SERVER_URI` | não | `http://localhost:8080/api/` |
-| `cors.origens` | `MD_CORS_ORIGENS` | não | `http://localhost:5173` (o Vite) |
+| `cors.origens` | `MD_CORS_ORIGENS` | não | `http://localhost:5173,null` (o Vite e o `index.html` aberto direto do disco) |
 | `simulacao.ativa` | `MD_SIMULACAO_ATIVA` | não | `true` |
 | `simulacao.chave` | `MD_SIMULACAO_CHAVE` | não | sem chave, as rotas `/api/simulacao/*` ficam desligadas |
 | `admin.chave` | `MD_ADMIN_CHAVE` | não | sem chave, o catálogo de direitos fica somente leitura |
