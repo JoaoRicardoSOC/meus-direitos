@@ -13,9 +13,8 @@ db.senha=sua_senha
 server.uri=http://localhost:8080/api/
 
 # Origens do front-end liberadas no CORS, separadas por vírgula (MD_CORS_ORIGENS).
-# Para avaliar o front-end abrindo frontend/dist/index.html direto do disco (file://), acrescente "null":
-#   cors.origens=http://localhost:5173,null
-cors.origens=http://localhost:5173
+# "null" é a origem do frontend/dist/index.html aberto direto do disco (file://), como na entrega.
+cors.origens=http://localhost:5173,null
 
 # "Cidade viva": conteúdo de demonstração para cidades novas e atividade simulada (MD_SIMULACAO_ATIVA)
 simulacao.ativa=true

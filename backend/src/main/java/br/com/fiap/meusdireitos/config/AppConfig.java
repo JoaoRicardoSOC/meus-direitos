@@ -53,12 +53,20 @@ public final class AppConfig {
     }
 
     /**
+     * Origens liberadas por padrão: o Vite em desenvolvimento e {@code null}, a origem que o navegador
+     * envia quando o {@code frontend/dist/index.html} é aberto direto do disco (file://), como na entrega
+     * da FIAP. Liberar {@code null} não expõe a sessão: o token vai no cabeçalho Authorization, que o
+     * navegador nunca envia sozinho para outra página.
+     */
+    static final String CORS_ORIGENS_PADRAO = "http://localhost:5173,null";
+
+    /**
      * Origens autorizadas a chamar a API pelo navegador (CORS), separadas por vírgula.
      *
-     * @return lista de origens, ex.: [http://localhost:5173]
+     * @return lista de origens, ex.: [http://localhost:5173, null]
      */
     public static List<String> corsOrigens() {
-        String valor = valor("cors.origens", "MD_CORS_ORIGENS", "http://localhost:5173");
+        String valor = valor("cors.origens", "MD_CORS_ORIGENS", CORS_ORIGENS_PADRAO);
         List<String> origens = new ArrayList<>();
         for (String origem : valor.split(",")) {
             if (!origem.isBlank()) {
