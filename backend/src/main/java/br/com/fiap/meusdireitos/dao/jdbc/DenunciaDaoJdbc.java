@@ -374,10 +374,6 @@ public class DenunciaDaoJdbc implements DenunciaDao {
             condicoes.add("d.st_denuncia = ?");
             parametros.add(filtro.status());
         }
-        if (filtro.idAutor() != null) {
-            condicoes.add("d.cd_usuario = ?");
-            parametros.add(filtro.idAutor());
-        }
         if (filtro.busca() != null && !filtro.busca().isBlank()) {
             condicoes.add("(UPPER(d.ds_titulo) LIKE ? ESCAPE '\\' OR UPPER(d.ds_denuncia) LIKE ? ESCAPE '\\')");
             String padrao = "%" + escaparLike(filtro.busca().trim().toUpperCase()) + "%";

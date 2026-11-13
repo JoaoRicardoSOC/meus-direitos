@@ -70,7 +70,7 @@ public class DenunciaService {
         FiltroDenuncia filtro = new FiltroDenuncia(vazioParaNulo(cidade), vazioParaNulo(uf),
                 Validador.converterEnum(CategoriaDenuncia.class, categoria, "categoria"),
                 Validador.converterEnum(StatusDenuncia.class, status, "status"),
-                vazioParaNulo(busca), null);
+                vazioParaNulo(busca));
         int numeroPagina = Validador.inteiro("pagina", pagina, 1, 1, PAGINA_MAXIMA);
         int tamanhoPagina = Validador.inteiro("tamanho", tamanho, TAMANHO_PADRAO, 1, TAMANHO_MAXIMO);
         return Transacao.consultar(con ->

@@ -112,7 +112,7 @@ class DaosIntegracaoTest {
         assertTrue(feed.itens().get(0).getRelevanteParaLeitor());
 
         FiltroDenuncia filtro = new FiltroDenuncia("  " + cidadeSemAcento.toUpperCase() + " ", "sp", null, null,
-                "buraco " + sufixo.toLowerCase(), null);
+                "buraco " + sufixo.toLowerCase());
         Pagina<DenunciaDetalhada> pesquisa = dao.pesquisar(filtro, autor.getId(), 1, 10);
         assertEquals(1, pesquisa.total());
         assertEquals(denuncia.getId(), pesquisa.itens().get(0).getDenuncia().getId());

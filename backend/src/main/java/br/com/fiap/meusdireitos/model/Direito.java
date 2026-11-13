@@ -108,10 +108,6 @@ public class Direito extends EntidadeBase {
         passos.add(passo);
     }
 
-    public void limparPassos() {
-        passos.clear();
-    }
-
     /** @return tags do público do tema, somente leitura */
     public Set<TagDemografica> getTags() {
         return Collections.unmodifiableSet(tags);
@@ -121,10 +117,6 @@ public class Direito extends EntidadeBase {
         if (tag != null) {
             tags.add(tag);
         }
-    }
-
-    public void limparTags() {
-        tags.clear();
     }
 
     private static String aparar(String texto) {
