@@ -102,7 +102,7 @@ cp db.properties.example db.properties   # preencha db.usuario, db.senha e token
 mvn clean compile exec:java              # API em http://localhost:8080/api
 ```
 
-No `db.properties`, deixe `cors.origens=http://localhost:5173,null`: a origem `null` é a do `index.html` aberto direto do disco.
+O modelo já libera `cors.origens=http://localhost:5173,null`: a origem `null` é a do `index.html` aberto direto do disco. Se mudar a lista, mantenha o `null`.
 
 **3. App.** Com a API rodando, abra **`frontend/dist/index.html`** com um duplo clique. A pasta `dist/` já vem pronta.
 
