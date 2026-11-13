@@ -9,7 +9,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * Executa operações no banco garantindo que a conexão seja fechada e, quando necessário,
+ * Executa operações no banco garantindo que a conexão volte ao pool e, quando necessário,
  * que tudo seja confirmado (COMMIT) ou desfeito (ROLLBACK) junto.
  * <p>
  * Uso típico no service:
@@ -34,7 +34,9 @@ public final class Transacao {
      * ROLLBACK se qualquer exceção ocorrer.
      */
     public static <R> R executar(OperacaoComConexao<R> operacao) {
-        try (Connection conexao = ConnectionFactory.getConnection()) {
+        Connection conexao = null;
+        try {
+            conexao = ConnectionFactory.emprestar();
             conexao.setAutoCommit(false);
             try {
                 R resultado = operacao.executar(conexao);
@@ -46,6 +48,8 @@ public final class Transacao {
             }
         } catch (SQLException e) {
             throw PersistenciaException.de(e);
+        } finally {
+            ConnectionFactory.devolver(conexao); // sempre volta ao pool, com ou sem erro
         }
     }
 
@@ -61,10 +65,14 @@ public final class Transacao {
      * Executa apenas leituras (SELECT), sem abrir transação explícita.
      */
     public static <R> R consultar(OperacaoComConexao<R> consulta) {
-        try (Connection conexao = ConnectionFactory.getConnection()) {
+        Connection conexao = null;
+        try {
+            conexao = ConnectionFactory.emprestar();
             return consulta.executar(conexao);
         } catch (SQLException e) {
             throw PersistenciaException.de(e);
+        } finally {
+            ConnectionFactory.devolver(conexao);
         }
     }
 

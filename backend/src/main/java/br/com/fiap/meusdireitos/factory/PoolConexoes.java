@@ -1,34 +1,34 @@
 package br.com.fiap.meusdireitos.factory;
 
-import java.lang.reflect.InvocationHandler;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.lang.reflect.Proxy;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.Set;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
  * Pool simples de conexões, feito só com o JDK (sem biblioteca nova).
  * <p>
+ * Por que existe: abrir uma conexão com o Oracle da FIAP leva ~300 ms, e uma consulta leva ~30 ms.
+ * Sem reaproveitar conexões, cada tela do app ficaria várias vezes mais lenta.
+ * <p>
  * Como funciona:
  * <ul>
- *     <li>no máximo {@code tamanho} conexões físicas existem ao mesmo tempo; um {@link Semaphore}
- *     controla quantas estão emprestadas;</li>
- *     <li>as conexões livres ficam numa {@link BlockingQueue}. Ao emprestar, a conexão livre é testada
- *     com {@code isValid}; se o banco a derrubou, ela é descartada e outra é aberta;</li>
- *     <li>quem pede recebe um <b>proxy</b> da conexão. O {@code close()} do proxy não fecha a conexão
- *     física: desfaz o que ficou pendente (ROLLBACK), volta ao autocommit e devolve a conexão ao pool.
- *     Por isso o resto do código continua usando try-with-resources normalmente;</li>
- *     <li>se todas estiverem em uso, espera até {@code esperaMaxima}; depois disso lança
+ *     <li>{@link #emprestar()} entrega uma conexão parada na fila {@code livres} (testada com
+ *     {@code isValid}) ou, se não houver, abre uma nova;</li>
+ *     <li>{@link #devolver(Connection)} desfaz o que ficou sem COMMIT, volta ao autocommit e guarda a
+ *     conexão na fila para a próxima requisição;</li>
+ *     <li>o {@link Semaphore} {@code vagas} limita quantas conexões existem ao mesmo tempo. Se todas
+ *     estiverem emprestadas, quem pede espera até {@code esperaMaxima}; depois disso recebe
  *     {@link SQLException} com SQLState 08001 (a API responde 503).</li>
  * </ul>
+ * Quem empresta precisa devolver. No sistema, só a {@code Transacao} e o health check fazem isso,
+ * sempre num bloco {@code finally}.
  */
 final class PoolConexoes {
 
@@ -38,8 +38,6 @@ final class PoolConexoes {
     static final int TIMEOUT_VALIDACAO_SEGUNDOS = 2;
     /** SQLState da classe 08 (erro de conexão): vira HTTP 503 em PersistenciaException. */
     static final String SQLSTATE_SEM_CONEXAO = "08001";
-    /** SQLState de "conexão inexistente": usar o proxy depois de fechá-lo. */
-    static final String SQLSTATE_CONEXAO_FECHADA = "08003";
 
     /** Abre uma conexão física nova (no uso real, {@code DriverManager.getConnection}). */
     @FunctionalInterface
@@ -52,6 +50,8 @@ final class PoolConexoes {
     private final long esperaMaximaMs;
     private final BlockingQueue<Connection> livres;
     private final Semaphore vagas;
+    /** Conexões emprestadas agora: devolver a mesma duas vezes (ou uma que não é do pool) não faz nada. */
+    private final Set<Connection> emprestadas = ConcurrentHashMap.newKeySet();
 
     PoolConexoes(int tamanho, AbridorConexao abridor, long esperaMaximaMs) {
         if (tamanho < 1) {
@@ -65,7 +65,7 @@ final class PoolConexoes {
     }
 
     /**
-     * Empresta uma conexão. Feche-a (try-with-resources) para devolvê-la ao pool.
+     * Empresta uma conexão, em autocommit. Devolva-a com {@link #devolver(Connection)}.
      *
      * @throws SQLException SQLState 08001 se nenhuma vaga abrir dentro do tempo de espera, ou o erro do driver
      */
@@ -80,51 +80,56 @@ final class PoolConexoes {
             throw new SQLException("Espera por conexão interrompida.", SQLSTATE_SEM_CONEXAO, e);
         }
         try {
-            return embrulhar(obterFisica());
+            Connection conexao = livreOuNova();
+            emprestadas.add(conexao);
+            return conexao;
         } catch (SQLException | RuntimeException e) {
             vagas.release(); // não conseguiu abrir: a vaga volta a ficar disponível
             throw e;
         }
     }
 
-    /** Conexão livre e válida do pool, ou uma nova se não houver nenhuma. */
-    private Connection obterFisica() throws SQLException {
-        Connection fisica;
-        while ((fisica = livres.poll()) != null) {
-            if (valida(fisica)) {
-                return fisica;
-            }
-            fecharFisica(fisica); // derrubada pelo banco (timeout, reinício...): descarta e tenta a próxima
-        }
-        return abridor.abrir();
-    }
-
     /**
-     * Prepara a conexão para o próximo uso e a guarda na fila. Se não for possível limpá-la,
-     * ou a fila já estiver cheia, a conexão física é fechada.
+     * Devolve uma conexão emprestada. Se não for possível limpá-la, ou a fila já estiver cheia,
+     * ela é fechada. Aceita {@code null} e conexões já devolvidas (não faz nada).
      */
-    private void devolver(Connection fisica) {
+    void devolver(Connection conexao) {
+        if (conexao == null || !emprestadas.remove(conexao)) {
+            return;
+        }
         try {
-            if (limpar(fisica) && livres.offer(fisica)) {
-                return;
+            if (!limpar(conexao) || !livres.offer(conexao)) {
+                fechar(conexao);
             }
-            fecharFisica(fisica);
         } finally {
             vagas.release();
         }
     }
 
-    private static boolean limpar(Connection fisica) {
+    /** Conexão livre e válida da fila, ou uma nova se não houver nenhuma. */
+    private Connection livreOuNova() throws SQLException {
+        Connection conexao;
+        while ((conexao = livres.poll()) != null) {
+            if (valida(conexao)) {
+                return conexao;
+            }
+            fechar(conexao); // derrubada pelo banco (tempo parado, reinício...): descarta e tenta a próxima
+        }
+        return abridor.abrir();
+    }
+
+    /** Deixa a conexão como nova: nada que ficou sem COMMIT passa para o próximo usuário. */
+    private static boolean limpar(Connection conexao) {
         try {
-            if (fisica.isClosed()) {
+            if (conexao.isClosed()) {
                 return false;
             }
-            if (!fisica.getAutoCommit()) {
-                fisica.rollback(); // nada que ficou sem COMMIT passa para o próximo usuário
-                fisica.setAutoCommit(true);
+            if (!conexao.getAutoCommit()) {
+                conexao.rollback();
+                conexao.setAutoCommit(true);
             }
-            if (fisica.isReadOnly()) {
-                fisica.setReadOnly(false);
+            if (conexao.isReadOnly()) {
+                conexao.setReadOnly(false);
             }
             return true;
         } catch (SQLException e) {
@@ -133,31 +138,31 @@ final class PoolConexoes {
         }
     }
 
-    private static boolean valida(Connection fisica) {
+    private static boolean valida(Connection conexao) {
         try {
-            return fisica.isValid(TIMEOUT_VALIDACAO_SEGUNDOS);
+            return conexao.isValid(TIMEOUT_VALIDACAO_SEGUNDOS);
         } catch (SQLException e) {
             return false;
         }
     }
 
-    private static void fecharFisica(Connection fisica) {
+    private static void fechar(Connection conexao) {
         try {
-            fisica.close();
+            conexao.close();
         } catch (SQLException e) {
             LOG.log(Level.FINE, "Falha ao fechar conexão descartada", e);
         }
     }
 
-    /** Fecha as conexões livres (ao encerrar a aplicação). As emprestadas fecham quando forem devolvidas. */
+    /** Fecha as conexões livres (ao encerrar a aplicação). */
     void fecharLivres() {
-        Connection fisica;
-        while ((fisica = livres.poll()) != null) {
-            fecharFisica(fisica);
+        Connection conexao;
+        while ((conexao = livres.poll()) != null) {
+            fechar(conexao);
         }
     }
 
-    /** @return conexões físicas paradas na fila (para testes e diagnóstico) */
+    /** @return conexões paradas na fila (para testes e diagnóstico) */
     int quantidadeLivres() {
         return livres.size();
     }
@@ -165,50 +170,5 @@ final class PoolConexoes {
     /** @return vagas para novos empréstimos (para testes e diagnóstico) */
     int vagasDisponiveis() {
         return vagas.availablePermits();
-    }
-
-    private Connection embrulhar(Connection fisica) {
-        return (Connection) Proxy.newProxyInstance(Connection.class.getClassLoader(),
-                new Class<?>[]{Connection.class}, new ConexaoEmprestada(fisica));
-    }
-
-    /** Comportamento do proxy entregue a quem pediu a conexão. */
-    private final class ConexaoEmprestada implements InvocationHandler {
-
-        private final Connection fisica;
-        private final AtomicBoolean devolvida = new AtomicBoolean(false);
-
-        ConexaoEmprestada(Connection fisica) {
-            this.fisica = fisica;
-        }
-
-        @Override
-        public Object invoke(Object proxy, Method metodo, Object[] args) throws Throwable {
-            switch (metodo.getName()) {
-                case "close":
-                    if (devolvida.compareAndSet(false, true)) { // fechar duas vezes devolve uma vez só
-                        devolver(fisica);
-                    }
-                    return null;
-                case "isClosed":
-                    return devolvida.get() || fisica.isClosed();
-                case "equals":
-                    return proxy == args[0];
-                case "hashCode":
-                    return System.identityHashCode(proxy);
-                case "toString":
-                    return "ConexaoDoPool[" + fisica + (devolvida.get() ? ", devolvida]" : "]");
-                default:
-                    break;
-            }
-            if (devolvida.get()) {
-                throw new SQLException("A conexão já foi devolvida ao pool.", SQLSTATE_CONEXAO_FECHADA);
-            }
-            try {
-                return metodo.invoke(fisica, args);
-            } catch (InvocationTargetException e) {
-                throw e.getCause(); // repassa a SQLException original do driver
-            }
-        }
     }
 }

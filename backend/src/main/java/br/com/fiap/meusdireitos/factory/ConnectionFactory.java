@@ -8,15 +8,15 @@ import java.sql.SQLException;
 import java.util.logging.Logger;
 
 /**
- * Fábrica de conexões com o Oracle (mesmo padrão do Cap17), agora com reaproveitamento de conexões.
+ * Fábrica de conexões com o Oracle (mesmo padrão do Cap17).
  * <p>
  * Diferenças em relação ao exemplo do curso:
  * <ul>
  *     <li>URL, usuário e senha vêm do {@link AppConfig} (nada de credencial no código);</li>
- *     <li>as conexões são reaproveitadas por um pool simples ({@link PoolConexoes}, só com o JDK):
- *     abrir uma conexão com o Oracle da FIAP leva centenas de milissegundos, e cada requisição
- *     abria uma nova. Quem chama continua fechando a conexão com try-with-resources; o
- *     {@code close()} apenas a devolve ao pool.</li>
+ *     <li>além de {@link #getConnection()} (conexão nova, como no curso), há um pool simples
+ *     ({@link PoolConexoes}, só com o JDK): {@link #emprestar()} e {@link #devolver(Connection)}.
+ *     Abrir uma conexão com o Oracle da FIAP leva ~300 ms, e uma consulta ~30 ms; reaproveitar as
+ *     conexões deixa cada requisição várias vezes mais rápida. A {@code Transacao} usa o pool.</li>
  * </ul>
  * O tamanho do pool vem da variável de ambiente {@code MD_DB_POOL} (padrão 5, entre 1 e 50).
  */
@@ -50,18 +50,37 @@ public final class ConnectionFactory {
     }
 
     /**
-     * Empresta uma conexão do pool. Feche-a sempre (try-with-resources) para devolvê-la.
+     * Abre uma conexão nova, fora do pool (como no Cap17). Quem chama fecha (try-with-resources).
      *
-     * @return conexão pronta para uso, em autocommit
+     * @throws SQLException se as credenciais não estiverem configuradas ou o banco não responder
+     */
+    public static Connection getConnection() throws SQLException {
+        exigirCredenciais();
+        return abrirFisica();
+    }
+
+    /**
+     * Empresta uma conexão do pool, em autocommit. Devolva-a sempre com {@link #devolver(Connection)}
+     * num bloco {@code finally}.
+     *
      * @throws SQLException se as credenciais não estiverem configuradas, o banco não responder ou todas as
      *                      conexões continuarem ocupadas após a espera (SQLState 08001 → HTTP 503)
      */
-    public static Connection getConnection() throws SQLException {
+    public static Connection emprestar() throws SQLException {
+        exigirCredenciais();
+        return POOL.emprestar();
+    }
+
+    /** Devolve ao pool uma conexão de {@link #emprestar()}. Aceita {@code null}. */
+    public static void devolver(Connection conexao) {
+        POOL.devolver(conexao);
+    }
+
+    private static void exigirCredenciais() throws SQLException {
         if (!AppConfig.pendencias().isEmpty()) {
             throw new SQLException("Credenciais do banco não configuradas: " + AppConfig.pendencias(),
                     SQLSTATE_SEM_CONEXAO);
         }
-        return POOL.emprestar();
     }
 
     private static Connection abrirFisica() throws SQLException {

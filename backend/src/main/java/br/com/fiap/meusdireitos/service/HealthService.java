@@ -29,11 +29,15 @@ public class HealthService {
     }
 
     private String estadoDoBanco() {
-        try (Connection conexao = ConnectionFactory.getConnection()) {
+        Connection conexao = null;
+        try {
+            conexao = ConnectionFactory.emprestar();
             return conexao.isValid(TIMEOUT_VALIDACAO_SEGUNDOS) ? UP : INDISPONIVEL;
         } catch (SQLException e) {
             LOG.warning(() -> "Banco indisponível no health check: " + e.getMessage());
             return INDISPONIVEL;
+        } finally {
+            ConnectionFactory.devolver(conexao);
         }
     }
 }

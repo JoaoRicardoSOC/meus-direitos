@@ -10,13 +10,15 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotSame;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
- * Testes do pool com uma {@link Connection} falsa (proxy de teste): nenhum banco é usado.
+ * Testes do pool com uma {@link Connection} falsa: nenhum banco é usado.
+ * <p>
+ * A conexão falsa é criada com {@link Proxy} só aqui no teste, porque a interface {@code Connection}
+ * tem dezenas de métodos e o pool usa poucos. O código de produção não usa proxy.
  */
 class PoolConexoesTest {
 
@@ -71,92 +73,82 @@ class PoolConexoesTest {
     @Test
     void reaproveitaAConexaoDevolvida() throws SQLException {
         PoolConexoes pool = pool(2, 100);
-        try (Connection c = pool.emprestar()) {
-            c.setAutoCommit(false);
-            c.commit();
-        }
-        try (Connection c = pool.emprestar()) {
-            assertTrue(c.getAutoCommit());
-        }
-        assertEquals(1, abridor.abertas.size(), "a segunda requisição deve usar a mesma conexão física");
+        Connection primeira = pool.emprestar();
+        primeira.setAutoCommit(false);
+        primeira.commit();
+        pool.devolver(primeira);
+
+        Connection segunda = pool.emprestar();
+        assertSame(primeira, segunda, "a segunda requisição usa a mesma conexão física");
+        assertTrue(segunda.getAutoCommit());
+        pool.devolver(segunda);
+
+        assertEquals(1, abridor.abertas.size());
         assertEquals(1, pool.quantidadeLivres());
         assertEquals(2, pool.vagasDisponiveis());
     }
 
     @Test
-    void fecharFazRollbackERestauraAutoCommitEReadOnly() throws SQLException {
+    void devolverFazRollbackERestauraAutoCommitEReadOnly() throws SQLException {
         PoolConexoes pool = pool(1, 100);
         Connection c = pool.emprestar();
         c.setAutoCommit(false);
         c.setReadOnly(true);
-        c.close();
+        pool.devolver(c);
 
         ConexaoFalsa fisica = abridor.abertas.get(0);
         assertEquals(1, fisica.rollbacks, "o que ficou sem COMMIT é desfeito");
         assertTrue(fisica.autoCommit);
         assertFalse(fisica.readOnly);
-        assertFalse(fisica.fechada, "a conexão física continua aberta, no pool");
+        assertFalse(fisica.fechada, "a conexão continua aberta, na fila do pool");
     }
 
     @Test
     void emAutoCommitNaoFazRollback() throws SQLException {
         PoolConexoes pool = pool(1, 100);
-        pool.emprestar().close();
+        pool.devolver(pool.emprestar());
         assertEquals(0, abridor.abertas.get(0).rollbacks);
     }
 
     @Test
-    void fecharDuasVezesDevolveUmaVezSo() throws SQLException {
+    void devolverDuasVezesContaUmaVezSo() throws SQLException {
         PoolConexoes pool = pool(2, 100);
         Connection c = pool.emprestar();
-        c.close();
-        c.close();
+        pool.devolver(c);
+        pool.devolver(c);
         assertEquals(1, pool.quantidadeLivres());
-        assertEquals(2, pool.vagasDisponiveis());
-        assertTrue(c.isClosed());
+        assertEquals(2, pool.vagasDisponiveis(), "não libera vaga a mais");
     }
 
     @Test
-    void usarDepoisDeFecharEhErro() throws SQLException {
+    void devolverNullOuConexaoDeForaNaoFazNada() throws SQLException {
         PoolConexoes pool = pool(1, 100);
-        Connection c = pool.emprestar();
-        c.close();
-        SQLException erro = assertThrows(SQLException.class, c::commit);
-        assertEquals(PoolConexoes.SQLSTATE_CONEXAO_FECHADA, erro.getSQLState());
-    }
-
-    @Test
-    void cadaEmprestimoRecebeUmProxyNovo() throws SQLException {
-        PoolConexoes pool = pool(1, 100);
-        Connection primeiro = pool.emprestar();
-        primeiro.close();
-        Connection segundo = pool.emprestar();
-        assertNotSame(primeiro, segundo);
-        assertTrue(primeiro.isClosed(), "o proxy antigo não volta a funcionar");
-        assertFalse(segundo.isClosed());
-        segundo.close();
+        pool.devolver(null);
+        pool.devolver(new AbridorFalso().abrir());
+        assertEquals(0, pool.quantidadeLivres());
+        assertEquals(1, pool.vagasDisponiveis());
     }
 
     @Test
     void descartaConexaoInvalidaEAbreOutra() throws SQLException {
         PoolConexoes pool = pool(1, 100);
-        pool.emprestar().close();
+        pool.devolver(pool.emprestar());
         abridor.abertas.get(0).valida = false; // o banco derrubou a sessão enquanto estava parada
 
-        try (Connection c = pool.emprestar()) {
-            assertFalse(c.isClosed());
-        }
+        Connection c = pool.emprestar();
+        assertFalse(c.isClosed());
+        pool.devolver(c);
         assertEquals(2, abridor.abertas.size());
         assertTrue(abridor.abertas.get(0).fechada, "a conexão inválida é fechada");
         assertFalse(abridor.abertas.get(1).fechada);
     }
 
     @Test
-    void conexaoQueFalhaAoLimparEhFechadaENaoVoltaAoPool() throws SQLException {
+    void conexaoQueCaiuDuranteOUsoEhDescartadaNaDevolucao() throws SQLException {
         PoolConexoes pool = pool(1, 100);
         Connection c = pool.emprestar();
         abridor.abertas.get(0).fechada = true; // caiu durante o uso
-        c.close();
+        pool.devolver(c);
         assertEquals(0, pool.quantidadeLivres());
         assertEquals(1, pool.vagasDisponiveis(), "a vaga é liberada mesmo descartando a conexão");
     }
@@ -175,12 +167,12 @@ class PoolConexoesTest {
         assertTrue(esperouMs >= 100, "espera antes de desistir (esperou " + esperouMs + " ms)");
         assertEquals(2, abridor.abertas.size());
 
-        a.close();
-        try (Connection c = pool.emprestar()) {
-            assertFalse(c.isClosed());
-        }
-        assertEquals(2, abridor.abertas.size(), "reaproveitou a conexão devolvida");
-        b.close();
+        pool.devolver(a);
+        Connection c = pool.emprestar();
+        assertSame(a, c, "reaproveitou a conexão devolvida");
+        pool.devolver(c);
+        pool.devolver(b);
+        assertEquals(2, abridor.abertas.size());
     }
 
     @Test
@@ -197,13 +189,13 @@ class PoolConexoesTest {
         });
         outra.start();
         Thread.sleep(50);
-        ocupada.close();
+        pool.devolver(ocupada);
         outra.join(2_000);
 
         assertFalse(outra.isAlive());
-        assertFalse(recebida[0].isClosed());
+        assertSame(ocupada, recebida[0]);
         assertEquals(1, abridor.abertas.size());
-        recebida[0].close();
+        pool.devolver(recebida[0]);
     }
 
     @Test
@@ -216,34 +208,15 @@ class PoolConexoesTest {
     }
 
     @Test
-    void repassaAExcecaoOriginalDoDriver() throws SQLException {
-        PoolConexoes pool = pool(1, 100);
-        try (Connection c = pool.emprestar()) {
-            SQLException erro = assertThrows(SQLException.class, c::createStatement);
-            assertTrue(erro.getMessage().contains("createStatement"));
-        }
-    }
-
-    @Test
-    void fecharLivresFechaAsConexoesFisicas() throws SQLException {
+    void fecharLivresFechaAsConexoes() throws SQLException {
         PoolConexoes pool = pool(2, 100);
         Connection a = pool.emprestar();
         Connection b = pool.emprestar();
-        a.close();
-        b.close();
+        pool.devolver(a);
+        pool.devolver(b);
         pool.fecharLivres();
         assertEquals(0, pool.quantidadeLivres());
         assertTrue(abridor.abertas.stream().allMatch(c -> c.fechada));
-    }
-
-    @Test
-    void proxyEhIgualSoASiMesmo() throws SQLException {
-        PoolConexoes pool = pool(1, 100);
-        try (Connection c = pool.emprestar()) {
-            assertSame(c, c);
-            assertTrue(c.equals(c));
-            assertFalse(c.equals(abridor.abertas.get(0).conexao));
-        }
     }
 
     @Test
