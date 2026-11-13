@@ -209,7 +209,7 @@ Alguns recursos vêm da **própria especificação JAX-RS ou do JDK**, sem nenhu
 | `java.util.Properties` + `System.getenv` | Tirar a senha do Oracle do código e do git | JDK |
 | `java.util.logging` | Registrar erros inesperados no console (o cliente recebe só a mensagem amigável) | JDK |
 | `addBatch` / `executeBatch` | Gravar o conteúdo de demonstração de uma cidade nova em ~1–2 s (antes ~7,5 s) | A mesma API JDBC do `PreparedStatement` |
-| `java.lang.reflect.Proxy` + `BlockingQueue` + `Semaphore` | Pool de conexões: reaproveitar as conexões com o Oracle em vez de abrir uma por requisição | JDK |
+| `BlockingQueue` + `Semaphore` | Pool de conexões: reaproveitar as conexões com o Oracle em vez de abrir uma por requisição | JDK |
 
 Outras decisões:
 - **Token de sessão assinado.** O login (`POST /auth/login`) e o cadastro (`POST /usuarios`) devolvem o usuário com o campo `token`, e o front o envia nas rotas 🔒 em `Authorization: Bearer <token>`. Formato: `base64url(id + "." + expiraEm) + "." + base64url(HMAC-SHA256(segredo, parte1))`, válido por **7 dias**. A assinatura é conferida em tempo constante e, em toda rota 🔒, a API confere também se o usuário ainda existe (conta excluída = 401). Nas rotas públicas, um token inválido é apenas ignorado. O token não é criptografado: o id do usuário fica legível, o que não é segredo. Sem o segredo (`token.segredo`), ninguém consegue trocar o id nem estender a validade. No Insomnia: faça o login, copie o `token` e use *Auth → Bearer Token*.
@@ -219,14 +219,15 @@ Outras decisões:
 - **Consentimento no questionário.** `PUT /usuarios/perfil` só grava dados sensíveis (data de nascimento, raça/cor, deficiência, percurso escolar, baixa renda) com `consentimento: true`; sem ele, 400 no campo `consentimento`.
 - **IPv4 e IPv6 em loopback.** Com `server.uri` em `localhost`/`127.0.0.1`, a API também escuta em `::1` na mesma porta. No Windows, navegadores e o Node tentam `::1` primeiro e esperariam ~2 s até cair para o IPv4. Se a máquina não tiver IPv6, a API só avisa no console.
 - **Pool de conexões só com o JDK** (`factory.PoolConexoes`). Abrir uma conexão com o Oracle da FIAP custa
-  centenas de milissegundos, e antes cada requisição abria uma. Agora até `MD_DB_POOL` conexões (padrão 5) ficam
-  abertas numa `BlockingQueue` e são reaproveitadas:
-  - `ConnectionFactory.getConnection()` entrega uma conexão livre (testada com `isValid(2)`; se o banco a
-    derrubou, é descartada e outra é aberta) ou abre uma nova se ainda houver vaga;
+  ~300 ms, e uma consulta ~30 ms (medido em 13/11). Sem pool, cada requisição pagaria a abertura. Agora até
+  `MD_DB_POOL` conexões (padrão 5) ficam abertas numa `BlockingQueue` e são reaproveitadas:
+  - `ConnectionFactory.emprestar()` entrega uma conexão livre (testada com `isValid(2)`; se o banco a
+    derrubou, é descartada e outra é aberta) ou abre uma nova se ainda houver vaga (`Semaphore`);
   - com todas em uso, espera até 10 s e então responde 503 ("banco indisponível"), sem travar o servidor;
-  - quem chama recebe um **proxy** da conexão: o código continua usando try-with-resources, e o `close()` do
-    proxy desfaz o que ficou sem COMMIT (ROLLBACK), volta ao autocommit e devolve a conexão ao pool.
-    Fechar duas vezes devolve uma vez só. `Transacao` e os DAOs não mudaram.
+  - `ConnectionFactory.devolver(con)` desfaz o que ficou sem COMMIT (ROLLBACK), volta ao autocommit e guarda a
+    conexão na fila. A `Transacao` (e o health check) devolve sempre num bloco `finally`; os DAOs não mudam;
+  - `ConnectionFactory.getConnection()` continua abrindo uma conexão nova, como no Cap17 (usada no teste de
+    integração).
 - **Índice para a busca por cidade.** A cidade é comparada sem acentos nem maiúsculas
   (`JdbcUtil.cidadeIgual`: `TRANSLATE(UPPER(TRIM(...)))`), e a API junta os espaços repetidos antes de gravar.
   Assim a expressão só usa funções puras: com `REGEXP_REPLACE` o Oracle recusa o índice (ORA-01743).

@@ -143,7 +143,7 @@ Cada decisão com o motivo e o que se abriu mão.
 | 1 | **JAX-RS + JDBC puro**, sem Spring nem JPA | Regra da FIAP: só pontuam as tecnologias da disciplina | Mais código de infraestrutura (transação, pool, mapeamento) |
 | 2 | **Camadas resource → service → dao** com interfaces nos DAOs | Separar HTTP, regra e SQL; testar regras sem banco | Mais arquivos por funcionalidade |
 | 3 | **Token assinado com HMAC-SHA256** feito com `javax.crypto` | Sem biblioteca de JWT; não precisa de tabela de sessões | O token não pode ser revogado antes de vencer (7 dias), exceto excluindo a conta |
-| 4 | **Pool de conexões próprio** (`Proxy` + `BlockingQueue` + `Semaphore`) | Abrir conexão com o Oracle da FIAP custa centenas de milissegundos | Pool simples: tamanho fixo, sem métricas |
+| 4 | **Pool de conexões próprio** (`BlockingQueue` + `Semaphore`; a `Transacao` empresta e devolve no `finally`) | Abrir conexão com o Oracle da FIAP custa centenas de milissegundos | Pool simples: tamanho fixo, sem métricas |
 | 5 | **Script do banco que só cria o que falta** | O schema é compartilhado com outro projeto | Mudanças de coluna exigem um bloco novo e cuidadoso |
 | 6 | **Sem `ON DELETE CASCADE`**: o service apaga as filhas antes | Exclusões explícitas e revisáveis; se algo escapar, o Oracle recusa (ORA-02292) em vez de apagar em silêncio | Toda tabela filha nova precisa entrar nas rotinas de exclusão |
 | 7 | **Cidade como texto**, comparada sem acento e maiúsculas, com índice baseado em função | Cadastro simples, sem tabela de municípios | Grafias muito diferentes ("S. Paulo") não se encontram |
