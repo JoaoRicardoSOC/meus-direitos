@@ -175,6 +175,7 @@ meus-direitos/
 | [README do back-end](backend/README.md) e [diagrama de classes](docs/diagramas/diagrama-classes.md) | Configuração, pacotes, decisões e limitações da API |
 | [README do front-end](frontend/README.md) e [diagrama do front](docs/diagramas/diagrama-frontend.md) | Rotas, componentes, tokens de design, acessibilidade e créditos |
 | [Roteiro de demonstração](docs/roteiro-demonstracao.md) | Como gravar o vídeo pitch ou apresentar |
+| [Deploy](docs/deploy.md) | Como publicar a API no Render e o app na Vercel |
 | [Como contribuir](CONTRIBUTING.md) · [Guia para agentes de IA](AGENTS.md) · [Histórico](CHANGELOG.md) | Trabalhar no projeto |
 
 ## Uso de IA generativa

@@ -14,6 +14,7 @@ Comece pelo documento que corresponde ao que você quer fazer.
 | Criar ou mudar tabelas | [Guia do banco de dados](banco-de-dados.md) e o [diagrama ER](diagramas/diagrama-er.md) |
 | Saber quais dados pessoais existem e como são protegidos | [Segurança e privacidade](seguranca-e-privacidade.md) |
 | Gravar o vídeo ou apresentar o projeto | [Roteiro de demonstração](roteiro-demonstracao.md) |
+| Publicar o app online (Vercel + Render) | [Deploy](deploy.md) |
 | Contribuir com código | [Como contribuir](../CONTRIBUTING.md) |
 | Usar um assistente de IA no projeto | [Guia para agentes de IA](../AGENTS.md) |
 | Ver o que mudou e quando | [Histórico de mudanças](../CHANGELOG.md) e a [§13 do guia da API](api.md#13-histórico-de-mudanças) |
@@ -27,6 +28,7 @@ Comece pelo documento que corresponde ao que você quer fazer.
 | [`banco-de-dados.md`](banco-de-dados.md) | Objetos do projeto no schema compartilhado, como rodar e conferir o script, como evoluir o banco, conteúdo de demonstração e erros comuns do Oracle |
 | [`seguranca-e-privacidade.md`](seguranca-e-privacidade.md) | Dados pessoais e sensíveis, LGPD, armazenamento no navegador, proteções da API e limitações |
 | [`roteiro-demonstracao.md`](roteiro-demonstracao.md) | Preparação, roteiro com tempos e plano B para o vídeo pitch |
+| [`deploy.md`](deploy.md) | API no Render (Docker) e app na Vercel: ordem, variáveis, CORS e conferência |
 | [`diagramas/diagrama-classes.md`](diagramas/diagrama-classes.md) | Diagramas de classes do back-end (domínio, camadas e erros), também em SVG |
 | [`diagramas/diagrama-er.md`](diagramas/diagrama-er.md) | Modelo de dados, regras garantidas pelo banco e decisões |
 | [`diagramas/diagrama-frontend.md`](diagramas/diagrama-frontend.md) | Telas, rotas e camadas do front-end |
