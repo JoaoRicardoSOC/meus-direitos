@@ -1,4 +1,5 @@
-# Confere, a cada push e pull request, que o back-end passa nos testes e que o front-end compila.
+# Confere, a cada push e pull request, que o back-end passa nos testes, que o front-end compila
+# e que a pasta frontend/dist versionada corresponde ao código.
 # Os testes de integração (MD_INTEGRACAO=true) não rodam aqui: eles precisam do Oracle da FIAP.
 name: CI
 
@@ -43,4 +44,13 @@ jobs:
       - name: Dependências
         run: npm ci
       - name: Build
-        run: npx vite build --outDir "$RUNNER_TEMP/dist"
+        run: npm run build
+      # A dist é versionada (a entrega abre o index.html direto do disco). Se o build gerar algo
+      # diferente do que está no git, alguém mudou o front e esqueceu de commitar a dist.
+      - name: Dist versionada atualizada
+        run: |
+          if [ -n "$(git status --porcelain -- dist)" ]; then
+            echo "::error::frontend/dist está desatualizada. Rode npm run build e faça o commit da dist."
+            git status --short -- dist
+            exit 1
+          fi

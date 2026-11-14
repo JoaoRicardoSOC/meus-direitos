@@ -20,7 +20,7 @@ Monorepo de um trabalho da FIAP (Global Solution 2026/2): uma API REST em **Java
 | `docs/diagramas/` | Diagramas de classes (Mermaid + SVG), ER e do front |
 | `docs/insomnia/` | Coleção do Insomnia com todas as rotas e uma pasta de erros |
 | `testes/api-ponta-a-ponta.mjs` | Teste de ponta a ponta da API (Node 22, sem dependências) |
-| `.github/workflows/ci.yml` | CI: `mvn test` e build do front |
+| `.github/workflows/ci.yml` | CI: `mvn test`, build do front e conferência de que a `dist` versionada está atualizada |
 
 ## Comandos
 
