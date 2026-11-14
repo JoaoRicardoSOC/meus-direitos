@@ -155,3 +155,23 @@
   flex-direction: column;
   gap: 12px;
 }
+
+/* Todos os temas: filtro "Para quem" acima da lista */
+.md-direito-filtro {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.md-direito-filtro-rotulo {
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.3;
+  color: var(--md-tinta);
+  margin: 0;
+}
+
+/* Link "Ver todos os temas": ação em texto, alinhada à esquerda */
+.md-direito-ver-todos {
+  align-self: flex-start;
+}

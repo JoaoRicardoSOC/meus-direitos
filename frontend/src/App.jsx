@@ -19,6 +19,7 @@ import MeusDireitos from './pages/direitos/MeusDireitos.jsx';
 import Questionario from './pages/direitos/Questionario.jsx';
 import DetalheDireito from './pages/direitos/DetalheDireito.jsx';
 import CanaisOficiais from './pages/direitos/CanaisOficiais.jsx';
+import TodosOsTemas from './pages/direitos/TodosOsTemas.jsx';
 
 /** Mapa de telas (os números são os do Figma). */
 export default function App() {
@@ -56,6 +57,7 @@ export default function App() {
             <Route path="/direitos" element={<MeusDireitos />} />
             <Route path="/direitos/questionario" element={<Questionario />} />
             <Route path="/direitos/canais" element={<CanaisOficiais />} />
+            <Route path="/direitos/temas" element={<TodosOsTemas />} />
             <Route path="/direitos/:id" element={<DetalheDireito />} />
           </Route>
 

@@ -48,6 +48,9 @@ export default function PrimeiroAcesso({ aviso, aoFecharAviso }) {
         <Link to="/cidade" className="md-botao md-botao-secundario">
           Agora não
         </Link>
+        <Link to="/direitos/temas" className="md-acao-texto md-direito-ver-todos">
+          Ver todos os temas sem responder
+        </Link>
       </div>
 
       <Toast texto={aviso} chave={aviso} aoFechar={aoFecharAviso} />

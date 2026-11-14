@@ -136,6 +136,9 @@ export default function MeusDireitos() {
               </Link>
             )}
             <p className="md-legenda">Esta lista orienta a pesquisa. Não confirma elegibilidade.</p>
+            <Link to="/direitos/temas" className="md-acao-texto md-direito-ver-todos">
+              Ver todos os temas
+            </Link>
           </div>
 
           <ApagarRespostas aoApagar={respostasApagadas} />
@@ -224,11 +227,18 @@ function ApagarRespostas({ aoApagar }) {
   );
 }
 
-/** Card de um tema: ícone, título, resumo e "Entender os critérios" (abre o detalhe, telas 29–31). */
-function CardTema({ direito }) {
+/**
+ * Card de um tema: ícone, título, resumo e "Entender os critérios" (abre o detalhe, telas 29–31).
+ * `voltarPara` (opcional) é para onde a seta do detalhe leva; sem ele, volta a Meus Direitos.
+ */
+export function CardTema({ direito, voltarPara }) {
   const icone = iconeDoTema(direito.icone);
   return (
-    <Link to={`/direitos/${direito.id}`} className="md-card md-direito-card">
+    <Link
+      to={`/direitos/${direito.id}`}
+      state={voltarPara ? { voltarPara } : undefined}
+      className="md-card md-direito-card"
+    >
       <span className="md-direito-card-titulo">
         <span className="md-direito-icone" aria-hidden="true">
           <img src={icone.src} alt="" width={icone.tamanho} height={icone.tamanho} />

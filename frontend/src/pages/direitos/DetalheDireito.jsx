@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { Link, useLocation, useParams } from 'react-router-dom';
 import Tela from '../../components/Tela.jsx';
 import Cabecalho from '../../components/Cabecalho.jsx';
 import Mensagem, { Carregando } from '../../components/Mensagem.jsx';
@@ -14,6 +14,8 @@ import './direitos.css';
  */
 export default function DetalheDireito() {
   const { id } = useParams();
+  // Quem abriu o tema por "Todos os temas" volta para lá; o padrão é Meus Direitos
+  const voltarPara = useLocation().state?.voltarPara ?? '/direitos';
   const [estado, setEstado] = useState({ carregando: true, erro: '', naoEncontrado: false, direito: null });
 
   const carregar = useCallback(async () => {
@@ -35,7 +37,7 @@ export default function DetalheDireito() {
 
   return (
     <Tela titulo={direito?.titulo ?? 'Direito'} comNavegacao>
-      <Cabecalho titulo={direito?.titulo ?? 'Meus Direitos'} voltarPara="/direitos" />
+      <Cabecalho titulo={direito?.titulo ?? 'Meus Direitos'} voltarPara={voltarPara} />
 
       {estado.carregando && <Carregando texto="Carregando o tema…" />}
 
