@@ -109,11 +109,13 @@ Todas em `src/App.jsx`. Como o roteador é o `HashRouter`, o endereço real fica
 | `/direitos/questionario?passo=1..3` | 23–27 "Sua história" (`&lista=raca\|deficiencia\|percurso` abre as listas 24, 26 e 27) | sim | `pages/direitos/Questionario.jsx` |
 | `/direitos/:id` | 29–31 Detalhe do tema | sim | `pages/direitos/DetalheDireito.jsx` |
 | `/direitos/canais` | 32 Canais oficiais | sim | `pages/direitos/CanaisOficiais.jsx` |
+| `/direitos/temas` | Todos os temas (catálogo com filtro "Para quem"; fora do Figma) | sim | `pages/direitos/TodosOsTemas.jsx` |
 | qualquer outra | volta para `/` | — | `App.jsx` |
 
 - **Rotas protegidas** ficam dentro de `<RotaProtegida>`: sem sessão, quem saiu por vontade própria ("Sair da conta", conta excluída) vai para `/`; quem perdeu a sessão (401) ou abriu um link sem login vai para `/entrar` e, depois do login, volta à tela pedida.
 - **Rotas públicas** ficam dentro de `<RotaPublica>`: quem já está logado vai direto para `/cidade`.
-- `/direitos/canais` vem antes de `/direitos/:id` no `App.jsx`, para "canais" não ser lido como id de tema.
+- `/direitos/canais` e `/direitos/temas` vêm antes de `/direitos/:id` no `App.jsx`, para não serem lidos como id de tema.
+- **Todos os temas** (`GET /direitos`) abre pelo "Ver todos os temas sem responder" do primeiro acesso e pelo "Ver todos os temas" no fim da lista de Meus Direitos. O filtro roda no próprio app; um tema marcado para todas as pessoas aparece em qualquer filtro. O detalhe aberto daqui volta para o catálogo (`state.voltarPara`).
 
 ## 7. Organização
 

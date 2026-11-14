@@ -31,6 +31,7 @@ flowchart LR
         QUEST["/direitos/questionario?passo=1..3 · 23–27"]
         TEMA["/direitos/:id · 29–31 Detalhe do tema"]
         CANAIS["/direitos/canais · 32 Canais oficiais"]
+        TODOS["/direitos/temas · Todos os temas"]
     end
 
     subgraph perfil["Aba Perfil"]
@@ -54,6 +55,7 @@ flowchart LR
     MD --> QUEST --> MD
     MD --> TEMA --> CANAIS
     MD -- "sem temas" --> CANAIS
+    MD -- "Ver todos os temas" --> TODOS --> TEMA
     PERF --> EDP
     PERF --> SENHA
     PERF --> EXC --> BV

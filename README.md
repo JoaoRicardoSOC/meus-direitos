@@ -81,7 +81,7 @@ O protótipo segue o Figma da equipe: verde `#075E4A`, tinta `#142E2A`, verde-li
 | | **Denúncias** | Nova denúncia em etapas, com foto de demonstração e "Usar minha localização" para o endereço; protocolo; editar, excluir, marcar como resolvida e reabrir |
 | <img src="docs/imagens/icone-conversa.svg" width="28" alt=""> | **Comunidade** | Apoiar ou discordar (voto otimista), conversa do bairro, resolução confirmada por 3 moradores, denunciar comentário ofensivo, compartilhar |
 | | **Painel da cidade** | Resumo, denúncias por categoria, bairros com mais problemas e denúncias com mais participação |
-| <img src="docs/imagens/icone-direitos.svg" width="28" alt=""> | **Meus Direitos** | Questionário opcional em 3 etapas com consentimento (LGPD), temas indicados pelo perfil, passos práticos e canais oficiais pela localização ou pela cidade do cadastro |
+| <img src="docs/imagens/icone-direitos.svg" width="28" alt=""> | **Meus Direitos** | Questionário opcional em 3 etapas com consentimento (LGPD), temas indicados pelo perfil, catálogo com todos os temas (filtro por público), passos práticos e canais oficiais pela localização ou pela cidade do cadastro |
 | <img src="docs/imagens/icone-perfil.svg" width="28" alt=""> | **Perfil** | Minhas denúncias com avisos de novidades, editar dados, trocar senha e excluir a conta com tudo o que foi criado |
 
 **Em todas as telas:** validação em JavaScript com as mesmas regras da API, mensagens ao lado de cada campo, navegação por teclado e leitor de tela, alvos de toque de 44 px e respeito a `prefers-reduced-motion`.
