@@ -1,0 +1,9 @@
+# Nunca levar credenciais para a imagem: no deploy elas vêm de variáveis de ambiente
+db.properties
+.env*
+
+# Gerados localmente (a imagem compila do zero)
+target/
+*.iml
+.idea/
+.vscode/

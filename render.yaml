@@ -1,0 +1,28 @@
+# Blueprint do Render: cria o serviço da API a partir deste repositório.
+# No painel do Render: New > Blueprint > escolha este repositório. Os valores marcados com
+# "sync: false" são pedidos na criação e ficam só no Render (nunca no git).
+# Passo a passo completo: docs/deploy.md
+services:
+  - type: web
+    name: meus-direitos-api
+    runtime: docker
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: ./backend
+    plan: free
+    healthCheckPath: /api/health
+    autoDeploy: true
+    envVars:
+      - key: MD_DB_USUARIO
+        sync: false
+      - key: MD_DB_SENHA
+        sync: false
+      # Endereço do app na Vercel, ex.: https://meus-direitos.vercel.app (e localhost para desenvolver)
+      - key: MD_CORS_ORIGENS
+        sync: false
+      # Gerados pelo Render: segredo dos tokens de sessão e chaves das rotas restritas
+      - key: MD_TOKEN_SEGREDO
+        generateValue: true
+      - key: MD_SIMULACAO_CHAVE
+        generateValue: true
+      - key: MD_ADMIN_CHAVE
+        generateValue: true
