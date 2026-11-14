@@ -48,8 +48,21 @@ public final class AppConfig {
         return valor("db.senha", "MD_DB_SENHA", null);
     }
 
+    /**
+     * Endereço em que a API escuta: server.uri (ou MD_SERVER_URI). Sem ele, usa a variável PORT, que
+     * plataformas de deploy como o Render definem; nesse caso escuta em todas as interfaces (0.0.0.0),
+     * porque dentro do container "localhost" só aceita conexões do próprio container.
+     */
     public static String serverUri() {
-        return valor("server.uri", "MD_SERVER_URI", "http://localhost:8080/api/");
+        return valor("server.uri", "MD_SERVER_URI", uriPadrao(System.getenv("PORT")));
+    }
+
+    /** @param porta valor da variável PORT (pode ser nulo) */
+    static String uriPadrao(String porta) {
+        if (porta != null && porta.trim().matches("[0-9]{1,5}")) {
+            return "http://0.0.0.0:" + porta.trim() + "/api/";
+        }
+        return "http://localhost:8080/api/";
     }
 
     /**

@@ -27,7 +27,7 @@ Ela grava e lê os dados de um banco **Oracle** via **JDBC**.
 | `db.url` | `MD_DB_URL` | não | `jdbc:oracle:thin:@oracle.fiap.com.br:1521:ORCL` |
 | `db.usuario` | `MD_DB_USUARIO` | **sim** | — |
 | `db.senha` | `MD_DB_SENHA` | **sim** | — |
-| `server.uri` | `MD_SERVER_URI` | não | `http://localhost:8080/api/` |
+| `server.uri` | `MD_SERVER_URI` | não | `http://localhost:8080/api/`; com a variável `PORT` (deploy), `http://0.0.0.0:<PORT>/api/` |
 | `cors.origens` | `MD_CORS_ORIGENS` | não | `http://localhost:5173,null` (o Vite e o `index.html` aberto direto do disco) |
 | `simulacao.ativa` | `MD_SIMULACAO_ATIVA` | não | `true` |
 | `simulacao.chave` | `MD_SIMULACAO_CHAVE` | não | sem chave, as rotas `/api/simulacao/*` ficam desligadas |
