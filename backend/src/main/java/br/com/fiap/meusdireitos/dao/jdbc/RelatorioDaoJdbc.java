@@ -28,21 +28,21 @@ public class RelatorioDaoJdbc implements RelatorioDao {
     /** Indicadores gerais: várias subconsultas escalares em uma única linha (FROM dual). */
     private static final String SQL_RESUMO =
             "SELECT "
-                    + "(SELECT COUNT(*) FROM tb_usuario u WHERE " + JdbcUtil.cidadeIgual("u.nm_cidade") + " AND u.sg_uf = ?) AS qt_usuarios, "
-                    + "(SELECT COUNT(*) FROM tb_denuncia d WHERE " + DA_CIDADE + ") AS qt_denuncias, "
-                    + "(SELECT COUNT(*) FROM tb_denuncia d WHERE " + DA_CIDADE + " AND d.st_denuncia = 'ABERTA') AS qt_abertas, "
-                    + "(SELECT COUNT(*) FROM tb_denuncia d WHERE " + DA_CIDADE + " AND d.st_denuncia = 'EM_ANDAMENTO') AS qt_andamento, "
-                    + "(SELECT COUNT(*) FROM tb_denuncia d WHERE " + DA_CIDADE + " AND d.st_denuncia = 'RESOLVIDA') AS qt_resolvidas, "
-                    + "(SELECT COUNT(*) FROM tb_voto_denuncia v INNER JOIN tb_denuncia d ON d.cd_denuncia = v.cd_denuncia "
+                    + "(SELECT COUNT(*) FROM tb_gs26s2_usuario u WHERE " + JdbcUtil.cidadeIgual("u.nm_cidade") + " AND u.sg_uf = ?) AS qt_usuarios, "
+                    + "(SELECT COUNT(*) FROM tb_gs26s2_denuncia d WHERE " + DA_CIDADE + ") AS qt_denuncias, "
+                    + "(SELECT COUNT(*) FROM tb_gs26s2_denuncia d WHERE " + DA_CIDADE + " AND d.st_denuncia = 'ABERTA') AS qt_abertas, "
+                    + "(SELECT COUNT(*) FROM tb_gs26s2_denuncia d WHERE " + DA_CIDADE + " AND d.st_denuncia = 'EM_ANDAMENTO') AS qt_andamento, "
+                    + "(SELECT COUNT(*) FROM tb_gs26s2_denuncia d WHERE " + DA_CIDADE + " AND d.st_denuncia = 'RESOLVIDA') AS qt_resolvidas, "
+                    + "(SELECT COUNT(*) FROM tb_gs26s2_voto_denuncia v INNER JOIN tb_gs26s2_denuncia d ON d.cd_denuncia = v.cd_denuncia "
                     + "  WHERE " + DA_CIDADE + ") AS qt_votos, "
-                    + "(SELECT COUNT(*) FROM tb_comentario c INNER JOIN tb_denuncia d ON d.cd_denuncia = c.cd_denuncia "
+                    + "(SELECT COUNT(*) FROM tb_gs26s2_comentario c INNER JOIN tb_gs26s2_denuncia d ON d.cd_denuncia = c.cd_denuncia "
                     + "  WHERE " + DA_CIDADE + " AND " + ReporteComentarioDaoJdbc.naoOculto("c.cd_comentario")
                     + ") AS qt_comentarios, "
-                    + "(SELECT COUNT(*) FROM tb_confirmacao_resolucao r INNER JOIN tb_denuncia d ON d.cd_denuncia = r.cd_denuncia "
+                    + "(SELECT COUNT(*) FROM tb_gs26s2_confirmacao_resolucao r INNER JOIN tb_gs26s2_denuncia d ON d.cd_denuncia = r.cd_denuncia "
                     + "  WHERE " + DA_CIDADE + ") AS qt_confirmacoes, "
-                    + "(SELECT COUNT(*) FROM tb_denuncia d INNER JOIN tb_usuario u ON u.cd_usuario = d.cd_usuario "
+                    + "(SELECT COUNT(*) FROM tb_gs26s2_denuncia d INNER JOIN tb_gs26s2_usuario u ON u.cd_usuario = d.cd_usuario "
                     + "  WHERE " + DA_CIDADE + " AND u.st_simulado = 'S') AS qt_simuladas, "
-                    + "(SELECT COUNT(*) FROM tb_direito) AS qt_temas "
+                    + "(SELECT COUNT(*) FROM tb_gs26s2_direito) AS qt_temas "
                     + "FROM dual";
     /** Quantas vezes o par (cidade, UF) aparece no SQL_RESUMO. */
     private static final int OCORRENCIAS_CIDADE_RESUMO = 9;
@@ -53,7 +53,7 @@ public class RelatorioDaoJdbc implements RelatorioDao {
                     + "SUM(CASE WHEN d.st_denuncia = 'ABERTA' THEN 1 ELSE 0 END) AS qt_abertas, "
                     + "SUM(CASE WHEN d.st_denuncia = 'EM_ANDAMENTO' THEN 1 ELSE 0 END) AS qt_andamento, "
                     + "SUM(CASE WHEN d.st_denuncia = 'RESOLVIDA' THEN 1 ELSE 0 END) AS qt_resolvidas "
-                    + "FROM tb_denuncia d WHERE " + DA_CIDADE + " "
+                    + "FROM tb_gs26s2_denuncia d WHERE " + DA_CIDADE + " "
                     + "GROUP BY d.tp_categoria "
                     + "ORDER BY qt_total DESC, d.tp_categoria";
 
@@ -63,7 +63,7 @@ public class RelatorioDaoJdbc implements RelatorioDao {
                     + "COUNT(DISTINCT d.cd_denuncia) AS qt_total, "
                     + "COUNT(DISTINCT CASE WHEN d.st_denuncia = 'RESOLVIDA' THEN d.cd_denuncia END) AS qt_resolvidas, "
                     + "NVL(SUM(CASE v.tp_voto WHEN 'UP' THEN 1 WHEN 'DOWN' THEN -1 END), 0) AS nr_saldo "
-                    + "FROM tb_denuncia d LEFT JOIN tb_voto_denuncia v ON v.cd_denuncia = d.cd_denuncia "
+                    + "FROM tb_gs26s2_denuncia d LEFT JOIN tb_gs26s2_voto_denuncia v ON v.cd_denuncia = d.cd_denuncia "
                     + "WHERE " + DA_CIDADE + " "
                     + "GROUP BY NVL(d.nm_bairro, 'Não informado') "
                     + "HAVING COUNT(DISTINCT d.cd_denuncia) >= ? "
@@ -76,9 +76,9 @@ public class RelatorioDaoJdbc implements RelatorioDao {
                     + "  SELECT d.cd_denuncia, d.ds_titulo, d.tp_categoria, d.st_denuncia, d.dt_criacao, "
                     + "  COUNT(v.cd_usuario) AS qt_votos, "
                     + "  NVL(SUM(CASE v.tp_voto WHEN 'UP' THEN 1 WHEN 'DOWN' THEN -1 END), 0) AS nr_saldo, "
-                    + "  (SELECT COUNT(*) FROM tb_comentario c WHERE c.cd_denuncia = d.cd_denuncia AND "
+                    + "  (SELECT COUNT(*) FROM tb_gs26s2_comentario c WHERE c.cd_denuncia = d.cd_denuncia AND "
                     + ReporteComentarioDaoJdbc.naoOculto("c.cd_comentario") + ") AS qt_comentarios "
-                    + "  FROM tb_denuncia d LEFT JOIN tb_voto_denuncia v ON v.cd_denuncia = d.cd_denuncia "
+                    + "  FROM tb_gs26s2_denuncia d LEFT JOIN tb_gs26s2_voto_denuncia v ON v.cd_denuncia = d.cd_denuncia "
                     + "  WHERE " + DA_CIDADE + " "
                     + "  GROUP BY d.cd_denuncia, d.ds_titulo, d.tp_categoria, d.st_denuncia, d.dt_criacao"
                     + " ) x ORDER BY x.qt_votos + x.qt_comentarios DESC, x.dt_criacao DESC"

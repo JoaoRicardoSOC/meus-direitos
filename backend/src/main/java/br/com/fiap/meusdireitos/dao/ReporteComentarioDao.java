@@ -3,7 +3,7 @@ package br.com.fiap.meusdireitos.dao;
 import java.sql.SQLException;
 
 /**
- * Acesso aos reportes de comentários ofensivos (TB_REPORTE_COMENTARIO, tabela associativa N:N entre
+ * Acesso aos reportes de comentários ofensivos (TB_GS26S2_REPORTE_COMENTARIO, tabela associativa N:N entre
  * usuário e comentário). A chave é o par (usuário, comentário): cada pessoa reporta um comentário uma vez só.
  */
 public interface ReporteComentarioDao {

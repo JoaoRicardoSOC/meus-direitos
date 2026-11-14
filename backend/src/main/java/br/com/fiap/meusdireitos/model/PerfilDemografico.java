@@ -12,7 +12,7 @@ import java.util.EnumSet;
 import java.util.Set;
 
 /**
- * Respostas do questionário "Meus Direitos" (tabela TB_PERFIL_DEMOGRAFICO), em relação 1:1 com o usuário.
+ * Respostas do questionário "Meus Direitos" (tabela TB_GS26S2_PERFIL_DEMOGRAFICO), em relação 1:1 com o usuário.
  * <p>
  * Todos os campos são opcionais: a pessoa escolhe o que informar ("Pular por enquanto" e
  * "Prefiro não informar"). São dados sensíveis (LGPD) e por isso ficam separados do cadastro.

@@ -7,7 +7,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 /**
- * Confirmações de moradores de que o problema foi resolvido (TB_CONFIRMACAO_RESOLUCAO,
+ * Confirmações de moradores de que o problema foi resolvido (TB_GS26S2_CONFIRMACAO_RESOLUCAO,
  * tabela associativa N:N entre usuário e denúncia).
  */
 public interface ConfirmacaoResolucaoDao {

@@ -21,17 +21,17 @@ public class SemeaduraCidadeDaoJdbc implements SemeaduraCidadeDao {
     private static final String COLUNAS =
             "nm_cidade_chave, sg_uf, nm_cidade, dt_semeadura, dt_ultimo_pulso, qt_eventos";
     private static final String SQL_INSERIR =
-            "INSERT INTO tb_semeadura_cidade (nm_cidade_chave, sg_uf, nm_cidade, dt_semeadura, dt_ultimo_pulso) "
+            "INSERT INTO tb_gs26s2_semeadura_cidade (nm_cidade_chave, sg_uf, nm_cidade, dt_semeadura, dt_ultimo_pulso) "
                     + "VALUES (?, ?, ?, ?, ?)";
     private static final String SQL_BUSCAR =
-            "SELECT " + COLUNAS + " FROM tb_semeadura_cidade WHERE nm_cidade_chave = ? AND sg_uf = ?";
+            "SELECT " + COLUNAS + " FROM tb_gs26s2_semeadura_cidade WHERE nm_cidade_chave = ? AND sg_uf = ?";
     private static final String SQL_BUSCAR_PARA_ATUALIZAR = SQL_BUSCAR + " FOR UPDATE";
     private static final String SQL_PULSO =
-            "UPDATE tb_semeadura_cidade SET dt_ultimo_pulso = ?, qt_eventos = qt_eventos + ? "
+            "UPDATE tb_gs26s2_semeadura_cidade SET dt_ultimo_pulso = ?, qt_eventos = qt_eventos + ? "
                     + "WHERE nm_cidade_chave = ? AND sg_uf = ?";
     private static final String SQL_LISTAR =
-            "SELECT " + COLUNAS + " FROM tb_semeadura_cidade ORDER BY dt_semeadura";
-    private static final String SQL_EXCLUIR_TODAS = "DELETE FROM tb_semeadura_cidade";
+            "SELECT " + COLUNAS + " FROM tb_gs26s2_semeadura_cidade ORDER BY dt_semeadura";
+    private static final String SQL_EXCLUIR_TODAS = "DELETE FROM tb_gs26s2_semeadura_cidade";
 
     private final Connection conexao;
 

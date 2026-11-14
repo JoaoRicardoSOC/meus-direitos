@@ -27,7 +27,7 @@ class IndiceCidadeScriptTest {
         String expressao = condicao.substring(0, condicao.length() - " = ?".length());
 
         assertEquals(2, ocorrencias(script, "(" + expressao + ", sg_uf)"),
-                "IX_DENUNCIA_CIDADE_CHAVE e IX_USUARIO_CIDADE_CHAVE devem indexar: " + expressao);
+                "IX_GS26S2_DENUNCIA_CIDADE_CHAVE e IX_GS26S2_USUARIO_CIDADE_CHAVE devem indexar: " + expressao);
     }
 
     private static int ocorrencias(String texto, String trecho) {

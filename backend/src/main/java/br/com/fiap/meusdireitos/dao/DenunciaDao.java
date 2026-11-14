@@ -12,7 +12,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Acesso às denúncias (TB_DENUNCIA).
+ * Acesso às denúncias (TB_GS26S2_DENUNCIA).
  * <p>
  * Além do CRUD, oferece consultas "detalhadas" que já trazem o placar de votos e o número de
  * comentários (JOIN + GROUP BY), usadas pelas telas. O parâmetro {@code idLeitor} identifica

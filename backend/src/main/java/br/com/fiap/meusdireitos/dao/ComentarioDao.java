@@ -6,7 +6,7 @@ import java.sql.SQLException;
 import java.util.List;
 
 /**
- * Acesso aos comentários da "Conversa do bairro" (TB_COMENTARIO).
+ * Acesso aos comentários da "Conversa do bairro" (TB_GS26S2_COMENTARIO).
  */
 public interface ComentarioDao extends CrudDao<Comentario> {
 

@@ -21,11 +21,11 @@ public class ComentarioDaoJdbc implements ComentarioDao {
 
     private static final String SELECT =
             "SELECT c.cd_comentario, c.cd_denuncia, c.cd_usuario, u.nm_usuario, u.st_simulado, c.ds_comentario, c.dt_criacao, "
-                    + "c.dt_edicao FROM tb_comentario c INNER JOIN tb_usuario u ON u.cd_usuario = c.cd_usuario ";
+                    + "c.dt_edicao FROM tb_gs26s2_comentario c INNER JOIN tb_gs26s2_usuario u ON u.cd_usuario = c.cd_usuario ";
 
     private static final String SQL_INSERIR =
-            "INSERT INTO tb_comentario (cd_comentario, cd_denuncia, cd_usuario, ds_comentario, dt_criacao) "
-                    + "VALUES (seq_comentario.NEXTVAL, ?, ?, ?, ?)";
+            "INSERT INTO tb_gs26s2_comentario (cd_comentario, cd_denuncia, cd_usuario, ds_comentario, dt_criacao) "
+                    + "VALUES (seq_gs26s2_comentario.NEXTVAL, ?, ?, ?, ?)";
     private static final String SQL_BUSCAR_POR_ID = SELECT + "WHERE c.cd_comentario = ?";
     private static final String SQL_BUSCAR_VISIVEL_POR_ID =
             SQL_BUSCAR_POR_ID + " AND " + ReporteComentarioDaoJdbc.naoOculto("c.cd_comentario");
@@ -34,12 +34,12 @@ public class ComentarioDaoJdbc implements ComentarioDao {
             SELECT + "WHERE c.cd_denuncia = ? AND " + ReporteComentarioDaoJdbc.naoOculto("c.cd_comentario")
                     + " ORDER BY c.dt_criacao, c.cd_comentario";
     private static final String SQL_ATUALIZAR =
-            "UPDATE tb_comentario SET ds_comentario = ?, dt_edicao = ? WHERE cd_comentario = ?";
-    private static final String SQL_EXCLUIR = "DELETE FROM tb_comentario WHERE cd_comentario = ?";
-    private static final String SQL_EXCLUIR_POR_DENUNCIA = "DELETE FROM tb_comentario WHERE cd_denuncia = ?";
+            "UPDATE tb_gs26s2_comentario SET ds_comentario = ?, dt_edicao = ? WHERE cd_comentario = ?";
+    private static final String SQL_EXCLUIR = "DELETE FROM tb_gs26s2_comentario WHERE cd_comentario = ?";
+    private static final String SQL_EXCLUIR_POR_DENUNCIA = "DELETE FROM tb_gs26s2_comentario WHERE cd_denuncia = ?";
     private static final String SQL_EXCLUIR_DO_USUARIO =
-            "DELETE FROM tb_comentario WHERE cd_usuario = ? "
-                    + "OR cd_denuncia IN (SELECT cd_denuncia FROM tb_denuncia WHERE cd_usuario = ?)";
+            "DELETE FROM tb_gs26s2_comentario WHERE cd_usuario = ? "
+                    + "OR cd_denuncia IN (SELECT cd_denuncia FROM tb_gs26s2_denuncia WHERE cd_usuario = ?)";
 
     private final Connection conexao;
 

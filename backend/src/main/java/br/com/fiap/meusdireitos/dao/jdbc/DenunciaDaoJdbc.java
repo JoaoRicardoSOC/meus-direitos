@@ -46,24 +46,24 @@ public class DenunciaDaoJdbc implements DenunciaDao {
     // ------------------------------------------------------------------ CRUD
 
     private static final String SQL_INSERIR =
-            "INSERT INTO tb_denuncia (cd_denuncia, cd_usuario, ds_titulo, ds_denuncia, tp_categoria, st_denuncia, "
+            "INSERT INTO tb_gs26s2_denuncia (cd_denuncia, cd_usuario, ds_titulo, ds_denuncia, tp_categoria, st_denuncia, "
                     + "ds_endereco, nm_bairro, nm_cidade, sg_uf, ds_imagem_url, dt_criacao, dt_atualizacao) "
-                    + "VALUES (seq_denuncia.NEXTVAL, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                    + "VALUES (seq_gs26s2_denuncia.NEXTVAL, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
     private static final String SQL_BUSCAR_POR_ID =
-            "SELECT " + COLUNAS + ", u.nm_usuario AS nm_autor, u.st_simulado AS st_autor_simulado FROM tb_denuncia d "
-                    + "INNER JOIN tb_usuario u ON u.cd_usuario = d.cd_usuario WHERE d.cd_denuncia = ?";
+            "SELECT " + COLUNAS + ", u.nm_usuario AS nm_autor, u.st_simulado AS st_autor_simulado FROM tb_gs26s2_denuncia d "
+                    + "INNER JOIN tb_gs26s2_usuario u ON u.cd_usuario = d.cd_usuario WHERE d.cd_denuncia = ?";
     private static final String SQL_LISTAR =
-            "SELECT " + COLUNAS + ", u.nm_usuario AS nm_autor, u.st_simulado AS st_autor_simulado FROM tb_denuncia d "
-                    + "INNER JOIN tb_usuario u ON u.cd_usuario = d.cd_usuario ORDER BY d.dt_criacao DESC";
+            "SELECT " + COLUNAS + ", u.nm_usuario AS nm_autor, u.st_simulado AS st_autor_simulado FROM tb_gs26s2_denuncia d "
+                    + "INNER JOIN tb_gs26s2_usuario u ON u.cd_usuario = d.cd_usuario ORDER BY d.dt_criacao DESC";
     private static final String SQL_ATUALIZAR =
-            "UPDATE tb_denuncia SET ds_titulo = ?, ds_denuncia = ?, tp_categoria = ?, ds_endereco = ?, nm_bairro = ?, "
+            "UPDATE tb_gs26s2_denuncia SET ds_titulo = ?, ds_denuncia = ?, tp_categoria = ?, ds_endereco = ?, nm_bairro = ?, "
                     + "ds_imagem_url = ?, dt_atualizacao = ? WHERE cd_denuncia = ?";
     private static final String SQL_ATUALIZAR_STATUS =
-            "UPDATE tb_denuncia SET st_denuncia = ?, dt_atualizacao = ? WHERE cd_denuncia = ?";
+            "UPDATE tb_gs26s2_denuncia SET st_denuncia = ?, dt_atualizacao = ? WHERE cd_denuncia = ?";
     private static final String SQL_EXCLUIR =
-            "DELETE FROM tb_denuncia WHERE cd_denuncia = ?";
+            "DELETE FROM tb_gs26s2_denuncia WHERE cd_denuncia = ?";
     private static final String SQL_EXCLUIR_DO_AUTOR =
-            "DELETE FROM tb_denuncia WHERE cd_usuario = ?";
+            "DELETE FROM tb_gs26s2_denuncia WHERE cd_usuario = ?";
 
     // ------------------------------------------------------------------ consultas de tela
 
@@ -74,16 +74,16 @@ public class DenunciaDaoJdbc implements DenunciaDao {
                     + "COUNT(CASE WHEN v.tp_voto = 'DOWN' THEN 1 END) AS qt_down, "
                     + "NVL(SUM(CASE v.tp_voto WHEN 'UP' THEN 1 WHEN 'DOWN' THEN -1 END), 0) AS nr_saldo, "
                     + "MAX(CASE WHEN v.cd_usuario = ? THEN v.tp_voto END) AS tp_meu_voto, "
-                    + "(SELECT COUNT(*) FROM tb_comentario c WHERE c.cd_denuncia = d.cd_denuncia AND "
+                    + "(SELECT COUNT(*) FROM tb_gs26s2_comentario c WHERE c.cd_denuncia = d.cd_denuncia AND "
                     + ReporteComentarioDaoJdbc.naoOculto("c.cd_comentario") + ") AS qt_comentarios, "
-                    + "(SELECT COUNT(*) FROM tb_confirmacao_resolucao r WHERE r.cd_denuncia = d.cd_denuncia) "
+                    + "(SELECT COUNT(*) FROM tb_gs26s2_confirmacao_resolucao r WHERE r.cd_denuncia = d.cd_denuncia) "
                     + "AS qt_confirmacoes, "
-                    + "(SELECT COUNT(*) FROM tb_confirmacao_resolucao r WHERE r.cd_denuncia = d.cd_denuncia "
+                    + "(SELECT COUNT(*) FROM tb_gs26s2_confirmacao_resolucao r WHERE r.cd_denuncia = d.cd_denuncia "
                     + "AND r.cd_usuario = ?) AS st_confirmei"
                     + "%s "
-                    + "FROM tb_denuncia d "
-                    + "INNER JOIN tb_usuario u ON u.cd_usuario = d.cd_usuario "
-                    + "LEFT JOIN tb_voto_denuncia v ON v.cd_denuncia = d.cd_denuncia "
+                    + "FROM tb_gs26s2_denuncia d "
+                    + "INNER JOIN tb_gs26s2_usuario u ON u.cd_usuario = d.cd_usuario "
+                    + "LEFT JOIN tb_gs26s2_voto_denuncia v ON v.cd_denuncia = d.cd_denuncia "
                     + "WHERE %s "
                     + "GROUP BY " + COLUNAS + ", u.nm_usuario, u.st_simulado "
                     + "ORDER BY %s";
@@ -99,7 +99,7 @@ public class DenunciaDaoJdbc implements DenunciaDao {
     private static final String SQL_PAGINAR =
             "SELECT * FROM (SELECT q.*, ROWNUM AS nr_linha FROM (%s) q WHERE ROWNUM <= ?) WHERE nr_linha > ?";
 
-    private static final String SQL_CONTAR = "SELECT COUNT(*) FROM tb_denuncia d WHERE %s";
+    private static final String SQL_CONTAR = "SELECT COUNT(*) FROM tb_gs26s2_denuncia d WHERE %s";
 
     private static final String ORDEM_RECENTES = "d.dt_criacao DESC, d.cd_denuncia DESC";
 
@@ -142,7 +142,7 @@ public class DenunciaDaoJdbc implements DenunciaDao {
         if (autores.isEmpty()) {
             return ids;
         }
-        String sql = "SELECT cd_denuncia, cd_usuario, ds_titulo FROM tb_denuncia WHERE cd_usuario IN ("
+        String sql = "SELECT cd_denuncia, cd_usuario, ds_titulo FROM tb_gs26s2_denuncia WHERE cd_usuario IN ("
                 + JdbcUtil.placeholders(autores.size()) + ")";
         try (PreparedStatement stmt = conexao.prepareStatement(sql)) {
             JdbcUtil.preencher(stmt, new ArrayList<>(autores));
@@ -251,7 +251,7 @@ public class DenunciaDaoJdbc implements DenunciaDao {
     @Override
     public List<Denuncia> listarSimuladasDaCidade(String cidade, String uf) throws SQLException {
         String sql = "SELECT " + COLUNAS + ", u.nm_usuario AS nm_autor, u.st_simulado AS st_autor_simulado "
-                + "FROM tb_denuncia d INNER JOIN tb_usuario u ON u.cd_usuario = d.cd_usuario "
+                + "FROM tb_gs26s2_denuncia d INNER JOIN tb_gs26s2_usuario u ON u.cd_usuario = d.cd_usuario "
                 + "WHERE u.st_simulado = 'S' AND " + JdbcUtil.cidadeIgual("d.nm_cidade") + " AND d.sg_uf = ? "
                 + "ORDER BY d.dt_criacao DESC";
         List<Denuncia> lista = new ArrayList<>();

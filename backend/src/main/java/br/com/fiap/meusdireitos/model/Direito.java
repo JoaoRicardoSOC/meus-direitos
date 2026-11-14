@@ -10,7 +10,7 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * Tema de direitos exibido em "Meus Direitos" (tabela TB_DIREITO), por exemplo
+ * Tema de direitos exibido em "Meus Direitos" (tabela TB_GS26S2_DIREITO), por exemplo
  * "Transporte e mobilidade", com os passos para verificar o direito e as tags do público.
  * <p>
  * Os textos usam linguagem cautelosa ("possibilidade a verificar"): a plataforma orienta,

@@ -24,21 +24,21 @@ import java.util.List;
 public class VotoDenunciaDaoJdbc implements VotoDenunciaDao {
 
     private static final String SQL_ATUALIZAR =
-            "UPDATE tb_voto_denuncia SET tp_voto = ?, dt_voto = ? WHERE cd_usuario = ? AND cd_denuncia = ?";
+            "UPDATE tb_gs26s2_voto_denuncia SET tp_voto = ?, dt_voto = ? WHERE cd_usuario = ? AND cd_denuncia = ?";
     private static final String SQL_INSERIR =
-            "INSERT INTO tb_voto_denuncia (tp_voto, dt_voto, cd_usuario, cd_denuncia) VALUES (?, ?, ?, ?)";
+            "INSERT INTO tb_gs26s2_voto_denuncia (tp_voto, dt_voto, cd_usuario, cd_denuncia) VALUES (?, ?, ?, ?)";
     private static final String SQL_REMOVER =
-            "DELETE FROM tb_voto_denuncia WHERE cd_usuario = ? AND cd_denuncia = ?";
+            "DELETE FROM tb_gs26s2_voto_denuncia WHERE cd_usuario = ? AND cd_denuncia = ?";
     private static final String SQL_EXCLUIR_POR_DENUNCIA =
-            "DELETE FROM tb_voto_denuncia WHERE cd_denuncia = ?";
+            "DELETE FROM tb_gs26s2_voto_denuncia WHERE cd_denuncia = ?";
     private static final String SQL_EXCLUIR_DO_USUARIO =
-            "DELETE FROM tb_voto_denuncia WHERE cd_usuario = ? "
-                    + "OR cd_denuncia IN (SELECT cd_denuncia FROM tb_denuncia WHERE cd_usuario = ?)";
+            "DELETE FROM tb_gs26s2_voto_denuncia WHERE cd_usuario = ? "
+                    + "OR cd_denuncia IN (SELECT cd_denuncia FROM tb_gs26s2_denuncia WHERE cd_usuario = ?)";
     private static final String SQL_PLACAR =
             "SELECT COUNT(CASE WHEN tp_voto = 'UP' THEN 1 END) AS qt_up, "
                     + "COUNT(CASE WHEN tp_voto = 'DOWN' THEN 1 END) AS qt_down, "
                     + "MAX(CASE WHEN cd_usuario = ? THEN tp_voto END) AS tp_meu_voto "
-                    + "FROM tb_voto_denuncia WHERE cd_denuncia = ?";
+                    + "FROM tb_gs26s2_voto_denuncia WHERE cd_denuncia = ?";
 
     private final Connection conexao;
 
@@ -78,7 +78,7 @@ public class VotoDenunciaDaoJdbc implements VotoDenunciaDao {
     @Override
     public boolean jaVotou(Long idUsuario, Long idDenuncia) throws SQLException {
         try (PreparedStatement stmt = conexao.prepareStatement(
-                "SELECT 1 FROM tb_voto_denuncia WHERE cd_usuario = ? AND cd_denuncia = ?")) {
+                "SELECT 1 FROM tb_gs26s2_voto_denuncia WHERE cd_usuario = ? AND cd_denuncia = ?")) {
             stmt.setLong(1, idUsuario);
             stmt.setLong(2, idDenuncia);
             try (ResultSet rs = stmt.executeQuery()) {

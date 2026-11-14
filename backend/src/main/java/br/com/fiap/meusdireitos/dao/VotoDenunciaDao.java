@@ -7,7 +7,7 @@ import java.sql.SQLException;
 import java.util.List;
 
 /**
- * Acesso aos votos (TB_VOTO_DENUNCIA, tabela associativa N:N entre usuário e denúncia).
+ * Acesso aos votos (TB_GS26S2_VOTO_DENUNCIA, tabela associativa N:N entre usuário e denúncia).
  */
 public interface VotoDenunciaDao {
 

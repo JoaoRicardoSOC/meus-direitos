@@ -7,7 +7,7 @@ import br.com.fiap.meusdireitos.util.TextoUtil;
 import java.time.LocalDateTime;
 
 /**
- * Problema urbano registrado por um morador (tabela TB_DENUNCIA).
+ * Problema urbano registrado por um morador (tabela TB_GS26S2_DENUNCIA).
  * <p>
  * A cidade e a UF são copiadas do autor no momento do registro: a denúncia pertence ao lugar,
  * não à pessoa (se o autor se mudar, a denúncia continua na cidade original).

@@ -19,17 +19,17 @@ import java.util.List;
 public class ConfirmacaoResolucaoDaoJdbc implements ConfirmacaoResolucaoDao {
 
     private static final String SQL_INSERIR =
-            "INSERT INTO tb_confirmacao_resolucao (cd_usuario, cd_denuncia, dt_confirmacao) VALUES (?, ?, ?)";
+            "INSERT INTO tb_gs26s2_confirmacao_resolucao (cd_usuario, cd_denuncia, dt_confirmacao) VALUES (?, ?, ?)";
     private static final String SQL_RETIRAR =
-            "DELETE FROM tb_confirmacao_resolucao WHERE cd_usuario = ? AND cd_denuncia = ?";
+            "DELETE FROM tb_gs26s2_confirmacao_resolucao WHERE cd_usuario = ? AND cd_denuncia = ?";
     private static final String SQL_CONTAR =
-            "SELECT COUNT(*) FROM tb_confirmacao_resolucao WHERE cd_denuncia = ?";
+            "SELECT COUNT(*) FROM tb_gs26s2_confirmacao_resolucao WHERE cd_denuncia = ?";
     private static final String SQL_EXCLUIR_POR_DENUNCIA =
-            "DELETE FROM tb_confirmacao_resolucao WHERE cd_denuncia = ?";
+            "DELETE FROM tb_gs26s2_confirmacao_resolucao WHERE cd_denuncia = ?";
 
     private static final String SQL_EXCLUIR_DO_USUARIO =
-            "DELETE FROM tb_confirmacao_resolucao WHERE cd_usuario = ? "
-                    + "OR cd_denuncia IN (SELECT cd_denuncia FROM tb_denuncia WHERE cd_usuario = ?)";
+            "DELETE FROM tb_gs26s2_confirmacao_resolucao WHERE cd_usuario = ? "
+                    + "OR cd_denuncia IN (SELECT cd_denuncia FROM tb_gs26s2_denuncia WHERE cd_usuario = ?)";
 
     private final Connection conexao;
 

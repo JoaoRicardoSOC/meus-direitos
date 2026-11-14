@@ -1,7 +1,7 @@
 package br.com.fiap.meusdireitos.model;
 
 /**
- * Um passo do "Por onde começar" de um tema de direitos (tabela TB_DIREITO_PASSO).
+ * Um passo do "Por onde começar" de um tema de direitos (tabela TB_GS26S2_DIREITO_PASSO).
  * Só existe dentro de um {@link Direito} (composição). É imutável, por isso é um record.
  *
  * @param ordem  posição do passo (1, 2, 3...)

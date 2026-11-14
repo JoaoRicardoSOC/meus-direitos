@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Acesso aos dados de usuários (TB_USUARIO).
+ * Acesso aos dados de usuários (TB_GS26S2_USUARIO).
  */
 public interface UsuarioDao extends CrudDao<Usuario> {
 

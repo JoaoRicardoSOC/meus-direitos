@@ -7,7 +7,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 /**
- * Controle da simulação por cidade (TB_SEMEADURA_CIDADE).
+ * Controle da simulação por cidade (TB_GS26S2_SEMEADURA_CIDADE).
  */
 public interface SemeaduraCidadeDao {
 

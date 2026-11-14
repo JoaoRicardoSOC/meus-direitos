@@ -3,7 +3,7 @@ package br.com.fiap.meusdireitos.model;
 import java.time.LocalDateTime;
 
 /**
- * Mensagem da "Conversa do bairro" em uma denúncia (tabela TB_COMENTARIO).
+ * Mensagem da "Conversa do bairro" em uma denúncia (tabela TB_GS26S2_COMENTARIO).
  */
 public class Comentario extends EntidadeBase {
 

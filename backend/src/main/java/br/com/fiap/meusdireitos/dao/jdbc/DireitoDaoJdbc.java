@@ -32,42 +32,42 @@ public class DireitoDaoJdbc implements DireitoDao {
     private static final String ORDENACAO = " ORDER BY d.nr_ordem, d.ds_titulo";
 
     private static final String SQL_INSERIR =
-            "INSERT INTO tb_direito (cd_direito, ds_titulo, ds_resumo, ds_direito, ds_aviso, ds_base_legal, "
-                    + "ds_link_oficial, tp_icone, nr_ordem) VALUES (seq_direito.NEXTVAL, ?, ?, ?, ?, ?, ?, ?, ?)";
+            "INSERT INTO tb_gs26s2_direito (cd_direito, ds_titulo, ds_resumo, ds_direito, ds_aviso, ds_base_legal, "
+                    + "ds_link_oficial, tp_icone, nr_ordem) VALUES (seq_gs26s2_direito.NEXTVAL, ?, ?, ?, ?, ?, ?, ?, ?)";
     private static final String SQL_ATUALIZAR =
-            "UPDATE tb_direito SET ds_titulo = ?, ds_resumo = ?, ds_direito = ?, ds_aviso = ?, ds_base_legal = ?, "
+            "UPDATE tb_gs26s2_direito SET ds_titulo = ?, ds_resumo = ?, ds_direito = ?, ds_aviso = ?, ds_base_legal = ?, "
                     + "ds_link_oficial = ?, tp_icone = ?, nr_ordem = ? WHERE cd_direito = ?";
-    private static final String SQL_EXCLUIR = "DELETE FROM tb_direito WHERE cd_direito = ?";
+    private static final String SQL_EXCLUIR = "DELETE FROM tb_gs26s2_direito WHERE cd_direito = ?";
 
     private static final String SQL_BUSCAR_POR_ID =
-            "SELECT " + COLUNAS + " FROM tb_direito d WHERE d.cd_direito = ?";
+            "SELECT " + COLUNAS + " FROM tb_gs26s2_direito d WHERE d.cd_direito = ?";
     private static final String SQL_LISTAR =
-            "SELECT " + COLUNAS + " FROM tb_direito d" + ORDENACAO;
+            "SELECT " + COLUNAS + " FROM tb_gs26s2_direito d" + ORDENACAO;
     private static final String SQL_LISTAR_POR_TAG =
-            "SELECT " + COLUNAS + " FROM tb_direito d WHERE EXISTS "
-                    + "(SELECT 1 FROM tb_direito_tag t WHERE t.cd_direito = d.cd_direito AND t.tp_tag = ?)" + ORDENACAO;
+            "SELECT " + COLUNAS + " FROM tb_gs26s2_direito d WHERE EXISTS "
+                    + "(SELECT 1 FROM tb_gs26s2_direito_tag t WHERE t.cd_direito = d.cd_direito AND t.tp_tag = ?)" + ORDENACAO;
     private static final String SQL_LISTAR_RESUMO_POR_TAGS =
-            "SELECT DISTINCT " + COLUNAS + " FROM tb_direito d "
-                    + "INNER JOIN tb_direito_tag t ON t.cd_direito = d.cd_direito "
+            "SELECT DISTINCT " + COLUNAS + " FROM tb_gs26s2_direito d "
+                    + "INNER JOIN tb_gs26s2_direito_tag t ON t.cd_direito = d.cd_direito "
                     + "WHERE t.tp_tag IN (%s)" + ORDENACAO;
     private static final String SQL_BUSCAR_ID_POR_TITULO =
-            "SELECT cd_direito FROM tb_direito WHERE UPPER(ds_titulo) = UPPER(?)";
+            "SELECT cd_direito FROM tb_gs26s2_direito WHERE UPPER(ds_titulo) = UPPER(?)";
 
     private static final String SQL_PASSOS_DE_UM =
-            "SELECT cd_direito, nr_ordem, ds_titulo, ds_passo FROM tb_direito_passo WHERE cd_direito = ? ORDER BY nr_ordem";
+            "SELECT cd_direito, nr_ordem, ds_titulo, ds_passo FROM tb_gs26s2_direito_passo WHERE cd_direito = ? ORDER BY nr_ordem";
     private static final String SQL_PASSOS_TODOS =
-            "SELECT cd_direito, nr_ordem, ds_titulo, ds_passo FROM tb_direito_passo ORDER BY cd_direito, nr_ordem";
+            "SELECT cd_direito, nr_ordem, ds_titulo, ds_passo FROM tb_gs26s2_direito_passo ORDER BY cd_direito, nr_ordem";
     private static final String SQL_INSERIR_PASSO =
-            "INSERT INTO tb_direito_passo (cd_direito, nr_ordem, ds_titulo, ds_passo) VALUES (?, ?, ?, ?)";
-    private static final String SQL_EXCLUIR_PASSOS = "DELETE FROM tb_direito_passo WHERE cd_direito = ?";
+            "INSERT INTO tb_gs26s2_direito_passo (cd_direito, nr_ordem, ds_titulo, ds_passo) VALUES (?, ?, ?, ?)";
+    private static final String SQL_EXCLUIR_PASSOS = "DELETE FROM tb_gs26s2_direito_passo WHERE cd_direito = ?";
 
     private static final String SQL_TAGS_DE_UM =
-            "SELECT cd_direito, tp_tag FROM tb_direito_tag WHERE cd_direito = ?";
+            "SELECT cd_direito, tp_tag FROM tb_gs26s2_direito_tag WHERE cd_direito = ?";
     private static final String SQL_TAGS_TODAS =
-            "SELECT cd_direito, tp_tag FROM tb_direito_tag";
+            "SELECT cd_direito, tp_tag FROM tb_gs26s2_direito_tag";
     private static final String SQL_INSERIR_TAG =
-            "INSERT INTO tb_direito_tag (cd_direito, tp_tag) VALUES (?, ?)";
-    private static final String SQL_EXCLUIR_TAGS = "DELETE FROM tb_direito_tag WHERE cd_direito = ?";
+            "INSERT INTO tb_gs26s2_direito_tag (cd_direito, tp_tag) VALUES (?, ?)";
+    private static final String SQL_EXCLUIR_TAGS = "DELETE FROM tb_gs26s2_direito_tag WHERE cd_direito = ?";
 
     private final Connection conexao;
 

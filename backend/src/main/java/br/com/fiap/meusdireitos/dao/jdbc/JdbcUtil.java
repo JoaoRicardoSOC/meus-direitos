@@ -150,7 +150,7 @@ public final class JdbcUtil {
      * Condição SQL que compara a cidade sem diferenciar maiúsculas nem acentos ("Sao Paulo" = "São Paulo").
      * O valor do "?" deve vir de {@code TextoUtil.chaveCidade}. Os espaços repetidos não são tratados aqui:
      * a API já grava a cidade com {@code TextoUtil.normalizarEspacos}. Assim a expressão só usa funções puras
-     * e pode ser indexada (índices IX_DENUNCIA_CIDADE_CHAVE e IX_USUARIO_CIDADE_CHAVE do script.sql, que
+     * e pode ser indexada (índices IX_GS26S2_DENUNCIA_CIDADE_CHAVE e IX_GS26S2_USUARIO_CIDADE_CHAVE do script.sql, que
      * precisam repetir exatamente esta expressão).
      */
     public static String cidadeIgual(String coluna) {

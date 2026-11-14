@@ -24,7 +24,7 @@ public class ReporteComentarioDaoJdbc implements ReporteComentarioDao {
      * @param colunaComentario coluna com o código do comentário, ex.: "c.cd_comentario"
      */
     public static String naoOculto(String colunaComentario) {
-        return "(SELECT COUNT(*) FROM tb_reporte_comentario rc WHERE rc.cd_comentario = " + colunaComentario
+        return "(SELECT COUNT(*) FROM tb_gs26s2_reporte_comentario rc WHERE rc.cd_comentario = " + colunaComentario
                 + ") < " + ComentarioService.REPORTES_PARA_OCULTAR;
     }
 
@@ -32,18 +32,18 @@ public class ReporteComentarioDaoJdbc implements ReporteComentarioDao {
     private static final int ORA_UNIQUE_VIOLADA = 1;
 
     private static final String SQL_INSERIR =
-            "INSERT INTO tb_reporte_comentario (cd_usuario, cd_comentario, dt_reporte) VALUES (?, ?, SYSTIMESTAMP)";
+            "INSERT INTO tb_gs26s2_reporte_comentario (cd_usuario, cd_comentario, dt_reporte) VALUES (?, ?, SYSTIMESTAMP)";
     private static final String SQL_CONTAR =
-            "SELECT COUNT(*) FROM tb_reporte_comentario WHERE cd_comentario = ?";
+            "SELECT COUNT(*) FROM tb_gs26s2_reporte_comentario WHERE cd_comentario = ?";
     private static final String SQL_EXCLUIR_POR_COMENTARIO =
-            "DELETE FROM tb_reporte_comentario WHERE cd_comentario = ?";
+            "DELETE FROM tb_gs26s2_reporte_comentario WHERE cd_comentario = ?";
     private static final String SQL_EXCLUIR_POR_DENUNCIA =
-            "DELETE FROM tb_reporte_comentario WHERE cd_comentario IN "
-                    + "(SELECT cd_comentario FROM tb_comentario WHERE cd_denuncia = ?)";
+            "DELETE FROM tb_gs26s2_reporte_comentario WHERE cd_comentario IN "
+                    + "(SELECT cd_comentario FROM tb_gs26s2_comentario WHERE cd_denuncia = ?)";
     private static final String SQL_EXCLUIR_DO_USUARIO =
-            "DELETE FROM tb_reporte_comentario WHERE cd_usuario = ? "
-                    + "OR cd_comentario IN (SELECT cd_comentario FROM tb_comentario WHERE cd_usuario = ? "
-                    + "OR cd_denuncia IN (SELECT cd_denuncia FROM tb_denuncia WHERE cd_usuario = ?))";
+            "DELETE FROM tb_gs26s2_reporte_comentario WHERE cd_usuario = ? "
+                    + "OR cd_comentario IN (SELECT cd_comentario FROM tb_gs26s2_comentario WHERE cd_usuario = ? "
+                    + "OR cd_denuncia IN (SELECT cd_denuncia FROM tb_gs26s2_denuncia WHERE cd_usuario = ?))";
 
     private final Connection conexao;
 

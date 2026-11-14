@@ -5,7 +5,7 @@ import br.com.fiap.meusdireitos.model.enums.TipoVoto;
 import java.time.LocalDateTime;
 
 /**
- * Voto de um usuário em uma denúncia (tabela associativa TB_VOTO_DENUNCIA, relação N:N).
+ * Voto de um usuário em uma denúncia (tabela associativa TB_GS26S2_VOTO_DENUNCIA, relação N:N).
  * A chave é o par (usuário, denúncia): cada pessoa tem no máximo um voto por denúncia.
  */
 public class VotoDenuncia {

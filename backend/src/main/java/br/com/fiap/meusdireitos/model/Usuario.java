@@ -3,7 +3,7 @@ package br.com.fiap.meusdireitos.model;
 import java.time.LocalDateTime;
 
 /**
- * Cidadão cadastrado na plataforma (tabela TB_USUARIO).
+ * Cidadão cadastrado na plataforma (tabela TB_GS26S2_USUARIO).
  * <p>
  * Os setters já normalizam os dados (e-mail em minúsculas, UF em maiúsculas, sem espaços
  * nas pontas), garantindo que o mesmo e-mail digitado de formas diferentes seja reconhecido.

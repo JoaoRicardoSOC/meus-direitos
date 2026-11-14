@@ -5,7 +5,7 @@ import br.com.fiap.meusdireitos.model.PerfilDemografico;
 import java.sql.SQLException;
 
 /**
- * Acesso ao perfil demográfico (TB_PERFIL_DEMOGRAFICO), em relação 1:1 com o usuário.
+ * Acesso ao perfil demográfico (TB_GS26S2_PERFIL_DEMOGRAFICO), em relação 1:1 com o usuário.
  * Não usa {@link CrudDao}: a chave é o id do usuário e o perfil é gravado com "upsert".
  */
 public interface PerfilDemograficoDao {

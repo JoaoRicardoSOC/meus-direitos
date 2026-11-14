@@ -21,17 +21,17 @@ public class PerfilDemograficoDaoJdbc implements PerfilDemograficoDao {
 
     private static final String SQL_BUSCAR =
             "SELECT cd_usuario, dt_nascimento, tp_raca_cor, tp_deficiencia, tp_percurso_escolar, st_baixa_renda, "
-                    + "dt_atualizacao FROM tb_perfil_demografico WHERE cd_usuario = ?";
+                    + "dt_atualizacao FROM tb_gs26s2_perfil_demografico WHERE cd_usuario = ?";
     private static final String SQL_EXISTE =
-            "SELECT 1 FROM tb_perfil_demografico WHERE cd_usuario = ?";
+            "SELECT 1 FROM tb_gs26s2_perfil_demografico WHERE cd_usuario = ?";
     private static final String SQL_ATUALIZAR =
-            "UPDATE tb_perfil_demografico SET dt_nascimento = ?, tp_raca_cor = ?, tp_deficiencia = ?, "
+            "UPDATE tb_gs26s2_perfil_demografico SET dt_nascimento = ?, tp_raca_cor = ?, tp_deficiencia = ?, "
                     + "tp_percurso_escolar = ?, st_baixa_renda = ?, dt_atualizacao = ? WHERE cd_usuario = ?";
     private static final String SQL_INSERIR =
-            "INSERT INTO tb_perfil_demografico (dt_nascimento, tp_raca_cor, tp_deficiencia, tp_percurso_escolar, "
+            "INSERT INTO tb_gs26s2_perfil_demografico (dt_nascimento, tp_raca_cor, tp_deficiencia, tp_percurso_escolar, "
                     + "st_baixa_renda, dt_atualizacao, cd_usuario) VALUES (?, ?, ?, ?, ?, ?, ?)";
     private static final String SQL_EXCLUIR =
-            "DELETE FROM tb_perfil_demografico WHERE cd_usuario = ?";
+            "DELETE FROM tb_gs26s2_perfil_demografico WHERE cd_usuario = ?";
 
     private final Connection conexao;
 

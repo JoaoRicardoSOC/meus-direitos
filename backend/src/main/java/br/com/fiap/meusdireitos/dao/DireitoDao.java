@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * Acesso ao catálogo de direitos: TB_DIREITO + TB_DIREITO_PASSO + TB_DIREITO_TAG.
+ * Acesso ao catálogo de direitos: TB_GS26S2_DIREITO + TB_GS26S2_DIREITO_PASSO + TB_GS26S2_DIREITO_TAG.
  * Gravar, atualizar e excluir mexem nas três tabelas e devem rodar dentro de uma transação.
  */
 public interface DireitoDao extends CrudDao<Direito> {

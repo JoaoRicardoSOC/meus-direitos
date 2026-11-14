@@ -26,30 +26,30 @@ public class UsuarioDaoJdbc implements UsuarioDao {
             "cd_usuario, nm_usuario, ds_email, ds_senha_hash, nm_cidade, sg_uf, dt_cadastro, st_simulado";
 
     private static final String SQL_INSERIR =
-            "INSERT INTO tb_usuario (cd_usuario, nm_usuario, ds_email, ds_senha_hash, nm_cidade, sg_uf, dt_cadastro, "
-                    + "st_simulado) VALUES (seq_usuario.NEXTVAL, ?, ?, ?, ?, ?, ?, ?)";
+            "INSERT INTO tb_gs26s2_usuario (cd_usuario, nm_usuario, ds_email, ds_senha_hash, nm_cidade, sg_uf, dt_cadastro, "
+                    + "st_simulado) VALUES (seq_gs26s2_usuario.NEXTVAL, ?, ?, ?, ?, ?, ?, ?)";
     private static final String SQL_LISTAR_REAIS =
-            "SELECT " + COLUNAS + " FROM tb_usuario WHERE st_simulado = 'N' ORDER BY nm_usuario";
+            "SELECT " + COLUNAS + " FROM tb_gs26s2_usuario WHERE st_simulado = 'N' ORDER BY nm_usuario";
     private static final String SQL_LISTAR_SIMULADOS =
-            "SELECT " + COLUNAS + " FROM tb_usuario WHERE st_simulado = 'S' ORDER BY cd_usuario";
+            "SELECT " + COLUNAS + " FROM tb_gs26s2_usuario WHERE st_simulado = 'S' ORDER BY cd_usuario";
     private static final String SQL_LISTAR_SIMULADOS_DA_CIDADE =
-            "SELECT " + COLUNAS + " FROM tb_usuario WHERE st_simulado = 'S' "
+            "SELECT " + COLUNAS + " FROM tb_gs26s2_usuario WHERE st_simulado = 'S' "
                     + "AND " + JdbcUtil.cidadeIgual("nm_cidade") + " AND sg_uf = ? ORDER BY cd_usuario";
     private static final String SQL_BUSCAR_POR_ID =
-            "SELECT " + COLUNAS + " FROM tb_usuario WHERE cd_usuario = ?";
+            "SELECT " + COLUNAS + " FROM tb_gs26s2_usuario WHERE cd_usuario = ?";
     private static final String SQL_BUSCAR_POR_EMAIL =
-            "SELECT " + COLUNAS + " FROM tb_usuario WHERE ds_email = ?";
+            "SELECT " + COLUNAS + " FROM tb_gs26s2_usuario WHERE ds_email = ?";
     private static final String SQL_LISTAR =
-            "SELECT " + COLUNAS + " FROM tb_usuario ORDER BY nm_usuario";
+            "SELECT " + COLUNAS + " FROM tb_gs26s2_usuario ORDER BY nm_usuario";
     private static final String SQL_ATUALIZAR =
-            "UPDATE tb_usuario SET nm_usuario = ?, ds_email = ?, ds_senha_hash = ?, nm_cidade = ?, sg_uf = ? "
+            "UPDATE tb_gs26s2_usuario SET nm_usuario = ?, ds_email = ?, ds_senha_hash = ?, nm_cidade = ?, sg_uf = ? "
                     + "WHERE cd_usuario = ?";
     private static final String SQL_EXCLUIR =
-            "DELETE FROM tb_usuario WHERE cd_usuario = ?";
+            "DELETE FROM tb_gs26s2_usuario WHERE cd_usuario = ?";
     private static final String SQL_EXISTE =
-            "SELECT 1 FROM tb_usuario WHERE cd_usuario = ?";
+            "SELECT 1 FROM tb_gs26s2_usuario WHERE cd_usuario = ?";
     private static final String SQL_CONTAR_DENUNCIAS =
-            "SELECT COUNT(*) FROM tb_denuncia WHERE cd_usuario = ?";
+            "SELECT COUNT(*) FROM tb_gs26s2_denuncia WHERE cd_usuario = ?";
 
     private final Connection conexao;
 
@@ -106,7 +106,7 @@ public class UsuarioDaoJdbc implements UsuarioDao {
         if (emails.isEmpty()) {
             return ids;
         }
-        String sql = "SELECT cd_usuario, ds_email FROM tb_usuario WHERE ds_email IN ("
+        String sql = "SELECT cd_usuario, ds_email FROM tb_gs26s2_usuario WHERE ds_email IN ("
                 + JdbcUtil.placeholders(emails.size()) + ")";
         try (PreparedStatement stmt = conexao.prepareStatement(sql)) {
             JdbcUtil.preencher(stmt, new ArrayList<>(emails));
