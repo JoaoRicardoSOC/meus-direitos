@@ -15,7 +15,7 @@ Monorepo de um trabalho da FIAP (Global Solution 2026/2): uma API REST em **Java
 | `backend/src/main/resources/simulacao.json` | Catálogo do conteúdo de demonstração ("cidade viva") |
 | `frontend/` | App React 19 + Vite 8. Código em `src/`, fotos de demonstração em `public/img/demo/` |
 | `frontend/dist/` | **Build versionado de propósito** (a entrega da FIAP exige o `index.html` abrindo direto no navegador) |
-| `database/script.sql` | DDL e carga inicial. Só cria o que falta; nunca apaga nem altera |
+| `database/script.sql` | DDL e carga inicial. Renomeia objetos antigos para o padrão `GS26S2` e cria o que falta; nunca apaga |
 | `docs/api.md` | Contrato da API (fonte da verdade para o front) com histórico de mudanças na §13 |
 | `docs/diagramas/` | Diagramas de classes (Mermaid + SVG), ER e do front |
 | `docs/insomnia/` | Coleção do Insomnia com todas as rotas e uma pasta de erros |
@@ -45,9 +45,10 @@ node testes/api-ponta-a-ponta.mjs [http://127.0.0.1:8080/api]
 1. **Nenhuma dependência nova.** A FIAP só pontua as tecnologias da disciplina.
    - Back-end: só JDK 17, Jersey (JAX-RS), Grizzly, JSON-B, ojdbc8 e JUnit 5. Nada de Spring, JPA/Hibernate, Lombok, Bean Validation, JWT ou biblioteca de pool (o token e o pool são feitos com o JDK).
    - Front-end: só React, React Router e Bootstrap (apenas o reset e os utilitários). Requisições com `fetch`, nunca axios; nada de Tailwind ou biblioteca de componentes.
-2. **O banco Oracle é compartilhado com outro projeto.** O schema tem tabelas que **não são nossas** e não podem ser lidas, alteradas nem citadas: `TB_CHAT_MENSAGEM`, `TB_ITEM_ROTEIRO`, `TB_LISTA_ROTEIRO`, `TB_PONTO_MAPA`, `TB_PRODUTO`, `TB_PRODUTO_ATRIBUTO`, `TB_REGISTRO_RUPTURA`, `TB_SESSAO`, `TODOS`, `USERS` e as sequences `ISEQ$$_*`.
-   - As nossas são: `TB_USUARIO`, `TB_PERFIL_DEMOGRAFICO`, `TB_DENUNCIA`, `TB_COMENTARIO`, `TB_VOTO_DENUNCIA`, `TB_CONFIRMACAO_RESOLUCAO`, `TB_REPORTE_COMENTARIO`, `TB_DIREITO`, `TB_DIREITO_PASSO`, `TB_DIREITO_TAG`, `TB_SEMEADURA_CIDADE` e as sequences `SEQ_USUARIO`, `SEQ_DENUNCIA`, `SEQ_COMENTARIO`, `SEQ_DIREITO`.
-   - Mudança de estrutura entra **só** no `database/script.sql`, num bloco PL/SQL que verifica antes (`user_tables`, `user_indexes`…) e cria apenas se não existir. Nunca `DROP`, `TRUNCATE` ou `ALTER` destrutivo. Não execute DDL nem DML fora do script sem a pessoa pedir.
+2. **O banco Oracle é compartilhado com outro projeto.** O schema tem tabelas que **não são nossas** e não podem ser lidas, alteradas nem citadas: as do challenge, com o prefixo `TB_CH26_` (`TB_CH26_PRODUTO`, `TB_CH26_SESSAO`…), `TODOS`, `USERS` e as sequences `ISEQ$$_*`.
+   - As nossas são: `TB_GS26S2_USUARIO`, `TB_GS26S2_PERFIL_DEMOGRAFICO`, `TB_GS26S2_DENUNCIA`, `TB_GS26S2_COMENTARIO`, `TB_GS26S2_VOTO_DENUNCIA`, `TB_GS26S2_CONFIRMACAO_RESOLUCAO`, `TB_GS26S2_REPORTE_COMENTARIO`, `TB_GS26S2_DIREITO`, `TB_GS26S2_DIREITO_PASSO`, `TB_GS26S2_DIREITO_TAG`, `TB_GS26S2_SEMEADURA_CIDADE` e as sequences `SEQ_GS26S2_USUARIO`, `SEQ_GS26S2_DENUNCIA`, `SEQ_GS26S2_COMENTARIO`, `SEQ_GS26S2_DIREITO`.
+   - Todo objeto deste projeto leva `GS26S2` (Global Solution 2026, 2º semestre) depois do prefixo do tipo: `TB_GS26S2_<TABELA>`, `SEQ_GS26S2_<TABELA>`, `PK_GS26S2_<TABELA>`, `FK_GS26S2_<TABELA>_<REFERENCIADA>`, `UK_`/`CK_`/`IX_GS26S2_<TABELA>_<COLUNA>`. As colunas não levam o prefixo.
+   - Mudança de estrutura entra **só** no `database/script.sql`, num bloco PL/SQL que verifica antes (`user_tables`, `user_indexes`…) e cria apenas se não existir. Nunca `DROP`, `TRUNCATE` ou `ALTER` destrutivo (a etapa 0 do script só renomeia objetos antigos deste projeto para o padrão, sem perder dados). Não execute DDL nem DML fora do script sem a pessoa pedir.
 3. **Segredos.** Nunca coloque senha, `token.segredo`, chaves de administração/simulação ou tokens de serviços externos em código, documentação, commits ou mensagens. O `frontend/.env.local` (se existir) também é privado.
 4. **Contrato da API.** Toda mudança de rota, campo ou código de erro atualiza junto: `docs/api.md` (incluindo uma linha na §13), a coleção do Insomnia e, se afetar o front, `frontend/src`.
 5. **Commits pequenos, um por subtarefa**, no formato `tipo(escopo): descrição` em português, minúsculas e sem acento (veja [`CONTRIBUTING.md`](CONTRIBUTING.md)). Sem branch nova e sem push, salvo pedido.
@@ -76,7 +77,7 @@ main.jsx (HashRouter, SessaoProvider) → App.jsx (rotas) → pages/<seção>/*.
 
 ## Armadilhas conhecidas
 
-- **Cidade.** As consultas comparam a cidade com `JdbcUtil.cidadeIgual(coluna)`, que gera `TRANSLATE(UPPER(TRIM(col)), '<acentos>', '<sem acento>') = ?`, e o valor vem de `TextoUtil.chaveCidade`. Os índices `IX_DENUNCIA_CIDADE_CHAVE` e `IX_USUARIO_CIDADE_CHAVE` repetem **exatamente** essa expressão; se ela mudar, mude o script (o teste `IndiceCidadeScriptTest` confere). Não use `REGEXP_REPLACE` nela: o Oracle recusa indexar (ORA-01743). Por isso a cidade é gravada já com `TextoUtil.normalizarEspacos`.
+- **Cidade.** As consultas comparam a cidade com `JdbcUtil.cidadeIgual(coluna)`, que gera `TRANSLATE(UPPER(TRIM(col)), '<acentos>', '<sem acento>') = ?`, e o valor vem de `TextoUtil.chaveCidade`. Os índices `IX_GS26S2_DENUNCIA_CIDADE_CHAVE` e `IX_GS26S2_USUARIO_CIDADE_CHAVE` repetem **exatamente** essa expressão; se ela mudar, mude o script (o teste `IndiceCidadeScriptTest` confere). Não use `REGEXP_REPLACE` nela: o Oracle recusa indexar (ORA-01743). Por isso a cidade é gravada já com `TextoUtil.normalizarEspacos`.
 - **Exclusões sem `ON DELETE CASCADE`.** Ao apagar usuário, denúncia ou comentário, o service apaga antes as tabelas filhas (votos, comentários, reportes, confirmações) na mesma transação. Tabela nova com FK precisa entrar nessas sequências (`UsuarioService.excluirConta`, `DenunciaService.excluir`, `ComentarioService.excluir`, `SimulacaoService.limparTudo`).
 - **`file://`.** O front usa `HashRouter`, `base: './'` e um build em IIFE (plugin `abrirDiretoNoNavegador` no `vite.config.js`) para abrir sem servidor. Nesse caso o navegador manda a origem `null`, liberada por padrão em `cors.origens` (quem trocar a lista precisa mantê-la).
 - **Sessão no front.** `services/sessao.js` copia token e usuário para a memória quando o app carrega. Testes automatizados que gravam no `localStorage` precisam recarregar a página (trocar só o `#` não recarrega).

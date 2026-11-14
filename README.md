@@ -92,7 +92,7 @@ O protótipo segue o Figma da equipe: verde `#075E4A`, tinta `#142E2A`, verde-li
 
 Pré-requisitos: **JDK 17**, **Maven 3.9+**, acesso ao **Oracle da FIAP** e um navegador. O Node 22 só é necessário para desenvolver o front.
 
-**1. Banco de dados.** No SQL Developer, abra [`database/script.sql`](database/script.sql) e execute com **F5**. O script só cria o que ainda não existe, e por isso pode rodar num schema compartilhado ([guia do banco](docs/banco-de-dados.md)).
+**1. Banco de dados.** No SQL Developer, abra [`database/script.sql`](database/script.sql) e execute com **F5**. O script renomeia objetos antigos para o padrão `GS26S2` e só cria o que ainda não existe, sem apagar nada; por isso pode rodar num schema compartilhado ([guia do banco](docs/banco-de-dados.md)).
 
 **2. API.**
 

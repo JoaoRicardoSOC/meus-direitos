@@ -77,7 +77,7 @@ sequenceDiagram
     R->>D: criar(idUsuario, DenunciaRequest)
     D->>D: Validador (título, descrição, categoria, endereço, foto)
     D->>J: inserir(denuncia) dentro de Transacao
-    J->>O: INSERT INTO tb_denuncia ... (SEQ_DENUNCIA.NEXTVAL)
+    J->>O: INSERT INTO tb_gs26s2_denuncia ... (SEQ_GS26S2_DENUNCIA.NEXTVAL)
     O-->>J: ok
     D-->>R: DenunciaResponse (com protocolo)
     R-->>A: 201 Created + JSON
@@ -120,7 +120,7 @@ O autor não confirma a própria denúncia, e reabrir zera as confirmações.
 
 ### 4.3 Meus Direitos
 
-O questionário tem três etapas, e todas as perguntas podem ser puladas. As respostas viram tags (tabela acima), e cada tema do catálogo (`TB_DIREITO`) declara a quais tags se aplica (`TB_DIREITO_TAG`). A tela mostra os temas cujas tags a pessoa tem, com passos práticos e o link oficial para confirmar. O app **não afirma que a pessoa tem o direito**: ele indica possibilidades e onde confirmar.
+O questionário tem três etapas, e todas as perguntas podem ser puladas. As respostas viram tags (tabela acima), e cada tema do catálogo (`TB_GS26S2_DIREITO`) declara a quais tags se aplica (`TB_GS26S2_DIREITO_TAG`). A tela mostra os temas cujas tags a pessoa tem, com passos práticos e o link oficial para confirmar. O app **não afirma que a pessoa tem o direito**: ele indica possibilidades e onde confirmar.
 
 ### 4.4 "Cidade viva" (conteúdo de demonstração)
 
@@ -144,7 +144,7 @@ Cada decisão com o motivo e o que se abriu mão.
 | 2 | **Camadas resource → service → dao** com interfaces nos DAOs | Separar HTTP, regra e SQL; testar regras sem banco | Mais arquivos por funcionalidade |
 | 3 | **Token assinado com HMAC-SHA256** feito com `javax.crypto` | Sem biblioteca de JWT; não precisa de tabela de sessões | O token não pode ser revogado antes de vencer (7 dias), exceto excluindo a conta |
 | 4 | **Pool de conexões próprio** (`BlockingQueue` + `Semaphore`; a `Transacao` empresta e devolve no `finally`) | Abrir conexão com o Oracle da FIAP custa centenas de milissegundos | Pool simples: tamanho fixo, sem métricas |
-| 5 | **Script do banco que só cria o que falta** | O schema é compartilhado com outro projeto | Mudanças de coluna exigem um bloco novo e cuidadoso |
+| 5 | **Script do banco que só cria o que falta, com objetos no padrão `GS26S2`** | O schema é compartilhado com outros projetos | Mudanças de coluna exigem um bloco novo e cuidadoso |
 | 6 | **Sem `ON DELETE CASCADE`**: o service apaga as filhas antes | Exclusões explícitas e revisáveis; se algo escapar, o Oracle recusa (ORA-02292) em vez de apagar em silêncio | Toda tabela filha nova precisa entrar nas rotinas de exclusão |
 | 7 | **Cidade como texto**, comparada sem acento e maiúsculas, com índice baseado em função | Cadastro simples, sem tabela de municípios | Grafias muito diferentes ("S. Paulo") não se encontram |
 | 8 | **HashRouter + build IIFE + `base: './'`** | A entrega da FIAP abre o `index.html` direto do disco | URLs com `#`; a origem `null` precisa estar no CORS |

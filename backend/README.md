@@ -232,7 +232,7 @@ Outras decisões:
   (`JdbcUtil.cidadeIgual`: `TRANSLATE(UPPER(TRIM(...)))`), e a API junta os espaços repetidos antes de gravar.
   Assim a expressão só usa funções puras: com `REGEXP_REPLACE` o Oracle recusa o índice (ORA-01743).
   O `script.sql` cria índices baseados em função com exatamente essa expressão, mais a
-  UF, em `TB_DENUNCIA` e `TB_USUARIO` (`IX_DENUNCIA_CIDADE_CHAVE`, `IX_USUARIO_CIDADE_CHAVE`). O Oracle só usa o
+  UF, em `TB_GS26S2_DENUNCIA` e `TB_GS26S2_USUARIO` (`IX_GS26S2_DENUNCIA_CIDADE_CHAVE`, `IX_GS26S2_USUARIO_CIDADE_CHAVE`). O Oracle só usa o
   índice se a expressão da consulta for idêntica; um teste de unidade confere isso. Se o Oracle recusar o índice,
   o script só registra o aviso e a API funciona igual, sem ele.
 - **Moderação de comentários.**
@@ -240,9 +240,9 @@ Outras decisões:
     comentário com palavrão ou ofensa comum, a API responde 400 no campo `texto`. Compara palavra inteira, sem
     acentos e sem diferenciar maiúsculas. Não é moderação completa: grafias disfarçadas passam.
   - Reporte pela comunidade: `POST /comentarios/{id}/reporte` (🔒, 204). Cada pessoa reporta um comentário uma
-    vez (chave primária em `TB_REPORTE_COMENTARIO`); reportar o próprio comentário dá 422. Com **3 reportes** o
+    vez (chave primária em `TB_GS26S2_REPORTE_COMENTARIO`); reportar o próprio comentário dá 422. Com **3 reportes** o
     comentário some da conversa para todos e deixa de contar no total de comentários da denúncia e nos relatórios.
-    Ele continua no banco: a contagem é uma subconsulta em `TB_REPORTE_COMENTARIO`, sem coluna de status.
+    Ele continua no banco: a contagem é uma subconsulta em `TB_GS26S2_REPORTE_COMENTARIO`, sem coluna de status.
   - Ao excluir comentário, denúncia ou conta, os reportes ligados são apagados antes, na mesma transação.
 - **"Cidade viva".** Na primeira conta de uma cidade, a API cria moradores e denúncias de exemplo (marcados como `simulado`), para que o avaliador veja votos, comentários e resolução funcionando. Esses moradores não fazem login, não aparecem nas listas de usuários e podem ser removidos com `DELETE /api/simulacao`.
 

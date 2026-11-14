@@ -6,14 +6,14 @@ O app lida com dados pessoais e, no questionário de "Meus Direitos", com **dado
 
 | Dado | Onde fica | Obrigatório? | Para quê | Quem vê |
 |---|---|---|---|---|
-| Nome | `TB_USUARIO` | Sim | Identificar o autor de denúncias e comentários | Qualquer pessoa (é público, como numa rede social de bairro) |
-| E-mail | `TB_USUARIO` (minúsculas, único) | Sim | Login | Só a própria pessoa |
-| Senha | `TB_USUARIO`, **só o hash** PBKDF2-HMAC-SHA256 (120.000 iterações, salt aleatório de 16 bytes) | Sim | Login | Ninguém: a senha não é guardada nem pode ser recuperada |
-| Cidade e UF | `TB_USUARIO` | Sim | Mostrar o feed e os relatórios da cidade | Público (aparece com o nome) |
-| Data de nascimento | `TB_PERFIL_DEMOGRAFICO` | Não | Indicar direitos de pessoa idosa e jovem | Só a própria pessoa |
-| Raça/cor | `TB_PERFIL_DEMOGRAFICO` | Não (**sensível**) | Indicar cotas e ações afirmativas | Só a própria pessoa |
-| Deficiência | `TB_PERFIL_DEMOGRAFICO` | Não (**sensível**) | Indicar direitos de PCD e priorizar denúncias de acessibilidade no feed | Só a própria pessoa |
-| Percurso escolar, CadÚnico | `TB_PERFIL_DEMOGRAFICO` | Não | Indicar cotas e benefícios | Só a própria pessoa |
+| Nome | `TB_GS26S2_USUARIO` | Sim | Identificar o autor de denúncias e comentários | Qualquer pessoa (é público, como numa rede social de bairro) |
+| E-mail | `TB_GS26S2_USUARIO` (minúsculas, único) | Sim | Login | Só a própria pessoa |
+| Senha | `TB_GS26S2_USUARIO`, **só o hash** PBKDF2-HMAC-SHA256 (120.000 iterações, salt aleatório de 16 bytes) | Sim | Login | Ninguém: a senha não é guardada nem pode ser recuperada |
+| Cidade e UF | `TB_GS26S2_USUARIO` | Sim | Mostrar o feed e os relatórios da cidade | Público (aparece com o nome) |
+| Data de nascimento | `TB_GS26S2_PERFIL_DEMOGRAFICO` | Não | Indicar direitos de pessoa idosa e jovem | Só a própria pessoa |
+| Raça/cor | `TB_GS26S2_PERFIL_DEMOGRAFICO` | Não (**sensível**) | Indicar cotas e ações afirmativas | Só a própria pessoa |
+| Deficiência | `TB_GS26S2_PERFIL_DEMOGRAFICO` | Não (**sensível**) | Indicar direitos de PCD e priorizar denúncias de acessibilidade no feed | Só a própria pessoa |
+| Percurso escolar, CadÚnico | `TB_GS26S2_PERFIL_DEMOGRAFICO` | Não | Indicar cotas e benefícios | Só a própria pessoa |
 | Denúncias, comentários, votos, confirmações, reportes | Tabelas de cada um | — | O próprio serviço | Denúncias e comentários são públicos; votos aparecem só como totais; reportes não aparecem |
 | Localização (GPS) | **Não vai para a API** | Não | Achar a prefeitura e os CRAS próximos, preencher o endereço da denúncia | Só o navegador da pessoa e o serviço de mapas consultado (OpenStreetMap) |
 

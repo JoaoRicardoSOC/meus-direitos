@@ -209,7 +209,7 @@ classDiagram
 
 > Também implementam `EnumDescritivo`: `RacaCor`, `Deficiencia`, `PercursoEscolar`, `IconeDireito` e `OrdemFeed`.
 >
-> O reporte de comentário (associação "reporta") não tem classe no modelo: é só a tabela `TB_REPORTE_COMENTARIO` (usuário, comentário, data), acessada pelo `ReporteComentarioDao`. Com 3 reportes, o comentário deixa de aparecer na listagem e nas contagens. `SemeaduraCidade` registra as cidades que já receberam o conteúdo de demonstração ("cidade viva").
+> O reporte de comentário (associação "reporta") não tem classe no modelo: é só a tabela `TB_GS26S2_REPORTE_COMENTARIO` (usuário, comentário, data), acessada pelo `ReporteComentarioDao`. Com 3 reportes, o comentário deixa de aparecer na listagem e nas contagens. `SemeaduraCidade` registra as cidades que já receberam o conteúdo de demonstração ("cidade viva").
 
 ## 2. Camadas (exemplo: denúncias e comentários)
 
