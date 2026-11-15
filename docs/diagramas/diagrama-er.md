@@ -1,7 +1,9 @@
 # Modelo de dados (diagrama ER)
 
 Gerado a partir de [`database/script.sql`](../../database/script.sql), que cria estas tabelas no Oracle.
-O GitHub desenha o diagrama abaixo direto nesta página.
+O GitHub desenha o diagrama abaixo direto nesta página. As versões em imagem estão nesta mesma pasta: [`diagrama-er.png`](diagrama-er.png), [`diagrama-er.pdf`](diagrama-er.pdf) e [`diagrama-er.svg`](diagrama-er.svg), geradas a partir deste Mermaid (gere de novo quando a estrutura mudar).
+
+O significado de cada tabela e coluna está gravado no próprio banco com `COMMENT ON` (etapa 5 do script) e pode ser lido em `USER_TAB_COMMENTS` e `USER_COL_COMMENTS`.
 
 ## Diagrama
 
@@ -120,6 +122,16 @@ erDiagram
 ```
 
 `TB_GS26S2_SEMEADURA_CIDADE` não tem chave estrangeira: ela registra quais cidades já receberam o conteúdo de demonstração ("cidade viva") e quando foi o último pulso de atividade. A ligação com usuários e denúncias é pelo nome da cidade e pela UF.
+
+## Normalização
+
+O modelo está na terceira forma normal (3FN):
+
+- **1FN (sem grupos repetidos nem atributos multivalorados).** Os públicos de um tema e os passos "Por onde começar" não ficam em colunas como `tag1, tag2` ou num texto separado por vírgulas: cada um é uma linha em `TB_GS26S2_DIREITO_TAG` e `TB_GS26S2_DIREITO_PASSO`. Todas as colunas guardam um valor só.
+- **2FN (nada depende de parte da chave).** As relações N:N viraram tabelas associativas com chave composta (`TB_GS26S2_VOTO_DENUNCIA`, `TB_GS26S2_CONFIRMACAO_RESOLUCAO`, `TB_GS26S2_REPORTE_COMENTARIO`), e os atributos delas (`tp_voto`, `dt_voto`, `dt_confirmacao`, `dt_reporte`) dependem do par inteiro: o voto é daquela pessoa naquela denúncia. O mesmo vale para o passo, que depende de `(cd_direito, nr_ordem)`.
+- **3FN (nada depende de outra coluna que não seja a chave).** Nenhum dado calculado é gravado: placar de votos, total de comentários, comentário oculto por reportes e idade (idoso/jovem) são calculados na consulta. O nome do autor não é copiado para a denúncia nem para o comentário; vem do `JOIN` com `TB_GS26S2_USUARIO`. O questionário fica em tabela própria (1:1) porque é opcional e tem dados sensíveis, não por dependência transitiva.
+
+Duas decisões conscientes ficam fora do "livro": a cidade é texto (`nm_cidade` + `sg_uf`), sem tabela de municípios, e a denúncia guarda a cidade em que foi publicada em vez de ler a do autor. A segunda não é redundância: se o autor mudar de cidade no cadastro, a denúncia continua na cidade onde o problema está.
 
 ## Regras garantidas pelo banco
 
