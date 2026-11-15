@@ -145,6 +145,27 @@ try {
   verificar('Comentário oculto não pode ser editado nem reportado (404)',
     editarOculto.status === 404 && reportarOculto.status === 404, `${editarOculto.status} / ${reportarOculto.status}`);
 
+  // 8b. Três moradores confirmando "já foi resolvido" ao mesmo tempo resolvem a denúncia
+  // (antes, cada transação contava só a própria confirmação e a denúncia ficava aberta)
+  const paraResolver = await chamar('POST', '/denuncias', {
+    token: a.token,
+    corpo: { titulo: 'Poste apagado para o teste', descricao: 'Poste apagado na esquina há dias.',
+      categoria: 'ILUMINACAO', endereco: 'Rua do Teste, 10', imagemUrl: 'img/demo/iluminacao-1.jpg' },
+  });
+  const confirmacoes = await Promise.all([b, c, d].map((conta) =>
+    chamar('PUT', `/denuncias/${paraResolver.dados?.id}/confirmacao`, { token: conta.token })));
+  const resolvida = await chamar('GET', `/denuncias/${paraResolver.dados?.id}`);
+  verificar('3 confirmações simultâneas resolvem a denúncia',
+    confirmacoes.every((r) => r.status === 200) && resolvida.dados?.status?.codigo === 'RESOLVIDA',
+    `${confirmacoes.map((r) => r.status).join(',')} → ${resolvida.dados?.status?.codigo}`);
+
+  // 8c. Fora de /api a resposta segue o JSON de erro (sem a página HTML do servidor)
+  const fora = await fetch(`${new URL(API).origin}/fora-da-api`);
+  const foraTexto = await fora.text();
+  verificar('Caminho fora da API → 404 em JSON',
+    fora.status === 404 && /application\/json/.test(fora.headers.get('content-type') ?? '') && !/grizzly/i.test(foraTexto),
+    `${fora.status} ${fora.headers.get('content-type')}`);
+
   // 9. Questionário exige consentimento quando há dado sensível
   const semConsentimento = await chamar('PUT', '/usuarios/perfil', { token: a.token, corpo: { baixaRenda: true } });
   verificar('Questionário sem consentimento → 400', semConsentimento.status === 400 && temErroNoCampo(semConsentimento, 'consentimento'));
