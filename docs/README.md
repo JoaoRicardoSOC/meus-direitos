@@ -25,12 +25,12 @@ Comece pelo documento que corresponde ao que você quer fazer.
 |---|---|
 | [`arquitetura.md`](arquitetura.md) | Contexto do sistema, camadas, caminho de uma requisição, regras do produto (feed, resolução, direitos, cidade viva, moderação) e decisões de arquitetura |
 | [`api.md`](api.md) | Contrato da API REST: sessão, cliente `fetch`, erros, mapa telas → rotas, referência de cada rota, objetos devolvidos e histórico |
-| [`banco-de-dados.md`](banco-de-dados.md) | Objetos do projeto no schema compartilhado, como rodar e conferir o script, como evoluir o banco, conteúdo de demonstração e erros comuns do Oracle |
+| [`banco-de-dados.md`](banco-de-dados.md) | Objetos do projeto no schema compartilhado, como rodar e conferir o script, consultas e carga de exemplo, como evoluir o banco, conteúdo de demonstração e erros comuns do Oracle |
 | [`seguranca-e-privacidade.md`](seguranca-e-privacidade.md) | Dados pessoais e sensíveis, LGPD, armazenamento no navegador, proteções da API e limitações |
 | [`roteiro-demonstracao.md`](roteiro-demonstracao.md) | Preparação, roteiro com tempos e plano B para o vídeo pitch |
 | [`deploy.md`](deploy.md) | API no Render (Docker) e app na Vercel: ordem, variáveis, CORS e conferência |
 | [`diagramas/diagrama-classes.md`](diagramas/diagrama-classes.md) | Diagramas de classes do back-end (domínio, camadas e erros), também em SVG |
-| [`diagramas/diagrama-er.md`](diagramas/diagrama-er.md) | Modelo de dados, regras garantidas pelo banco e decisões |
+| [`diagramas/diagrama-er.md`](diagramas/diagrama-er.md) | Modelo de dados (também em PNG, PDF e SVG), normalização, regras garantidas pelo banco e decisões |
 | [`diagramas/diagrama-frontend.md`](diagramas/diagrama-frontend.md) | Telas, rotas e camadas do front-end |
 | [`insomnia/meus-direitos.insomnia.json`](insomnia/meus-direitos.insomnia.json) | Todas as rotas, com uma pasta de erros tratados (importe em *Import → From File*) |
 | [`imagens/`](imagens/) | Banner e capturas de tela usados no README |

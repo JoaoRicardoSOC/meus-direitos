@@ -24,7 +24,7 @@ O [`database/script.sql`](../database/script.sql) monta tudo e **nunca apaga nad
 2. Abra o `database/script.sql` e use **Executar Script (F5)**, não "Executar Instrução" (Ctrl+Enter).
 3. Confira a aba **Saída do Script**. Cada bloco escreve o que fez, por exemplo `Criada a tabela TB_GS26S2_REPORTE_COMENTARIO` ou `TB_GS26S2_USUARIO já existe: mantida como está`.
 
-O script está dividido em quatro partes:
+O script está dividido em cinco partes (depois da etapa 0, que só renomeia):
 
 | Parte | Conteúdo |
 |---|---|
@@ -32,6 +32,14 @@ O script está dividido em quatro partes:
 | 2. Tabelas | Na ordem das chaves estrangeiras, com `CHECK` nos valores de lista e nos booleanos |
 | 3. Índices | Índices comuns e os índices baseados em função da busca por cidade |
 | 4. Carga inicial | Os 5 temas do catálogo de direitos, com passos e públicos |
+| 5. Dicionário de dados | `COMMENT ON TABLE` e `COMMENT ON COLUMN` com o significado de cada tabela e coluna do projeto |
+
+Os outros dois arquivos da pasta são opcionais e não mudam a estrutura:
+
+| Arquivo | Para quê |
+|---|---|
+| [`database/consultas.sql`](../database/consultas.sql) | 8 consultas de exemplo (só `SELECT`), cada uma com a pergunta que responde: resumo da cidade, denúncias por categoria, bairros com mais problemas, denúncias com mais participação, temas por público, denúncias perto de serem resolvidas, moradores reais × de exemplo e o dicionário de dados |
+| [`database/carga-exemplo.sql`](../database/carga-exemplo.sql) | Carga pequena em Campinas/SP (5 moradores, 5 denúncias, votos, comentários e confirmações) para as consultas devolverem linhas sem subir a API. Os moradores têm `ST_SIMULADO = 'S'` e e-mail `@exemplo.com`. **O arquivo não faz `COMMIT`:** confira e execute `COMMIT` ou `ROLLBACK`. Rodar de novo não duplica nada |
 
 ## 3. Conferir se está tudo certo
 
@@ -45,6 +53,10 @@ SELECT table_name FROM user_tables
 
 -- Catálogo de direitos (5 temas na carga inicial)
 SELECT cd_direito, ds_titulo FROM tb_gs26s2_direito ORDER BY nr_ordem;
+
+-- Dicionário de dados: nenhuma coluna do projeto sem comentário (deve devolver 0)
+SELECT COUNT(*) FROM user_col_comments
+ WHERE table_name LIKE 'TB!_GS26S2!_%' ESCAPE '!' AND comments IS NULL;
 
 -- Pessoas reais e moradores de exemplo por cidade
 SELECT nm_cidade, sg_uf, st_simulado, COUNT(*) FROM tb_gs26s2_usuario GROUP BY nm_cidade, sg_uf, st_simulado ORDER BY 1;
@@ -86,9 +98,10 @@ END;
 
 Depois de mudar o banco:
 
-1. Atualize o [diagrama ER](diagramas/diagrama-er.md).
-2. Se a tabela tem chave estrangeira para usuário, denúncia ou comentário, inclua a exclusão dela antes da tabela mãe em `UsuarioService.excluirConta`, `DenunciaService.excluir`, `ComentarioService.excluir` e `SimulacaoService.limparTudo` (o projeto não usa `ON DELETE CASCADE`).
-3. Rode os testes de integração: `MD_INTEGRACAO=true mvn test -Dtest=DaosIntegracaoTest`.
+1. Atualize o [diagrama ER](diagramas/diagrama-er.md) e as imagens dele (`diagrama-er.png`, `.pdf` e `.svg`).
+2. Acrescente o `COMMENT ON` da tabela ou coluna nova na etapa 5 do script.
+3. Se a tabela tem chave estrangeira para usuário, denúncia ou comentário, inclua a exclusão dela antes da tabela mãe em `UsuarioService.excluirConta`, `DenunciaService.excluir`, `ComentarioService.excluir` e `SimulacaoService.limparTudo` (o projeto não usa `ON DELETE CASCADE`).
+4. Rode os testes de integração: `MD_INTEGRACAO=true mvn test -Dtest=DaosIntegracaoTest`.
 
 ### Convenções de nomes
 
@@ -113,6 +126,8 @@ Os valores de lista são gravados com o nome da constante do enum Java (`ASFALTO
 A API cria moradores e denúncias de exemplo para a primeira pessoa de cada cidade (ver a [arquitetura](arquitetura.md#44-cidade-viva-conteúdo-de-demonstração)). Esses dados ficam nas mesmas tabelas, marcados com `TB_GS26S2_USUARIO.ST_SIMULADO = 'S'`, e cada cidade preparada tem uma linha em `TB_GS26S2_SEMEADURA_CIDADE`.
 
 Com `simulacao.chave` configurada no `db.properties`, as rotas `/api/simulacao/*` (cabeçalho `X-Chave-Simulacao`) permitem preparar uma cidade antes de uma apresentação (`POST /simulacao/cidades`), gerar atividade (`POST /simulacao/pulso`) e **apagar todo o conteúdo de demonstração** (`DELETE /simulacao`), sem tocar nas contas reais. Os exemplos estão na pasta "09 · Demonstração" da coleção do Insomnia.
+
+A carga do `database/carga-exemplo.sql` usa a mesma marca (`ST_SIMULADO = 'S'`), então o `DELETE /simulacao` também a apaga.
 
 Para desligar a geração de conteúdo novo, use `simulacao.ativa=false` (ou `MD_SIMULACAO_ATIVA=false`).
 

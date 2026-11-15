@@ -155,7 +155,7 @@ Sem frameworks além dos da disciplina: o token de sessão (HMAC-SHA256), o pool
 meus-direitos/
 ├── backend/            API REST (Java 17, JAX-RS, JDBC)
 ├── frontend/           App React; dist/ é o build que abre direto no navegador
-├── database/           script.sql: tabelas, índices e catálogo inicial de direitos
+├── database/           script.sql (tabelas, índices, catálogo e dicionário), consultas.sql e carga-exemplo.sql
 ├── docs/               arquitetura, API, banco, segurança, diagramas, Insomnia e roteiro
 ├── testes/             teste de ponta a ponta da API (Node, sem dependências)
 ├── AGENTS.md           guia para agentes de IA
