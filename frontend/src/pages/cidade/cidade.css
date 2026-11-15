@@ -234,3 +234,66 @@
 .md-comentario-denunciado {
   margin: 0;
 }
+
+/* Linha do tempo da denúncia: marcadores ligados por uma linha vertical, na cor da situação */
+.md-linha-tempo {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.md-linha-tempo-passo {
+  position: relative;
+  display: flex;
+  gap: 12px;
+  padding-bottom: 16px;
+}
+
+.md-linha-tempo-passo:last-child {
+  padding-bottom: 0;
+}
+
+/* a linha que liga um marcador ao próximo */
+.md-linha-tempo-passo:not(:last-child)::before {
+  content: '';
+  position: absolute;
+  left: 7px;
+  top: 18px;
+  bottom: 0;
+  width: 2px;
+  background: var(--md-linha-suave);
+}
+
+.md-linha-tempo-marcador {
+  flex: none;
+  width: 16px;
+  height: 16px;
+  margin-top: 2px;
+  border-radius: 50%;
+  border: 2px solid var(--md-verde);
+  background: var(--md-branco);
+}
+
+.md-linha-tempo-passo.andamento .md-linha-tempo-marcador {
+  border-color: var(--md-status-andamento-texto);
+  background: var(--md-status-andamento-fundo);
+}
+
+.md-linha-tempo-passo.resolvida .md-linha-tempo-marcador {
+  border-color: var(--md-verde);
+  background: var(--md-verde);
+}
+
+.md-linha-tempo-passo.aberta .md-linha-tempo-marcador {
+  border-color: var(--md-status-aberta-texto);
+  background: var(--md-status-aberta-fundo);
+}
+
+.md-linha-tempo-texto {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}

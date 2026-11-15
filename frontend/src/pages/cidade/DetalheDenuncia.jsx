@@ -10,6 +10,7 @@ import { cidadeUf } from '../../utils/formatos.js';
 import ConversaBairro from './ConversaBairro.jsx';
 import ComentarioEnviado from './ComentarioEnviado.jsx';
 import ResolucaoComunidade from './ResolucaoComunidade.jsx';
+import LinhaDoTempo from './LinhaDoTempo.jsx';
 import './cidade.css';
 
 /**
@@ -132,6 +133,10 @@ export default function DetalheDenuncia() {
           <Compartilhar denuncia={denuncia} />
           {/* logo depois do card: é a ação que só este app tem; a conversa vem depois */}
           <ResolucaoComunidade denuncia={denuncia} aoAtualizar={setDenuncia} />
+          <LinhaDoTempo
+            idDenuncia={denuncia.id}
+            chave={`${denuncia.status?.codigo}-${denuncia.resolucao?.confirmacoes ?? 0}`}
+          />
           <ConversaBairro
             ref={conversa}
             idDenuncia={denuncia.id}

@@ -23,6 +23,15 @@ export function haQuantoTempo(dataIso) {
   return 'agora';
 }
 
+const dataEHora = new Intl.DateTimeFormat('pt-BR', { dateStyle: 'short', timeStyle: 'short' });
+
+/** "2026-11-12T14:30:00" → "12/11/2026, 14:30" (data e hora exatas, para a linha do tempo). */
+export function dataHora(dataIso) {
+  if (!dataIso) return '';
+  const data = new Date(dataIso);
+  return Number.isNaN(data.getTime()) ? '' : dataEHora.format(data);
+}
+
 /** "Mariana Oliveira" → "MO"; "Ana" → "A". */
 export function iniciais(nome) {
   const partes = (nome ?? '').trim().split(/\s+/).filter(Boolean);
