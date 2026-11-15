@@ -1,6 +1,6 @@
 # Roteiro de demonstração
 
-Passo a passo para gravar o vídeo pitch ou apresentar o projeto ao vivo, mostrando cada parte do produto na ordem em que ela faz sentido. Os tempos somam cerca de 4 minutos; ajuste ao limite pedido na entrega.
+Passo a passo para gravar o vídeo pitch ou apresentar o projeto ao vivo, mostrando cada parte do produto na ordem em que ela faz sentido. Os tempos somam cerca de 4 minutos; ajuste ao limite pedido na entrega. O conceito e o porquê de cada funcionalidade estão na [visão geral](visao-geral.md).
 
 ## 1. Preparação (antes de gravar)
 

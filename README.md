@@ -169,6 +169,7 @@ meus-direitos/
 
 | Documento | Para quê |
 |---|---|
+| [Visão geral do projeto](docs/visao-geral.md) | O conceito, cada funcionalidade e o porquê de cada escolha (base para o vídeo e para a avaliação) |
 | [Índice da documentação](docs/README.md) | Qual documento ler para cada objetivo |
 | [Arquitetura](docs/arquitetura.md) | Como as peças se encaixam, regras do produto e decisões |
 | [Guia da API](docs/api.md) | Todas as rotas, corpos, respostas e erros |
