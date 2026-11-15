@@ -16,8 +16,14 @@ export default function RotaProtegida() {
   return <Outlet />;
 }
 
-/** Telas só para quem não entrou (boas-vindas, cadastro, login): logado vai direto para a cidade. */
+/**
+ * Telas só para quem não entrou (boas-vindas, cadastro, login): logado vai para a tela pedida antes do
+ * login (state.voltarPara, posto pela RotaProtegida) ou para a cidade.
+ * Ao entrar, esta rota e o "Entrar" navegam quase ao mesmo tempo; os dois usam o mesmo destino, senão
+ * quem chegasse primeiro decidia (e a pessoa caía na cidade em vez da tela que tinha aberto).
+ */
 export function RotaPublica() {
   const { logado } = useSessao();
-  return logado ? <Navigate to="/cidade" replace /> : <Outlet />;
+  const local = useLocation();
+  return logado ? <Navigate to={local.state?.voltarPara ?? '/cidade'} replace /> : <Outlet />;
 }
