@@ -35,6 +35,7 @@
 | Conversa do bairro (comentários) | ✅ Pronto |
 | Moderação: filtro de termos ofensivos e reporte de comentário (3 reportes ocultam) | ✅ Pronto |
 | Resolver denúncia: autor marca **ou** 3 moradores confirmam | ✅ Pronto |
+| Linha do tempo da denúncia (registro e cada mudança de situação, pelo autor ou pela comunidade) | ✅ Pronto |
 | Relatórios: "Números da cidade", por categoria, por bairro, mais engajadas | ✅ Pronto |
 | Trocar senha / excluir conta | ✅ Pronto |
 | Segurança: token de sessão (`Authorization: Bearer`, 7 dias), bloqueio do login após 5 erros (429), consentimento no questionário, cabeçalhos de segurança | ✅ Pronto |
@@ -219,7 +220,7 @@ Todo erro vem neste formato:
 | 06 Entrar | `POST /auth/login` |
 | 07 / 33 Feed "Nossa cidade" | `GET /denuncias/feed?ordem=...` (abas) |
 | 08 / 09 Voto registrado / contrário | `PUT /denuncias/{id}/voto` · clicar de novo no mesmo voto: `DELETE /denuncias/{id}/voto` |
-| 10 Detalhes da denúncia | `GET /denuncias/{id}` + `GET /denuncias/{id}/comentarios` |
+| 10 Detalhes da denúncia | `GET /denuncias/{id}` + `GET /denuncias/{id}/comentarios` + `GET /denuncias/{id}/historico` (linha do tempo) |
 | 11 Comentário enviado | `POST /denuncias/{id}/comentarios` |
 | 12 / 13 Nova denúncia | `GET /categorias` (select) → `POST /denuncias` |
 | 14 Categorias | `GET /categorias` |
@@ -467,6 +468,24 @@ Toda denúncia traz o progresso:
 
 Quando mostrar o botão "Já foi resolvido": usuário logado, **não** é o autor, mesma cidade da denúncia e `status.codigo !== 'RESOLVIDA'`. Se `euConfirmei` for `true`, o botão vira "Retirar confirmação".
 
+#### `GET /denuncias/{id}/historico` — linha do tempo (pública)
+
+Cada mudança de situação é gravada (pelo `PATCH .../status` do autor ou pela 3ª confirmação da comunidade). A rota devolve, em ordem de data, o registro da denúncia e essas mudanças. O fluxo completo da confirmação está no [diagrama de sequência](diagramas/diagrama-sequencia-confirmacao.md).
+
+```json
+[
+  { "em": "2026-11-15T18:39:33", "registro": true,
+    "situacao": { "codigo": "ABERTA", "descricao": "Em aberto" } },
+  { "em": "2026-11-15T18:39:33", "registro": false,
+    "origem": { "codigo": "AUTOR", "descricao": "Pelo autor" },
+    "situacao": { "codigo": "EM_ANDAMENTO", "descricao": "Em andamento" } }
+]
+```
+
+- `registro: true` só no primeiro item (quando a denúncia foi criada); nos demais, `situacao` é a situação **para a qual** a denúncia foi.
+- `origem`: `AUTOR` ("Pelo autor") ou `COMUNIDADE` ("Pela comunidade", 3 confirmações). Vem ausente só em denúncias anteriores ao histórico: nelas a lista traz o registro e a situação atual, sem origem.
+- Denúncia inexistente → **404**. Sem login: a rota é pública, como o detalhe.
+
 ### 8.8 Conversa do bairro (comentários)
 
 | Método | Rota | Descrição |
@@ -632,6 +651,7 @@ Rotas da equipe (cabeçalho `X-Chave-Simulacao` igual a `simulacao.chave`; sem c
 | `PerfilResponse` (o `perfil` acima) | `dataNascimento?, idade?, racaCor?, deficiencia?, percursoEscolar?, baixaRenda?, atualizadoEm` (opções como `OpcaoResponse`) |
 | `DireitoResponse` | `id, titulo, resumo, descricao, passos [{ordem, titulo, texto}], aviso?, baseLegal?, linkOficial?, icone, ordem, tags [OpcaoResponse]` |
 | `ResolucaoResponse` | `confirmacoes, necessarias, euConfirmei` |
+| `EventoHistoricoResponse` (em `GET /denuncias/{id}/historico`) | `situacao` (`OpcaoResponse`), `origem?` (`OpcaoResponse`: `AUTOR` ou `COMUNIDADE`), `registro`, `em` |
 | `HealthResponse` | `status, banco, dataHora` |
 | `ErroResponse` | `status, erro, mensagem, campos [{campo, mensagem}], caminho, timestamp` (seção 6) |
 | `OpcaoResponse` (enums) | `codigo, descricao` |
@@ -694,3 +714,4 @@ Ajustes em relação ao Figma, combinados com o grupo. **Todos foram atendidos n
 | 13/11/2026 | CORS libera por padrão a origem `null` (app aberto direto do disco), além de `http://localhost:5173`. Pool de conexões refeito sem proxy: a `Transacao` empresta e devolve a conexão explicitamente. **Sem mudança de contrato.** |
 | 14/11/2026 | Banco no padrão de nomes `GS26S2` (`TB_GS26S2_USUARIO`, `SEQ_GS26S2_USUARIO`, `PK_GS26S2_USUARIO`…). A etapa 0 do `database/script.sql` renomeia um schema antigo sem perder dados. A API escuta na porta `PORT` quando ela existe (deploy). **Sem mudança de contrato.** |
 | 15/11/2026 | Confirmações de resolução simultâneas agora contam certo (a denúncia é travada com `SELECT ... FOR UPDATE`): três moradores confirmando ao mesmo tempo resolvem a denúncia. Caminhos fora de `/api` respondem **404 no JSON de erro padrão** (antes, uma página HTML do servidor). **Sem mudança nas rotas.** |
+| 15/11/2026 | **Rota nova:** `GET /denuncias/{id}/historico` (linha do tempo da denúncia, pública), com o objeto `EventoHistoricoResponse` na seção 9. Cada mudança de situação passa a ser gravada na tabela `TB_GS26S2_HISTORICO_STATUS`, com a origem (`AUTOR` ou `COMUNIDADE`). No app, a linha do tempo aparece no detalhe da denúncia, e o Painel da cidade ganhou "Baixar os números (CSV)", montado no próprio navegador (sem rota nova). Nenhuma rota existente mudou. |

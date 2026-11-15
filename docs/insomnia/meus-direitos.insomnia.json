@@ -1033,6 +1033,20 @@
       "metaSortKey": 50
     },
     {
+      "_id": "req_md_080",
+      "_type": "request",
+      "parentId": "fld_md_041",
+      "name": "Linha do tempo da denúncia",
+      "description": "Pública. O registro e cada mudança de situação, em ordem de data, com a origem: AUTOR (PATCH de status) ou COMUNIDADE (3ª confirmação).",
+      "method": "GET",
+      "url": "{{ _.base_url }}/denuncias/{{ _.denuncia_id }}/historico",
+      "body": {},
+      "headers": [],
+      "parameters": [],
+      "authentication": {},
+      "metaSortKey": 50.5
+    },
+    {
       "_id": "fld_md_051",
       "_type": "request_group",
       "parentId": "wrk_meus_direitos",
@@ -1297,6 +1311,20 @@
       "parameters": [],
       "authentication": {},
       "metaSortKey": 64
+    },
+    {
+      "_id": "req_md_081",
+      "_type": "request",
+      "parentId": "fld_md_062",
+      "name": "404 · linha do tempo de denúncia inexistente",
+      "description": "",
+      "method": "GET",
+      "url": "{{ _.base_url }}/denuncias/999999999/historico",
+      "body": {},
+      "headers": [],
+      "parameters": [],
+      "authentication": {},
+      "metaSortKey": 64.5
     },
     {
       "_id": "req_md_065",
