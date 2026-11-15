@@ -7,6 +7,7 @@ import { SeloStatus } from '../../components/CardDenuncia.jsx';
 import { api } from '../../services/api.js';
 import { useSessao } from '../../contexts/SessaoContext.jsx';
 import { cidadeUf, numero, plural } from '../../utils/formatos.js';
+import { baixarArquivo, montarCsvPainel, nomeArquivoPainel } from '../../utils/csv.js';
 import './painel.css';
 
 const MAX_BAIRROS = 8;
@@ -98,6 +99,22 @@ export default function PainelCidade() {
           <PorCategoria estado={dados.categorias} />
           <Bairros estado={dados.bairros} />
           <MaisEngajadas estado={dados.engajamento} />
+          <div className="d-flex flex-column gap-2">
+            <button
+              type="button"
+              className="md-botao md-botao-secundario"
+              aria-describedby="painel-csv-dica"
+              onClick={() =>
+                baixarArquivo(nomeArquivoPainel(resumo.cidade, resumo.uf), montarCsvPainel(dados))
+              }
+            >
+              Baixar os números (CSV)
+            </button>
+            <p id="painel-csv-dica" className="md-legenda">
+              Planilha com o resumo, as categorias, os bairros e as denúncias com mais participação. Abre no Excel
+              ou no Google Planilhas.
+            </p>
+          </div>
         </>
       )}
     </Tela>
