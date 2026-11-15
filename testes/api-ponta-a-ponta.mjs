@@ -152,12 +152,26 @@ try {
     corpo: { titulo: 'Poste apagado para o teste', descricao: 'Poste apagado na esquina há dias.',
       categoria: 'ILUMINACAO', endereco: 'Rua do Teste, 10', imagemUrl: 'img/demo/iluminacao-1.jpg' },
   });
+  const andamento = await chamar('PATCH', `/denuncias/${paraResolver.dados?.id}/status`,
+    { token: a.token, corpo: { status: 'EM_ANDAMENTO' } });
+  verificar('Autor marca como em andamento', andamento.status === 200 && andamento.dados?.status?.codigo === 'EM_ANDAMENTO');
   const confirmacoes = await Promise.all([b, c, d].map((conta) =>
     chamar('PUT', `/denuncias/${paraResolver.dados?.id}/confirmacao`, { token: conta.token })));
   const resolvida = await chamar('GET', `/denuncias/${paraResolver.dados?.id}`);
   verificar('3 confirmações simultâneas resolvem a denúncia',
     confirmacoes.every((r) => r.status === 200) && resolvida.dados?.status?.codigo === 'RESOLVIDA',
     `${confirmacoes.map((r) => r.status).join(',')} → ${resolvida.dados?.status?.codigo}`);
+
+  // 8b'. Linha do tempo: registro → em andamento (autor) → resolvida (comunidade)
+  const linha = await chamar('GET', `/denuncias/${paraResolver.dados?.id}/historico`);
+  const passos = Array.isArray(linha.dados)
+    ? linha.dados.map((p) => `${p.situacao?.codigo}${p.registro ? '(registro)' : ''}${p.origem ? `/${p.origem.codigo}` : ''}`)
+    : [];
+  verificar('Linha do tempo da denúncia',
+    linha.status === 200 && passos.join(' > ') === 'ABERTA(registro) > EM_ANDAMENTO/AUTOR > RESOLVIDA/COMUNIDADE',
+    passos.join(' > '));
+  const semDenuncia = await chamar('GET', '/denuncias/999999999/historico');
+  verificar('Linha do tempo de denúncia inexistente → 404', semDenuncia.status === 404);
 
   // 8c. Fora de /api a resposta segue o JSON de erro (sem a página HTML do servidor)
   const fora = await fetch(`${new URL(API).origin}/fora-da-api`);
