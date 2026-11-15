@@ -5,6 +5,7 @@ import br.com.fiap.meusdireitos.dao.UsuarioDao;
 import br.com.fiap.meusdireitos.dao.jdbc.ComentarioDaoJdbc;
 import br.com.fiap.meusdireitos.dao.jdbc.ConfirmacaoResolucaoDaoJdbc;
 import br.com.fiap.meusdireitos.dao.jdbc.DenunciaDaoJdbc;
+import br.com.fiap.meusdireitos.dao.jdbc.HistoricoStatusDaoJdbc;
 import br.com.fiap.meusdireitos.dao.jdbc.PerfilDemograficoDaoJdbc;
 import br.com.fiap.meusdireitos.dao.jdbc.UsuarioDaoJdbc;
 import br.com.fiap.meusdireitos.dao.jdbc.VotoDenunciaDaoJdbc;
@@ -184,6 +185,7 @@ public class UsuarioService {
             new br.com.fiap.meusdireitos.dao.jdbc.ReporteComentarioDaoJdbc(con).excluirDoUsuario(idUsuario);
             new ComentarioDaoJdbc(con).excluirDoUsuario(idUsuario);
             new VotoDenunciaDaoJdbc(con).excluirDoUsuario(idUsuario);
+            new HistoricoStatusDaoJdbc(con).excluirDoAutor(idUsuario);
             new DenunciaDaoJdbc(con).excluirDoAutor(idUsuario);
             new PerfilDemograficoDaoJdbc(con).excluir(idUsuario);
             dao.excluir(idUsuario);

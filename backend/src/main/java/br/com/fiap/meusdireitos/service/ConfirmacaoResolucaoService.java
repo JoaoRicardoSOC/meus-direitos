@@ -5,12 +5,14 @@ import br.com.fiap.meusdireitos.dao.DenunciaDao;
 import br.com.fiap.meusdireitos.dao.Transacao;
 import br.com.fiap.meusdireitos.dao.jdbc.ConfirmacaoResolucaoDaoJdbc;
 import br.com.fiap.meusdireitos.dao.jdbc.DenunciaDaoJdbc;
+import br.com.fiap.meusdireitos.dao.jdbc.HistoricoStatusDaoJdbc;
 import br.com.fiap.meusdireitos.dao.jdbc.UsuarioDaoJdbc;
 import br.com.fiap.meusdireitos.dto.response.DenunciaResponse;
 import br.com.fiap.meusdireitos.exception.AcessoNegadoException;
 import br.com.fiap.meusdireitos.exception.RegraNegocioException;
 import br.com.fiap.meusdireitos.model.Denuncia;
 import br.com.fiap.meusdireitos.model.Usuario;
+import br.com.fiap.meusdireitos.model.enums.OrigemStatus;
 import br.com.fiap.meusdireitos.model.enums.StatusDenuncia;
 
 /**
@@ -51,6 +53,8 @@ public class ConfirmacaoResolucaoService {
             dao.confirmar(idUsuario, idDenuncia); // repetir não duplica
             if (Denuncia.confirmacoesSuficientes(dao.contar(idDenuncia))) {
                 denunciaDao.atualizarStatus(idDenuncia, StatusDenuncia.RESOLVIDA);
+                new HistoricoStatusDaoJdbc(con).registrar(idDenuncia, denuncia.getStatus(), StatusDenuncia.RESOLVIDA,
+                        OrigemStatus.COMUNIDADE);
             }
             return DenunciaResponse.de(denunciaDao.buscarDetalhada(idDenuncia, idUsuario));
         });

@@ -4,6 +4,7 @@ import br.com.fiap.meusdireitos.dao.FiltroDenuncia;
 import br.com.fiap.meusdireitos.dao.jdbc.ComentarioDaoJdbc;
 import br.com.fiap.meusdireitos.dao.jdbc.ConfirmacaoResolucaoDaoJdbc;
 import br.com.fiap.meusdireitos.dao.jdbc.DenunciaDaoJdbc;
+import br.com.fiap.meusdireitos.dao.jdbc.HistoricoStatusDaoJdbc;
 import br.com.fiap.meusdireitos.dao.jdbc.PerfilDemograficoDaoJdbc;
 import br.com.fiap.meusdireitos.dao.jdbc.RelatorioDaoJdbc;
 import br.com.fiap.meusdireitos.dao.jdbc.ReporteComentarioDaoJdbc;
@@ -14,12 +15,15 @@ import br.com.fiap.meusdireitos.factory.ConnectionFactory;
 import br.com.fiap.meusdireitos.model.Comentario;
 import br.com.fiap.meusdireitos.model.Denuncia;
 import br.com.fiap.meusdireitos.model.DenunciaDetalhada;
+import br.com.fiap.meusdireitos.model.HistoricoStatus;
 import br.com.fiap.meusdireitos.model.Pagina;
 import br.com.fiap.meusdireitos.model.Placar;
 import br.com.fiap.meusdireitos.model.Usuario;
 import br.com.fiap.meusdireitos.model.VotoDenuncia;
 import br.com.fiap.meusdireitos.model.enums.CategoriaDenuncia;
 import br.com.fiap.meusdireitos.model.enums.OrdemFeed;
+import br.com.fiap.meusdireitos.model.enums.OrigemStatus;
+import br.com.fiap.meusdireitos.model.enums.StatusDenuncia;
 import br.com.fiap.meusdireitos.model.enums.TipoVoto;
 import br.com.fiap.meusdireitos.model.relatorio.ResumoCidade;
 import br.com.fiap.meusdireitos.service.ComentarioService;
@@ -116,6 +120,27 @@ class DaosIntegracaoTest {
         Pagina<DenunciaDetalhada> pesquisa = dao.pesquisar(filtro, autor.getId(), 1, 10);
         assertEquals(1, pesquisa.total());
         assertEquals(denuncia.getId(), pesquisa.itens().get(0).getDenuncia().getId());
+    }
+
+    @Test
+    void historicoGuardaAsMudancasEmOrdemEESomeComAsDenunciasDoAutor() throws SQLException {
+        Usuario autor = inserirUsuario("Autor do histórico");
+        Denuncia denuncia = inserirDenuncia(autor);
+        HistoricoStatusDaoJdbc historico = new HistoricoStatusDaoJdbc(conexao);
+
+        historico.registrar(denuncia.getId(), StatusDenuncia.ABERTA, StatusDenuncia.EM_ANDAMENTO, OrigemStatus.AUTOR);
+        historico.registrarEmLote(List.of(new HistoricoStatus(null, denuncia.getId(), StatusDenuncia.EM_ANDAMENTO,
+                StatusDenuncia.RESOLVIDA, OrigemStatus.COMUNIDADE, java.time.LocalDateTime.now().plusMinutes(1))));
+        List<HistoricoStatus> mudancas = historico.listarPorDenuncia(denuncia.getId());
+        assertEquals(2, mudancas.size());
+        assertEquals(StatusDenuncia.EM_ANDAMENTO, mudancas.get(0).nova());
+        assertEquals(OrigemStatus.AUTOR, mudancas.get(0).origem());
+        assertEquals(OrigemStatus.COMUNIDADE, mudancas.get(1).origem());
+
+        // exclusão da conta: o histórico sai antes das denúncias (sem ON DELETE CASCADE)
+        historico.excluirDoAutor(autor.getId());
+        assertEquals(1, new DenunciaDaoJdbc(conexao).excluirDoAutor(autor.getId()));
+        assertTrue(historico.listarPorDenuncia(denuncia.getId()).isEmpty());
     }
 
     @Test

@@ -6,20 +6,24 @@ import br.com.fiap.meusdireitos.dao.Transacao;
 import br.com.fiap.meusdireitos.dao.jdbc.ComentarioDaoJdbc;
 import br.com.fiap.meusdireitos.dao.jdbc.ConfirmacaoResolucaoDaoJdbc;
 import br.com.fiap.meusdireitos.dao.jdbc.DenunciaDaoJdbc;
+import br.com.fiap.meusdireitos.dao.jdbc.HistoricoStatusDaoJdbc;
 import br.com.fiap.meusdireitos.dao.jdbc.ReporteComentarioDaoJdbc;
 import br.com.fiap.meusdireitos.dao.jdbc.UsuarioDaoJdbc;
 import br.com.fiap.meusdireitos.dao.jdbc.VotoDenunciaDaoJdbc;
 import br.com.fiap.meusdireitos.dto.request.DenunciaRequest;
 import br.com.fiap.meusdireitos.dto.request.StatusRequest;
 import br.com.fiap.meusdireitos.dto.response.DenunciaResponse;
+import br.com.fiap.meusdireitos.dto.response.EventoHistoricoResponse;
 import br.com.fiap.meusdireitos.dto.response.PaginaResponse;
 import br.com.fiap.meusdireitos.exception.AcessoNegadoException;
 import br.com.fiap.meusdireitos.exception.RegraNegocioException;
 import br.com.fiap.meusdireitos.model.Denuncia;
 import br.com.fiap.meusdireitos.model.DenunciaDetalhada;
+import br.com.fiap.meusdireitos.model.EventoLinhaDoTempo;
 import br.com.fiap.meusdireitos.model.Pagina;
 import br.com.fiap.meusdireitos.model.Usuario;
 import br.com.fiap.meusdireitos.model.enums.CategoriaDenuncia;
+import br.com.fiap.meusdireitos.model.enums.OrigemStatus;
 import br.com.fiap.meusdireitos.model.enums.StatusDenuncia;
 import br.com.fiap.meusdireitos.service.validacao.Validador;
 
@@ -114,6 +118,7 @@ public class DenunciaService {
                         + "' para '" + req.status().getDescricao() + "'.");
             }
             dao.atualizarStatus(id, req.status());
+            new HistoricoStatusDaoJdbc(con).registrar(id, denuncia.getStatus(), req.status(), OrigemStatus.AUTOR);
             if (req.status() == StatusDenuncia.ABERTA) {
                 // reaberta: as confirmações antigas não valem mais (o problema voltou)
                 new ConfirmacaoResolucaoDaoJdbc(con).excluirPorDenuncia(id);
@@ -122,11 +127,29 @@ public class DenunciaService {
         });
     }
 
+    /**
+     * Linha do tempo pública da denúncia: o registro e cada mudança de situação, com quem mudou.
+     *
+     * @throws br.com.fiap.meusdireitos.exception.EntidadeNaoEncontradaException se a denúncia não existir
+     */
+    public List<EventoHistoricoResponse> historico(Long id) {
+        return Transacao.consultar(con -> {
+            Denuncia denuncia = new DenunciaDaoJdbc(con).buscarPorId(id);
+            List<EventoHistoricoResponse> passos = new ArrayList<>();
+            for (EventoLinhaDoTempo evento :
+                    EventoLinhaDoTempo.montar(denuncia, new HistoricoStatusDaoJdbc(con).listarPorDenuncia(id))) {
+                passos.add(EventoHistoricoResponse.de(evento));
+            }
+            return passos;
+        });
+    }
+
     /** Exclui a denúncia com seus comentários (e reportes deles), votos e confirmações, numa única transação. */
     public void excluir(Long idUsuario, Long id) {
         Transacao.executarSemRetorno(con -> {
             DenunciaDao dao = new DenunciaDaoJdbc(con);
             exigirAutor(dao.buscarPorId(id), idUsuario, "excluí-la");
+            new HistoricoStatusDaoJdbc(con).excluirPorDenuncia(id);
             new ConfirmacaoResolucaoDaoJdbc(con).excluirPorDenuncia(id);
             new ReporteComentarioDaoJdbc(con).excluirPorDenuncia(id);
             new ComentarioDaoJdbc(con).excluirPorDenuncia(id);

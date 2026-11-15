@@ -6,6 +6,7 @@ import br.com.fiap.meusdireitos.dto.request.StatusRequest;
 import br.com.fiap.meusdireitos.dto.request.VotoRequest;
 import br.com.fiap.meusdireitos.dto.response.ComentarioResponse;
 import br.com.fiap.meusdireitos.dto.response.DenunciaResponse;
+import br.com.fiap.meusdireitos.dto.response.EventoHistoricoResponse;
 import br.com.fiap.meusdireitos.dto.response.PaginaResponse;
 import br.com.fiap.meusdireitos.dto.response.PlacarResponse;
 import br.com.fiap.meusdireitos.service.AutenticacaoService;
@@ -145,6 +146,15 @@ public class DenunciaResource {
     @Path("{id: \\d+}/confirmacao")
     public DenunciaResponse retirarConfirmacao(@HeaderParam(USUARIO) String usuarioId, @PathParam("id") Long id) {
         return confirmacoes.retirar(autenticacao.idDoUsuarioLogado(usuarioId), id);
+    }
+
+    // ------------------------------------------------------------------ linha do tempo
+
+    /** Linha do tempo pública: o registro e cada mudança de situação (pelo autor ou pela comunidade). */
+    @GET
+    @Path("{id: \\d+}/historico")
+    public List<EventoHistoricoResponse> historico(@PathParam("id") Long id) {
+        return denuncias.historico(id);
     }
 
     // ------------------------------------------------------------------ comentários
