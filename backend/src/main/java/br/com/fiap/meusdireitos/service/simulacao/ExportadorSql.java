@@ -62,6 +62,11 @@ class ExportadorSql {
                         .append(usuario(emailBase, c.morador())).append(", ").append(denuncia).append(", ")
                         .append(data(c.quando())).append(");\n");
             }
+            d.mudancaDeSituacao().ifPresent(m -> sql
+                    .append("INSERT INTO tb_gs26s2_historico_status (cd_historico, cd_denuncia, st_anterior, st_novo, ")
+                    .append("tp_origem, dt_alteracao) VALUES (seq_gs26s2_historico_status.NEXTVAL, ").append(denuncia)
+                    .append(", 'ABERTA', ").append(texto(m.nova().name())).append(", ").append(texto(m.origem().name()))
+                    .append(", ").append(data(m.quando())).append(");\n"));
             sql.append('\n');
         }
         return sql.append("COMMIT;\n").toString();

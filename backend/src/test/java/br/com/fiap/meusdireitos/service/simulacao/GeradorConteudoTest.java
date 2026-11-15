@@ -1,6 +1,7 @@
 package br.com.fiap.meusdireitos.service.simulacao;
 
 import br.com.fiap.meusdireitos.model.enums.CategoriaDenuncia;
+import br.com.fiap.meusdireitos.model.enums.OrigemStatus;
 import br.com.fiap.meusdireitos.model.enums.StatusDenuncia;
 import br.com.fiap.meusdireitos.service.simulacao.PacoteCidade.ComentarioPlanejado;
 import br.com.fiap.meusdireitos.service.simulacao.PacoteCidade.ConfirmacaoPlanejada;
@@ -156,5 +157,26 @@ class GeradorConteudoTest {
         assertEquals(1, emAndamento);
         assertEquals(1, resolvidasPelaComunidade);
         assertEquals(1, faltandoUma);
+    }
+
+    @Test
+    void denunciasDeExemploForaDeAbertaTemMudancaNaLinhaDoTempo() {
+        for (String cidade : CIDADES) {
+            for (DenunciaPlanejada d : pacoteDe(cidade).denuncias()) {
+                var mudanca = d.mudancaDeSituacao();
+                if (d.status() == StatusDenuncia.ABERTA) {
+                    assertTrue(mudanca.isEmpty(), cidade + ": aberta não tem mudança");
+                    continue;
+                }
+                assertTrue(mudanca.isPresent(), cidade + ": " + d.status() + " precisa de mudança");
+                assertEquals(d.status(), mudanca.get().nova());
+                assertFalse(mudanca.get().quando().isBefore(d.criadaEm()), cidade + ": mudança antes do registro");
+                assertFalse(mudanca.get().quando().isAfter(AGORA), cidade + ": mudança no futuro");
+                OrigemStatus esperada = d.status() == StatusDenuncia.RESOLVIDA
+                        && d.confirmacoes().size() >= GeradorConteudo.CONFIRMACOES_PARA_RESOLVER
+                        ? OrigemStatus.COMUNIDADE : OrigemStatus.AUTOR;
+                assertEquals(esperada, mudanca.get().origem(), cidade + ": origem da mudança");
+            }
+        }
     }
 }

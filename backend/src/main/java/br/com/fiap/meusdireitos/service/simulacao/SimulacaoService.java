@@ -8,6 +8,7 @@ import br.com.fiap.meusdireitos.dao.VotoDenunciaDao;
 import br.com.fiap.meusdireitos.dao.jdbc.ComentarioDaoJdbc;
 import br.com.fiap.meusdireitos.dao.jdbc.ConfirmacaoResolucaoDaoJdbc;
 import br.com.fiap.meusdireitos.dao.jdbc.DenunciaDaoJdbc;
+import br.com.fiap.meusdireitos.dao.jdbc.HistoricoStatusDaoJdbc;
 import br.com.fiap.meusdireitos.dao.jdbc.PerfilDemograficoDaoJdbc;
 import br.com.fiap.meusdireitos.dao.jdbc.ReporteComentarioDaoJdbc;
 import br.com.fiap.meusdireitos.dao.jdbc.SemeaduraCidadeDaoJdbc;
@@ -16,6 +17,7 @@ import br.com.fiap.meusdireitos.dao.jdbc.VotoDenunciaDaoJdbc;
 import br.com.fiap.meusdireitos.model.Comentario;
 import br.com.fiap.meusdireitos.model.ConfirmacaoResolucao;
 import br.com.fiap.meusdireitos.model.Denuncia;
+import br.com.fiap.meusdireitos.model.HistoricoStatus;
 import br.com.fiap.meusdireitos.model.SemeaduraCidade;
 import br.com.fiap.meusdireitos.model.Usuario;
 import br.com.fiap.meusdireitos.model.VotoDenuncia;
@@ -120,6 +122,7 @@ public class SimulacaoService {
         List<VotoDenuncia> votos = new ArrayList<>();
         List<Comentario> comentarios = new ArrayList<>();
         List<ConfirmacaoResolucao> confirmacoes = new ArrayList<>();
+        List<HistoricoStatus> historico = new ArrayList<>();
         for (int i = 0; i < pacote.denuncias().size(); i++) {
             DenunciaPlanejada planejada = pacote.denuncias().get(i);
             Long idDenuncia = idsDenuncias.get(i);
@@ -134,10 +137,13 @@ public class SimulacaoService {
             for (ConfirmacaoPlanejada c : planejada.confirmacoes()) {
                 confirmacoes.add(new ConfirmacaoResolucao(ids.get(c.morador()), idDenuncia, c.quando()));
             }
+            planejada.mudancaDeSituacao().ifPresent(m -> historico.add(
+                    new HistoricoStatus(null, idDenuncia, StatusDenuncia.ABERTA, m.nova(), m.origem(), m.quando())));
         }
         new VotoDenunciaDaoJdbc(con).inserirEmLote(votos);
         new ComentarioDaoJdbc(con).inserirEmLote(comentarios);
         new ConfirmacaoResolucaoDaoJdbc(con).confirmarEmLote(confirmacoes);
+        new HistoricoStatusDaoJdbc(con).registrarEmLote(historico);
     }
 
     /** @return ids dos moradores, na mesma ordem de {@code pacote.moradores()} */
@@ -327,6 +333,7 @@ public class SimulacaoService {
                 new ReporteComentarioDaoJdbc(con).excluirDoUsuario(id);
                 new ComentarioDaoJdbc(con).excluirDoUsuario(id);
                 new VotoDenunciaDaoJdbc(con).excluirDoUsuario(id);
+                new HistoricoStatusDaoJdbc(con).excluirDoAutor(id);
                 new DenunciaDaoJdbc(con).excluirDoAutor(id);
                 new PerfilDemograficoDaoJdbc(con).excluir(id);
                 new UsuarioDaoJdbc(con).excluir(id);
