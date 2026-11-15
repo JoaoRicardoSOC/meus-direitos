@@ -133,6 +133,25 @@ classDiagram
         -Boolean relevanteParaLeitor
     }
 
+    class HistoricoStatus {
+        <<record>>
+        Long id
+        Long idDenuncia
+        StatusDenuncia anterior
+        StatusDenuncia nova
+        OrigemStatus origem
+        LocalDateTime data
+    }
+
+    class EventoLinhaDoTempo {
+        <<record>>
+        StatusDenuncia situacao
+        OrigemStatus origem
+        boolean registro
+        LocalDateTime quando
+        +montar(Denuncia, List~HistoricoStatus~)$ List~EventoLinhaDoTempo~
+    }
+
     class SemeaduraCidade {
         <<record>>
         String cidadeChave
@@ -164,6 +183,11 @@ classDiagram
         RESOLVIDA
         +podeIrPara(StatusDenuncia novo) boolean
     }
+    class OrigemStatus {
+        <<enum>>
+        AUTOR
+        COMUNIDADE
+    }
     class TipoVoto {
         <<enum>>
         UP
@@ -192,6 +216,9 @@ classDiagram
     Denuncia "1" *-- "*" Comentario
     Denuncia "1" *-- "*" VotoDenuncia
     Denuncia "1" *-- "*" ConfirmacaoResolucao
+    Denuncia "1" *-- "*" HistoricoStatus : muda de situação
+    HistoricoStatus --> OrigemStatus
+    EventoLinhaDoTempo ..> HistoricoStatus : monta a partir de
     Direito "1" *-- "*" PassoDireito
     Direito "*" -- "*" TagDemografica : aplica-se a
     PerfilDemografico ..> TagDemografica : calcula
@@ -204,12 +231,15 @@ classDiagram
     EnumDescritivo <|.. CategoriaDenuncia
     EnumDescritivo <|.. StatusDenuncia
     EnumDescritivo <|.. TipoVoto
+    EnumDescritivo <|.. OrigemStatus
     EnumDescritivo <|.. TagDemografica
 ```
 
 > Também implementam `EnumDescritivo`: `RacaCor`, `Deficiencia`, `PercursoEscolar`, `IconeDireito` e `OrdemFeed`.
 >
 > O reporte de comentário (associação "reporta") não tem classe no modelo: é só a tabela `TB_GS26S2_REPORTE_COMENTARIO` (usuário, comentário, data), acessada pelo `ReporteComentarioDao`. Com 3 reportes, o comentário deixa de aparecer na listagem e nas contagens. `SemeaduraCidade` registra as cidades que já receberam o conteúdo de demonstração ("cidade viva").
+>
+> Linha do tempo: cada mudança de situação vira um `HistoricoStatus` (de qual para qual, quando, e se foi o `AUTOR` ou a `COMUNIDADE`, com 3 confirmações). `EventoLinhaDoTempo.montar` junta o registro da denúncia e essas mudanças em ordem de data; para denúncias anteriores ao histórico, mostra a situação atual sem origem.
 
 ## 2. Camadas (exemplo: denúncias e comentários)
 
@@ -227,6 +257,7 @@ classDiagram
         +excluir(authorization, id) Response
         +votar(authorization, id, VotoRequest) PlacarResponse
         +confirmarResolucao(authorization, id) DenunciaResponse
+        +historico(id) List~EventoHistoricoResponse~
         +comentar(authorization, id, ComentarioRequest) Response
     }
     class ComentarioResource {
@@ -276,6 +307,8 @@ classDiagram
         +criar(Long idUsuario, DenunciaRequest req) DenunciaResponse
         +atualizar(Long idUsuario, Long id, DenunciaRequest req) DenunciaResponse
         +excluir(Long idUsuario, Long id) void
+        +alterarStatus(Long idUsuario, Long id, StatusRequest req) DenunciaResponse
+        +historico(Long id) List~EventoHistoricoResponse~
     }
     class FeedService {
         ~BONUS_RELEVANCIA = 10
@@ -364,6 +397,16 @@ classDiagram
         +excluirPorDenuncia(Long idDenuncia) void
         +excluirDoUsuario(Long idUsuario) void
     }
+    class HistoricoStatusDao {
+        <<interface>>
+        +registrar(Long idDenuncia, StatusDenuncia anterior, StatusDenuncia nova, OrigemStatus origem) void
+        +listarPorDenuncia(Long idDenuncia) List~HistoricoStatus~
+        +excluirPorDenuncia(Long idDenuncia) void
+        +excluirDoAutor(Long idUsuario) void
+    }
+    class HistoricoStatusDaoJdbc {
+        -Connection conexao
+    }
     class DenunciaDaoJdbc {
         -Connection conexao
     }
@@ -433,6 +476,7 @@ classDiagram
     ComentarioService ..> Transacao
     DenunciaService ..> DenunciaDao
     DenunciaService ..> ReporteComentarioDao
+    DenunciaService ..> HistoricoStatusDao : registra AUTOR
     ComentarioService ..> ComentarioDao
     ComentarioService ..> ReporteComentarioDao
     PerfilService ..> PerfilRequest
@@ -445,6 +489,7 @@ classDiagram
     DenunciaDao <|.. DenunciaDaoJdbc
     ComentarioDao <|.. ComentarioDaoJdbc
     ReporteComentarioDao <|.. ReporteComentarioDaoJdbc
+    HistoricoStatusDao <|.. HistoricoStatusDaoJdbc
     ComentarioDaoJdbc ..> ReporteComentarioDaoJdbc : naoOculto
     DenunciaDaoJdbc ..> ReporteComentarioDaoJdbc : naoOculto
     ContainerResponseFilter <|.. CorsFilter
@@ -460,7 +505,7 @@ Como ler:
 - **Conexões.** `Transacao` pede a conexão à `ConnectionFactory`, que a empresta do `PoolConexoes` (até `MD_DB_POOL` conexões, padrão 5). A `Transacao` devolve a conexão com `ConnectionFactory.devolver` num bloco `finally`.
 - **Filtros de resposta.** `CorsFilter` e `CabecalhosSegurancaFilter` implementam `ContainerResponseFilter` e agem em toda resposta. O segundo põe `Cache-Control: no-store`, exceto quando a rota já definiu o seu, como as listas fixas do `MetadadosResource` (`public, max-age=86400`).
 
-> DAOs que estendem `CrudDao<T>`: `UsuarioDao`, `DenunciaDao`, `ComentarioDao` e `DireitoDao`. Os demais (`VotoDenunciaDao`, `ConfirmacaoResolucaoDao`, `ReporteComentarioDao`, `PerfilDemograficoDao`, `RelatorioDao`, `SemeaduraCidadeDao`) têm operações próprias. Cada um tem a sua implementação `*DaoJdbc`, que recebe a `Connection` aberta pela `Transacao`.
+> DAOs que estendem `CrudDao<T>`: `UsuarioDao`, `DenunciaDao`, `ComentarioDao` e `DireitoDao`. Os demais (`VotoDenunciaDao`, `ConfirmacaoResolucaoDao`, `ReporteComentarioDao`, `PerfilDemograficoDao`, `RelatorioDao`, `SemeaduraCidadeDao`, `HistoricoStatusDao`) têm operações próprias. A confirmação de resolução (que grava o histórico com origem `COMUNIDADE`) está no [diagrama de sequência](diagrama-sequencia-confirmacao.md). Cada um tem a sua implementação `*DaoJdbc`, que recebe a `Connection` aberta pela `Transacao`.
 
 ## 3. Erros (`exception`)
 
