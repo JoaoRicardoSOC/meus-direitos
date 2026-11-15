@@ -137,7 +137,7 @@ factory   (ConnectionFactory → Oracle)
 | `service` | Regras de negócio e controle de transação. `AutenticacaoService` (login e token) usa `LimiteTentativasLogin`. Subpacotes: `validacao` (`Validador`, que acumula os erros de todos os campos), `moderacao` (`FiltroTermosOfensivos`) e `simulacao` ("cidade viva") |
 | `resource` | Endpoints REST: `AuthResource`, `UsuarioResource`, `PerfilResource`, `DireitoResource`, `DenunciaResource`, `ComentarioResource`, `RelatorioResource`, `MetadadosResource`, `HealthResource` e `SimulacaoResource` |
 | `exception` / `exception.mapper` | Hierarquia de exceções com status HTTP e `ExceptionMapper`s que respondem sempre o mesmo JSON de erro |
-| `util` | `SenhaUtil` (hash PBKDF2), `TokenUtil` (token HMAC), `TextoUtil` (normalização de cidade e texto), `ChaveUtil` (comparação das chaves em tempo constante) e `GeradorHashSenha` (gera hashes de senha para scripts, pela linha de comando) |
+| `util` | `SenhaUtil` (hash PBKDF2), `TokenUtil` (token HMAC), `TextoUtil` (normalização de cidade e texto) e `ChaveUtil` (comparação das chaves em tempo constante) |
 
 **Caminho de um pedido.** Exemplo: `POST /api/denuncias/7/comentarios` com `{"texto": "..."}`.
 1. O Jersey converte o JSON no record `ComentarioRequest` (JSON-B) e chama `DenunciaResource.comentar`.
