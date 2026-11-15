@@ -22,6 +22,15 @@ public interface DenunciaDao extends CrudDao<Denuncia> {
 
     void atualizarStatus(Long id, StatusDenuncia status) throws SQLException;
 
+    /**
+     * Como {@link #buscarPorId}, mas trava a linha da denúncia até o fim da transação (SELECT ... FOR UPDATE).
+     * Usado quando a decisão depende de contar linhas filhas: duas transações simultâneas sobre a mesma
+     * denúncia passam a esperar uma pela outra em vez de contar ao mesmo tempo.
+     *
+     * @throws br.com.fiap.meusdireitos.exception.EntidadeNaoEncontradaException se não existir
+     */
+    Denuncia buscarParaAtualizar(Long id) throws SQLException;
+
     /** Grava várias denúncias de uma vez (lote JDBC), para o conteúdo de demonstração. */
     void inserirEmLote(List<Denuncia> denuncias) throws SQLException;
 

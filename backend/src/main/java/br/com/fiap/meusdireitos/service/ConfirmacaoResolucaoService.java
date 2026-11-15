@@ -30,7 +30,9 @@ public class ConfirmacaoResolucaoService {
     public DenunciaResponse confirmar(Long idUsuario, Long idDenuncia) {
         return Transacao.executar(con -> {
             DenunciaDao denunciaDao = new DenunciaDaoJdbc(con);
-            Denuncia denuncia = denunciaDao.buscarPorId(idDenuncia); // 404 se não existir
+            // Trava a denúncia: confirmações simultâneas entram em fila e cada uma conta as já gravadas.
+            // Sem isso, três moradores confirmando ao mesmo tempo contavam 1 cada e a denúncia não resolvia.
+            Denuncia denuncia = denunciaDao.buscarParaAtualizar(idDenuncia); // 404 se não existir
 
             if (denuncia.isAutor(idUsuario)) {
                 throw new RegraNegocioException(
@@ -62,7 +64,7 @@ public class ConfirmacaoResolucaoService {
     public DenunciaResponse retirar(Long idUsuario, Long idDenuncia) {
         return Transacao.executar(con -> {
             DenunciaDao denunciaDao = new DenunciaDaoJdbc(con);
-            Denuncia denuncia = denunciaDao.buscarPorId(idDenuncia); // 404 se não existir
+            Denuncia denuncia = denunciaDao.buscarParaAtualizar(idDenuncia); // mesma fila de confirmar
             if (!denuncia.aceitaConfirmacaoDeResolucao()) {
                 throw new RegraNegocioException(
                         "A denúncia já foi resolvida; a confirmação não pode mais ser retirada.");

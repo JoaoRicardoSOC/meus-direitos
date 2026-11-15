@@ -52,6 +52,8 @@ public class DenunciaDaoJdbc implements DenunciaDao {
     private static final String SQL_BUSCAR_POR_ID =
             "SELECT " + COLUNAS + ", u.nm_usuario AS nm_autor, u.st_simulado AS st_autor_simulado FROM tb_gs26s2_denuncia d "
                     + "INNER JOIN tb_gs26s2_usuario u ON u.cd_usuario = d.cd_usuario WHERE d.cd_denuncia = ?";
+    /** Trava só a linha da denúncia (não a do autor) até o fim da transação. */
+    private static final String SQL_BUSCAR_PARA_ATUALIZAR = SQL_BUSCAR_POR_ID + " FOR UPDATE OF d.st_denuncia";
     private static final String SQL_LISTAR =
             "SELECT " + COLUNAS + ", u.nm_usuario AS nm_autor, u.st_simulado AS st_autor_simulado FROM tb_gs26s2_denuncia d "
                     + "INNER JOIN tb_gs26s2_usuario u ON u.cd_usuario = d.cd_usuario ORDER BY d.dt_criacao DESC";
@@ -183,7 +185,16 @@ public class DenunciaDaoJdbc implements DenunciaDao {
 
     @Override
     public Denuncia buscarPorId(Long id) throws SQLException {
-        try (PreparedStatement stmt = conexao.prepareStatement(SQL_BUSCAR_POR_ID)) {
+        return buscar(SQL_BUSCAR_POR_ID, id);
+    }
+
+    @Override
+    public Denuncia buscarParaAtualizar(Long id) throws SQLException {
+        return buscar(SQL_BUSCAR_PARA_ATUALIZAR, id);
+    }
+
+    private Denuncia buscar(String sql, Long id) throws SQLException {
+        try (PreparedStatement stmt = conexao.prepareStatement(sql)) {
             stmt.setLong(1, id);
             try (ResultSet rs = stmt.executeQuery()) {
                 if (!rs.next()) {
