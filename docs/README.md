@@ -30,6 +30,7 @@ Comece pelo documento que corresponde ao que você quer fazer.
 | [`roteiro-demonstracao.md`](roteiro-demonstracao.md) | Preparação, roteiro com tempos e plano B para o vídeo pitch |
 | [`deploy.md`](deploy.md) | API no Render (Docker) e app na Vercel: ordem, variáveis, CORS e conferência |
 | [`diagramas/diagrama-classes.md`](diagramas/diagrama-classes.md) | Diagramas de classes do back-end (domínio, camadas e erros), também em SVG |
+| [`diagramas/diagrama-sequencia-confirmacao.md`](diagramas/diagrama-sequencia-confirmacao.md) | Sequência da confirmação de resolução pela comunidade (trava, contagem, mudança de situação e linha do tempo), também em SVG |
 | [`diagramas/diagrama-er.md`](diagramas/diagrama-er.md) | Modelo de dados (também em PNG, PDF e SVG), normalização, regras garantidas pelo banco e decisões |
 | [`diagramas/diagrama-frontend.md`](diagramas/diagrama-frontend.md) | Telas, rotas e camadas do front-end |
 | [`insomnia/meus-direitos.insomnia.json`](insomnia/meus-direitos.insomnia.json) | Todas as rotas, com uma pasta de erros tratados (importe em *Import → From File*) |

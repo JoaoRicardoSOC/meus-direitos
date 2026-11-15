@@ -158,6 +158,7 @@ Cada decisão com o motivo e o que se abriu mão.
 |---|---|
 | Rotas, corpos, respostas e erros | [`api.md`](api.md) |
 | Classes do back-end | [`diagramas/diagrama-classes.md`](diagramas/diagrama-classes.md) |
+| Sequência de "Já foi resolvido" (confirmação da comunidade) | [`diagramas/diagrama-sequencia-confirmacao.md`](diagramas/diagrama-sequencia-confirmacao.md) |
 | Tabelas e regras do banco | [`diagramas/diagrama-er.md`](diagramas/diagrama-er.md) e [`banco-de-dados.md`](banco-de-dados.md) |
 | Telas e camadas do front | [`diagramas/diagrama-frontend.md`](diagramas/diagrama-frontend.md) |
 | Segurança e LGPD | [`seguranca-e-privacidade.md`](seguranca-e-privacidade.md) |
