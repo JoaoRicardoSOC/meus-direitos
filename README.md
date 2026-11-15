@@ -149,6 +149,8 @@ flowchart LR
 
 Sem frameworks além dos da disciplina: o token de sessão (HMAC-SHA256), o pool de conexões e as transações são feitos com o próprio JDK. O porquê de cada decisão está na [arquitetura](docs/arquitetura.md).
 
+**Docker só no deploy.** O `backend/Dockerfile` existe apenas para publicar a API no Render, que não roda Java sem container. Ele não faz parte do código nem das dependências: para rodar e avaliar, basta o Maven ([Como executar](#como-executar)).
+
 ## Estrutura do repositório
 
 ```

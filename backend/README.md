@@ -5,7 +5,7 @@ Ela grava e lê os dados de um banco **Oracle** via **JDBC**.
 
 - **URL base:** `http://localhost:8080/api`
 - **Contrato completo da API** (rotas, corpos, respostas, erros): [`docs/api.md`](../docs/api.md)
-- **Coleção do Insomnia** (69 requisições, incluindo uma pasta só de erros): [`docs/insomnia/meus-direitos.insomnia.json`](../docs/insomnia/meus-direitos.insomnia.json)
+- **Coleção do Insomnia** (71 requisições, incluindo uma pasta só de erros): [`docs/insomnia/meus-direitos.insomnia.json`](../docs/insomnia/meus-direitos.insomnia.json)
 
 ---
 
@@ -54,6 +54,8 @@ mvn clean compile exec:java
 - Para encerrar, use **Enter** ou **Ctrl+C**.
 
 **Ordem para rodar o projeto inteiro:** `database/script.sql` → back-end (esta pasta) → front-end (`frontend/README.md`).
+
+**Docker só no deploy.** O `Dockerfile` e o `.dockerignore` desta pasta servem apenas para publicar a API no Render, que não roda Java sem container ([`docs/deploy.md`](../docs/deploy.md)). Eles não entram no código nem nas dependências: para rodar e avaliar, basta o Maven, como acima.
 
 ### Testes
 
@@ -179,7 +181,7 @@ Exemplos:
 - login bloqueado por muitas tentativas → 429
 - banco fora do ar → 503
 
-Esses casos foram testados manualmente, inclusive com o banco desligado: o servidor não cai. Para repetir os testes, use a pasta **"10 · Erros (robustez)"** da coleção do Insomnia (16 requisições que provocam os erros acima, exceto o 429, que exige errar a senha 5 vezes, e o 503, que exige desligar o banco).
+Esses casos foram testados manualmente, inclusive com o banco desligado: o servidor não cai. Para repetir os testes, use a pasta **"10 · Erros (robustez)"** da coleção do Insomnia (17 requisições que provocam os erros acima, exceto o 429, que exige errar a senha 5 vezes, e o 503, que exige desligar o banco).
 
 **Regra de negócio central: o feed "Para você".**
 - Relevância = saldo de votos, **+10** se a categoria afeta o perfil da pessoa (ex.: calçada para quem tem deficiência física), **−15** se a denúncia já foi resolvida.
