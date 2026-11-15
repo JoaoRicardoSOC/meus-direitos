@@ -5,11 +5,12 @@
 -- Como executar: no SQL Developer, abra este arquivo e use "Executar Script" (F5),
 -- conectado ao schema que a API usa (db.usuario do backend/db.properties).
 --
--- O SCRIPT NÃO APAGA DADOS NEM OBJETOS. Ele faz só duas coisas:
+-- O SCRIPT NÃO APAGA DADOS NEM OBJETOS. Ele faz só três coisas:
 --   * etapa 0: num schema criado com os nomes antigos (TB_USUARIO, SEQ_USUARIO, PK_USUARIO...), renomeia
 --     cada objeto deste projeto para o padrão GS26S2 (RENAME mantém dados, chaves e índices);
 --   * etapas 1 a 4: cria cada tabela, sequence e índice apenas se ainda não houver um objeto com o mesmo
---     nome, e insere cada tema do catálogo apenas se ainda não houver um tema com o mesmo título.
+--     nome, e insere cada tema do catálogo apenas se ainda não houver um tema com o mesmo título;
+--   * etapa 5: grava o dicionário de dados (COMMENT ON) das tabelas e colunas deste projeto.
 -- Por isso pode ser executado num schema compartilhado com outros projetos e quantas vezes for preciso:
 -- num schema que já está no padrão, não muda nada; num schema vazio, monta tudo do zero.
 --
@@ -830,3 +831,109 @@ END;
 /
 
 COMMIT;
+
+-- =====================================================================================
+-- 5. Dicionário de dados (COMMENT ON)
+-- =====================================================================================
+-- Grava no dicionário do Oracle o significado de cada tabela e coluna deste projeto, para aparecer no
+-- SQL Developer, no Data Modeler e em USER_TAB_COMMENTS / USER_COL_COMMENTS.
+-- COMMENT ON não muda dados nem estrutura e substitui o comentário anterior, então esta etapa também
+-- pode rodar quantas vezes for preciso.
+
+-- TB_GS26S2_USUARIO
+COMMENT ON TABLE TB_GS26S2_USUARIO IS 'Conta de quem usa o app Meus Direitos (pessoas reais e moradores de exemplo da cidade viva).';
+COMMENT ON COLUMN TB_GS26S2_USUARIO.CD_USUARIO IS 'Código do usuário (chave primária), gerado por SEQ_GS26S2_USUARIO.';
+COMMENT ON COLUMN TB_GS26S2_USUARIO.NM_USUARIO IS 'Nome exibido no app.';
+COMMENT ON COLUMN TB_GS26S2_USUARIO.DS_EMAIL IS 'E-mail de login, gravado em minúsculas e único por conta.';
+COMMENT ON COLUMN TB_GS26S2_USUARIO.DS_SENHA_HASH IS 'Hash PBKDF2 com sal (a senha nunca é gravada).';
+COMMENT ON COLUMN TB_GS26S2_USUARIO.NM_CIDADE IS 'Cidade do cadastro, como foi digitada; define o feed que a pessoa vê.';
+COMMENT ON COLUMN TB_GS26S2_USUARIO.SG_UF IS 'Sigla do estado.';
+COMMENT ON COLUMN TB_GS26S2_USUARIO.DT_CADASTRO IS 'Data e hora do cadastro.';
+COMMENT ON COLUMN TB_GS26S2_USUARIO.ST_SIMULADO IS 'S = morador de exemplo da cidade viva; N = conta real.';
+
+-- TB_GS26S2_PERFIL_DEMOGRAFICO
+COMMENT ON TABLE TB_GS26S2_PERFIL_DEMOGRAFICO IS 'Respostas do questionário Meus Direitos: opcional, no máximo uma linha por usuário (relação 1:1).';
+COMMENT ON COLUMN TB_GS26S2_PERFIL_DEMOGRAFICO.CD_USUARIO IS 'Dono das respostas: chave primária e estrangeira para TB_GS26S2_USUARIO.';
+COMMENT ON COLUMN TB_GS26S2_PERFIL_DEMOGRAFICO.DT_NASCIMENTO IS 'Data de nascimento (opcional), usada para calcular idoso (60+) e jovem.';
+COMMENT ON COLUMN TB_GS26S2_PERFIL_DEMOGRAFICO.TP_RACA_COR IS 'Raça/cor declarada: BRANCA, PRETA, PARDA, AMARELA, INDIGENA ou NAO_INFORMADO.';
+COMMENT ON COLUMN TB_GS26S2_PERFIL_DEMOGRAFICO.TP_DEFICIENCIA IS 'Deficiência declarada: NENHUMA, FISICA, VISUAL, AUDITIVA, INTELECTUAL ou NAO_INFORMADO.';
+COMMENT ON COLUMN TB_GS26S2_PERFIL_DEMOGRAFICO.TP_PERCURSO_ESCOLAR IS 'Onde estudou: ESCOLA_PUBLICA, ESCOLA_PARTICULAR, MISTO ou NAO_INFORMADO.';
+COMMENT ON COLUMN TB_GS26S2_PERFIL_DEMOGRAFICO.ST_BAIXA_RENDA IS 'S = família inscrita no CadÚnico; N = não.';
+COMMENT ON COLUMN TB_GS26S2_PERFIL_DEMOGRAFICO.DT_ATUALIZACAO IS 'Data e hora da última resposta.';
+
+-- TB_GS26S2_DENUNCIA
+COMMENT ON TABLE TB_GS26S2_DENUNCIA IS 'Problema urbano registrado por um morador, na cidade do cadastro dele.';
+COMMENT ON COLUMN TB_GS26S2_DENUNCIA.CD_DENUNCIA IS 'Código da denúncia (chave primária), gerado por SEQ_GS26S2_DENUNCIA; o protocolo mostrado é ano + código.';
+COMMENT ON COLUMN TB_GS26S2_DENUNCIA.CD_USUARIO IS 'Autor da denúncia (chave estrangeira para TB_GS26S2_USUARIO).';
+COMMENT ON COLUMN TB_GS26S2_DENUNCIA.DS_TITULO IS 'Título da denúncia.';
+COMMENT ON COLUMN TB_GS26S2_DENUNCIA.DS_DENUNCIA IS 'Descrição do problema.';
+COMMENT ON COLUMN TB_GS26S2_DENUNCIA.TP_CATEGORIA IS 'Categoria: ASFALTO, ILUMINACAO, CALCADA_ACESSIBILIDADE, SEGURANCA, LIMPEZA_URBANA ou OUTROS.';
+COMMENT ON COLUMN TB_GS26S2_DENUNCIA.ST_DENUNCIA IS 'Situação: ABERTA, EM_ANDAMENTO ou RESOLVIDA.';
+COMMENT ON COLUMN TB_GS26S2_DENUNCIA.DS_ENDERECO IS 'Rua e número do problema.';
+COMMENT ON COLUMN TB_GS26S2_DENUNCIA.NM_BAIRRO IS 'Bairro (opcional).';
+COMMENT ON COLUMN TB_GS26S2_DENUNCIA.NM_CIDADE IS 'Cidade, copiada do cadastro do autor ao publicar.';
+COMMENT ON COLUMN TB_GS26S2_DENUNCIA.SG_UF IS 'Sigla do estado.';
+COMMENT ON COLUMN TB_GS26S2_DENUNCIA.DS_IMAGEM_URL IS 'Caminho de uma foto de demonstração (opcional), ex.: img/demo/asfalto-1.jpg.';
+COMMENT ON COLUMN TB_GS26S2_DENUNCIA.DT_CRIACAO IS 'Data e hora da publicação.';
+COMMENT ON COLUMN TB_GS26S2_DENUNCIA.DT_ATUALIZACAO IS 'Data e hora da última edição ou mudança de situação.';
+
+-- TB_GS26S2_COMENTARIO
+COMMENT ON TABLE TB_GS26S2_COMENTARIO IS 'Conversa do bairro: comentários dos moradores em uma denúncia.';
+COMMENT ON COLUMN TB_GS26S2_COMENTARIO.CD_COMENTARIO IS 'Código do comentário (chave primária), gerado por SEQ_GS26S2_COMENTARIO.';
+COMMENT ON COLUMN TB_GS26S2_COMENTARIO.CD_DENUNCIA IS 'Denúncia comentada (chave estrangeira para TB_GS26S2_DENUNCIA).';
+COMMENT ON COLUMN TB_GS26S2_COMENTARIO.CD_USUARIO IS 'Autor do comentário (chave estrangeira para TB_GS26S2_USUARIO).';
+COMMENT ON COLUMN TB_GS26S2_COMENTARIO.DS_COMENTARIO IS 'Texto do comentário.';
+COMMENT ON COLUMN TB_GS26S2_COMENTARIO.DT_CRIACAO IS 'Data e hora do comentário.';
+COMMENT ON COLUMN TB_GS26S2_COMENTARIO.DT_EDICAO IS 'Data e hora da edição; preenchida só quando o autor edita.';
+
+-- TB_GS26S2_VOTO_DENUNCIA
+COMMENT ON TABLE TB_GS26S2_VOTO_DENUNCIA IS 'Associativa N:N entre usuário e denúncia: um voto de apoio ou discordância por pessoa.';
+COMMENT ON COLUMN TB_GS26S2_VOTO_DENUNCIA.CD_USUARIO IS 'Quem votou (parte da chave primária; chave estrangeira para TB_GS26S2_USUARIO).';
+COMMENT ON COLUMN TB_GS26S2_VOTO_DENUNCIA.CD_DENUNCIA IS 'Denúncia votada (parte da chave primária; chave estrangeira para TB_GS26S2_DENUNCIA).';
+COMMENT ON COLUMN TB_GS26S2_VOTO_DENUNCIA.TP_VOTO IS 'UP = apoio; DOWN = discordância.';
+COMMENT ON COLUMN TB_GS26S2_VOTO_DENUNCIA.DT_VOTO IS 'Data e hora do voto.';
+
+-- TB_GS26S2_CONFIRMACAO_RESOLUCAO
+COMMENT ON TABLE TB_GS26S2_CONFIRMACAO_RESOLUCAO IS 'Associativa N:N entre usuário e denúncia: morador confirmando que o problema já foi resolvido (3 confirmações resolvem a denúncia).';
+COMMENT ON COLUMN TB_GS26S2_CONFIRMACAO_RESOLUCAO.CD_USUARIO IS 'Quem confirmou (parte da chave primária; chave estrangeira para TB_GS26S2_USUARIO).';
+COMMENT ON COLUMN TB_GS26S2_CONFIRMACAO_RESOLUCAO.CD_DENUNCIA IS 'Denúncia confirmada (parte da chave primária; chave estrangeira para TB_GS26S2_DENUNCIA).';
+COMMENT ON COLUMN TB_GS26S2_CONFIRMACAO_RESOLUCAO.DT_CONFIRMACAO IS 'Data e hora da confirmação.';
+
+-- TB_GS26S2_REPORTE_COMENTARIO
+COMMENT ON TABLE TB_GS26S2_REPORTE_COMENTARIO IS 'Associativa N:N entre usuário e comentário: comentário denunciado como ofensivo (3 reportes o ocultam, sem apagar).';
+COMMENT ON COLUMN TB_GS26S2_REPORTE_COMENTARIO.CD_USUARIO IS 'Quem reportou (parte da chave primária; chave estrangeira para TB_GS26S2_USUARIO).';
+COMMENT ON COLUMN TB_GS26S2_REPORTE_COMENTARIO.CD_COMENTARIO IS 'Comentário reportado (parte da chave primária; chave estrangeira para TB_GS26S2_COMENTARIO).';
+COMMENT ON COLUMN TB_GS26S2_REPORTE_COMENTARIO.DT_REPORTE IS 'Data e hora do reporte.';
+
+-- TB_GS26S2_DIREITO
+COMMENT ON TABLE TB_GS26S2_DIREITO IS 'Catálogo de temas de direitos sociais (ex.: Transporte e mobilidade).';
+COMMENT ON COLUMN TB_GS26S2_DIREITO.CD_DIREITO IS 'Código do tema (chave primária), gerado por SEQ_GS26S2_DIREITO.';
+COMMENT ON COLUMN TB_GS26S2_DIREITO.DS_TITULO IS 'Título do tema, sem repetição.';
+COMMENT ON COLUMN TB_GS26S2_DIREITO.DS_RESUMO IS 'Resumo de uma linha mostrado no cartão do tema.';
+COMMENT ON COLUMN TB_GS26S2_DIREITO.DS_DIREITO IS 'Texto completo do tema.';
+COMMENT ON COLUMN TB_GS26S2_DIREITO.DS_AVISO IS 'Aviso de cautela (opcional), ex.: os critérios variam por localidade.';
+COMMENT ON COLUMN TB_GS26S2_DIREITO.DS_BASE_LEGAL IS 'Leis que embasam o tema (opcional).';
+COMMENT ON COLUMN TB_GS26S2_DIREITO.DS_LINK_OFICIAL IS 'Endereço do serviço ou portal oficial (opcional).';
+COMMENT ON COLUMN TB_GS26S2_DIREITO.TP_ICONE IS 'Ícone do tema: TRANSPORTE, PRIORIDADE, MUNICIPIO, EDUCACAO, SAUDE, RENDA ou OUTRO.';
+COMMENT ON COLUMN TB_GS26S2_DIREITO.NR_ORDEM IS 'Posição do tema na lista.';
+
+-- TB_GS26S2_DIREITO_PASSO
+COMMENT ON TABLE TB_GS26S2_DIREITO_PASSO IS 'Passos Por onde começar de cada tema (entidade fraca de TB_GS26S2_DIREITO).';
+COMMENT ON COLUMN TB_GS26S2_DIREITO_PASSO.CD_DIREITO IS 'Tema do passo (parte da chave primária; chave estrangeira para TB_GS26S2_DIREITO).';
+COMMENT ON COLUMN TB_GS26S2_DIREITO_PASSO.NR_ORDEM IS 'Número do passo dentro do tema, de 1 a 10 (parte da chave primária).';
+COMMENT ON COLUMN TB_GS26S2_DIREITO_PASSO.DS_TITULO IS 'Título do passo.';
+COMMENT ON COLUMN TB_GS26S2_DIREITO_PASSO.DS_PASSO IS 'Orientação do passo.';
+
+-- TB_GS26S2_DIREITO_TAG
+COMMENT ON TABLE TB_GS26S2_DIREITO_TAG IS 'Públicos a que cada tema se aplica (atributo multivalorado de TB_GS26S2_DIREITO).';
+COMMENT ON COLUMN TB_GS26S2_DIREITO_TAG.CD_DIREITO IS 'Tema (parte da chave primária; chave estrangeira para TB_GS26S2_DIREITO).';
+COMMENT ON COLUMN TB_GS26S2_DIREITO_TAG.TP_TAG IS 'Público: IDOSO, JOVEM, PCD, PCD_MOBILIDADE, PPI, ESCOLA_PUBLICA, BAIXA_RENDA ou TODOS (parte da chave primária).';
+
+-- TB_GS26S2_SEMEADURA_CIDADE
+COMMENT ON TABLE TB_GS26S2_SEMEADURA_CIDADE IS 'Controle da cidade viva: cidades que já receberam o conteúdo de demonstração. Sem chave estrangeira de propósito.';
+COMMENT ON COLUMN TB_GS26S2_SEMEADURA_CIDADE.NM_CIDADE_CHAVE IS 'Cidade sem acento e em maiúsculas, ex.: SAO PAULO (parte da chave primária).';
+COMMENT ON COLUMN TB_GS26S2_SEMEADURA_CIDADE.SG_UF IS 'Sigla do estado (parte da chave primária).';
+COMMENT ON COLUMN TB_GS26S2_SEMEADURA_CIDADE.NM_CIDADE IS 'Cidade como foi digitada.';
+COMMENT ON COLUMN TB_GS26S2_SEMEADURA_CIDADE.DT_SEMEADURA IS 'Quando a cidade recebeu o conteúdo de exemplo.';
+COMMENT ON COLUMN TB_GS26S2_SEMEADURA_CIDADE.DT_ULTIMO_PULSO IS 'Última atividade simulada (no máximo uma a cada 10 minutos).';
+COMMENT ON COLUMN TB_GS26S2_SEMEADURA_CIDADE.QT_EVENTOS IS 'Quantos eventos simulados já foram gerados.';
