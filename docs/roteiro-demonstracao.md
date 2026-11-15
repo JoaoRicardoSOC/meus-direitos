@@ -22,9 +22,9 @@ Passo a passo para gravar o vídeo pitch ou apresentar o projeto ao vivo, mostra
 | 1:05 | Feed: busca e filtros | Buscar "buraco" e filtrar por categoria | Busca sem diferenciar acentos ("sao paulo" encontra "São Paulo") |
 | 1:15 | Card | Tocar em "Apoiar" | O voto aparece na hora e a API confirma em seguida |
 | 1:25 | Detalhe da denúncia | Abrir uma denúncia, comentar na conversa do bairro, mostrar "Denunciar" num comentário de outra pessoa | Moderação: palavrões são recusados e 3 denúncias escondem um comentário |
-| 1:45 | Resolução pela comunidade | Numa denúncia com "2 de 3 moradores confirmaram", tocar em "Já foi resolvido" | Na terceira confirmação de moradores diferentes, a denúncia vira Resolvida sozinha |
+| 1:45 | Resolução pela comunidade | Numa denúncia com "2 de 3 moradores confirmaram", tocar em "Já foi resolvido" | Na terceira confirmação de moradores diferentes, a denúncia vira Resolvida sozinha, e a linha do tempo mostra "Resolvida · Pela comunidade" |
 | 2:00 | Nova denúncia | Escolher categoria, foto de demonstração, "Usar minha localização" para o endereço, publicar | A denúncia fica na cidade da pessoa e recebe um protocolo |
-| 2:30 | Painel da cidade | "Ver painel completo" no feed | Os números da cidade: por categoria, bairros com mais problemas e o que mais engaja |
+| 2:30 | Painel da cidade | "Ver painel completo" no feed | Os números da cidade: por categoria, bairros com mais problemas e o que mais engaja; "Baixar os números (CSV)" entrega a planilha |
 | 2:50 | Meus Direitos | Responder o questionário (data de nascimento 60+, deficiência física), marcar o consentimento, ver os temas | Perguntas opcionais; os dados sensíveis só são salvos com consentimento e nunca aparecem para outras pessoas |
 | 3:20 | Tema e canais oficiais | Abrir um tema; em "Canais oficiais", usar a localização atual | O app não promete o direito: mostra os passos e onde confirmar (prefeitura da cidade, Gov.br e CRAS mais próximos) |
 | 3:40 | Perfil e Minhas denúncias | Mostrar a denúncia criada e, se já houver apoios ou comentários nela, o aviso de novidades | A pessoa acompanha o que aconteceu desde a última visita |

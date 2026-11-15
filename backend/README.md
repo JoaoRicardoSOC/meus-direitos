@@ -184,6 +184,7 @@ Esses casos foram testados manualmente, inclusive com o banco desligado: o servi
 **Regra de negócio central: o feed "Para você".**
 - Relevância = saldo de votos, **+10** se a categoria afeta o perfil da pessoa (ex.: calçada para quem tem deficiência física), **−15** se a denúncia já foi resolvida.
 - Uma denúncia é resolvida pelo autor ou por **3 confirmações** de moradores da mesma cidade.
+- Cada mudança de situação fica gravada em `TB_GS26S2_HISTORICO_STATUS`, com a origem (`AUTOR` ou `COMUNIDADE`), e aparece na linha do tempo (`GET /denuncias/{id}/historico`).
 
 ## 5. Decisões técnicas
 

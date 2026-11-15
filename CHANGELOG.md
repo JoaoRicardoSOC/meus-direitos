@@ -2,6 +2,12 @@
 
 As principais entregas do projeto, da mais recente para a mais antiga. O detalhe de cada mudança está no histórico do git (`git log`), e as mudanças de contrato da API estão na [§13 do `docs/api.md`](docs/api.md#13-histórico-de-mudanças).
 
+## 15/11/2026 · Linha do tempo, CSV do painel e diagrama de sequência
+
+- **Linha do tempo da denúncia**: cada mudança de situação é gravada (tabela `TB_GS26S2_HISTORICO_STATUS`) com a origem, o autor ou a comunidade; rota pública `GET /denuncias/{id}/historico` e seção no detalhe da denúncia. As denúncias de exemplo da "cidade viva" já chegam com a sua linha do tempo.
+- **Painel da cidade em CSV**: "Baixar os números (CSV)" gera a planilha no navegador, pronta para o Excel.
+- **Diagrama de sequência** da confirmação de resolução pela comunidade (`docs/diagramas/diagrama-sequencia-confirmacao.md`); diagramas ER e de classes atualizados.
+
 ## 15/11/2026 · Banco: dicionário de dados, consultas e carga de exemplo
 
 - `database/script.sql` ganhou a etapa 5, com `COMMENT ON` em todas as tabelas e colunas do projeto.

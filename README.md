@@ -79,8 +79,8 @@ O protótipo segue o Figma da equipe: verde `#075E4A`, tinta `#142E2A`, verde-li
 |---|---|---|
 | <img src="docs/imagens/icone-cidade.svg" width="28" alt=""> | **Feed da cidade** | Abas "Para você", "Recentes" e "Mais votados"; busca por texto e filtros de categoria e situação; selo "Exemplo" no conteúdo de demonstração |
 | | **Denúncias** | Nova denúncia em etapas, com foto de demonstração e "Usar minha localização" para o endereço; protocolo; editar, excluir, marcar como resolvida e reabrir |
-| <img src="docs/imagens/icone-conversa.svg" width="28" alt=""> | **Comunidade** | Apoiar ou discordar (voto otimista), conversa do bairro, resolução confirmada por 3 moradores, denunciar comentário ofensivo, compartilhar |
-| | **Painel da cidade** | Resumo, denúncias por categoria, bairros com mais problemas e denúncias com mais participação |
+| <img src="docs/imagens/icone-conversa.svg" width="28" alt=""> | **Comunidade** | Apoiar ou discordar (voto otimista), conversa do bairro, resolução confirmada por 3 moradores, linha do tempo de cada denúncia (quem mudou a situação e quando), denunciar comentário ofensivo, compartilhar |
+| | **Painel da cidade** | Resumo, denúncias por categoria, bairros com mais problemas e denúncias com mais participação, com download dos números em CSV (abre no Excel) |
 | <img src="docs/imagens/icone-direitos.svg" width="28" alt=""> | **Meus Direitos** | Questionário opcional em 3 etapas com consentimento (LGPD), temas indicados pelo perfil, catálogo com todos os temas (filtro por público), passos práticos e canais oficiais pela localização ou pela cidade do cadastro |
 | <img src="docs/imagens/icone-perfil.svg" width="28" alt=""> | **Perfil** | Minhas denúncias com avisos de novidades, editar dados, trocar senha e excluir a conta com tudo o que foi criado |
 
