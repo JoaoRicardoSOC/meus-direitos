@@ -2,6 +2,13 @@
 
 As principais entregas do projeto, da mais recente para a mais antiga. O detalhe de cada mudança está no histórico do git (`git log`), e as mudanças de contrato da API estão na [§13 do `docs/api.md`](docs/api.md#13-histórico-de-mudanças).
 
+## 15/11/2026 · Banco: dicionário de dados, consultas e carga de exemplo
+
+- `database/script.sql` ganhou a etapa 5, com `COMMENT ON` em todas as tabelas e colunas do projeto.
+- `database/consultas.sql`: 8 consultas de exemplo, cada uma com a pergunta que responde.
+- `database/carga-exemplo.sql`: carga opcional de moradores de exemplo, sem `COMMIT`.
+- Diagrama ER também em PNG, PDF e SVG, e seção de normalização (3FN) no `docs/diagramas/diagrama-er.md`.
+
 ## 12/11/2026 · Correções da revisão da documentação
 
 - **"Apagar minhas respostas"** em Meus Direitos: apaga só o questionário (e o rascunho dele no navegador), como a caixa de consentimento promete.

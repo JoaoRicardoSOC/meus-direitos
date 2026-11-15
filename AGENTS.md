@@ -15,7 +15,8 @@ Monorepo de um trabalho da FIAP (Global Solution 2026/2): uma API REST em **Java
 | `backend/src/main/resources/simulacao.json` | Catálogo do conteúdo de demonstração ("cidade viva") |
 | `frontend/` | App React 19 + Vite 8. Código em `src/`, fotos de demonstração em `public/img/demo/` |
 | `frontend/dist/` | **Build versionado de propósito** (a entrega da FIAP exige o `index.html` abrindo direto no navegador) |
-| `database/script.sql` | DDL e carga inicial. Renomeia objetos antigos para o padrão `GS26S2` e cria o que falta; nunca apaga |
+| `database/script.sql` | DDL, carga inicial e dicionário de dados (`COMMENT ON`). Renomeia objetos antigos para o padrão `GS26S2` e cria o que falta; nunca apaga |
+| `database/consultas.sql`, `database/carga-exemplo.sql` | Consultas de exemplo (só `SELECT`) e carga opcional de moradores de exemplo (`ST_SIMULADO = 'S'`, sem `COMMIT`) |
 | `docs/api.md` | Contrato da API (fonte da verdade para o front) com histórico de mudanças na §13 |
 | `docs/diagramas/` | Diagramas de classes (Mermaid + SVG), ER e do front |
 | `docs/insomnia/` | Coleção do Insomnia com todas as rotas e uma pasta de erros |
@@ -92,7 +93,7 @@ main.jsx (HashRouter, SessaoProvider) → App.jsx (rotas) → pages/<seção>/*.
 |---|---|
 | Criar uma rota da API | `resource/*Resource.java` → `service/*Service.java` → `dao/*Dao.java` + `dao/jdbc/*DaoJdbc.java`; DTOs em `dto/request` e `dto/response`; documente em `docs/api.md` e no Insomnia |
 | Mudar uma regra de validação | `service/validacao/Validador.java` (back) e `frontend/src/utils/validacao.js` (front, mesmas regras) |
-| Adicionar uma tabela | `database/script.sql` (bloco "só cria se não existir"), `docs/diagramas/diagrama-er.md`, exclusões em cascata nos services |
+| Adicionar uma tabela | `database/script.sql` (bloco "só cria se não existir" e `COMMENT ON` na etapa 5), `docs/diagramas/diagrama-er.md`, exclusões em cascata nos services |
 | Criar uma tela | `frontend/src/pages/<seção>/`, rota em `App.jsx`, estilos com as classes `md-*` de `styles/tema.css` (ver o [README do front](frontend/README.md)) |
 | Mudar cores, tipografia ou movimento | `frontend/src/styles/tema.css` (tokens `--md-*`) |
 | Mudar o conteúdo de demonstração | `backend/src/main/resources/simulacao.json` e `service/simulacao/` |
