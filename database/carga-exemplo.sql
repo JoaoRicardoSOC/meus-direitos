@@ -130,16 +130,23 @@ BEGIN
 END;
 /
 
--- Conferência: o que a carga deixou em cada tabela
-SELECT (SELECT COUNT(*) FROM tb_gs26s2_usuario WHERE ds_email LIKE '%@exemplo.com') AS qt_moradores,
+-- Conferência: o que a carga deixou em cada tabela (esperado: 5, 5, 11, 5 e 5).
+-- Filtra pelos cinco e-mails da carga: outras contas também podem usar o domínio @exemplo.com.
+SELECT (SELECT COUNT(*) FROM tb_gs26s2_usuario u WHERE u.ds_email IN
+          ('ana.souza@exemplo.com', 'bruno.lima@exemplo.com', 'carla.mendes@exemplo.com',
+           'diego.rocha@exemplo.com', 'elaine.farias@exemplo.com')) AS qt_moradores,
        (SELECT COUNT(*) FROM tb_gs26s2_denuncia d JOIN tb_gs26s2_usuario u ON u.cd_usuario = d.cd_usuario
-         WHERE u.ds_email LIKE '%@exemplo.com') AS qt_denuncias,
+         WHERE u.ds_email IN ('ana.souza@exemplo.com', 'bruno.lima@exemplo.com', 'carla.mendes@exemplo.com',
+                              'diego.rocha@exemplo.com', 'elaine.farias@exemplo.com')) AS qt_denuncias,
        (SELECT COUNT(*) FROM tb_gs26s2_voto_denuncia v JOIN tb_gs26s2_usuario u ON u.cd_usuario = v.cd_usuario
-         WHERE u.ds_email LIKE '%@exemplo.com') AS qt_votos,
+         WHERE u.ds_email IN ('ana.souza@exemplo.com', 'bruno.lima@exemplo.com', 'carla.mendes@exemplo.com',
+                              'diego.rocha@exemplo.com', 'elaine.farias@exemplo.com')) AS qt_votos,
        (SELECT COUNT(*) FROM tb_gs26s2_comentario c JOIN tb_gs26s2_usuario u ON u.cd_usuario = c.cd_usuario
-         WHERE u.ds_email LIKE '%@exemplo.com') AS qt_comentarios,
+         WHERE u.ds_email IN ('ana.souza@exemplo.com', 'bruno.lima@exemplo.com', 'carla.mendes@exemplo.com',
+                              'diego.rocha@exemplo.com', 'elaine.farias@exemplo.com')) AS qt_comentarios,
        (SELECT COUNT(*) FROM tb_gs26s2_confirmacao_resolucao r JOIN tb_gs26s2_usuario u ON u.cd_usuario = r.cd_usuario
-         WHERE u.ds_email LIKE '%@exemplo.com') AS qt_confirmacoes
+         WHERE u.ds_email IN ('ana.souza@exemplo.com', 'bruno.lima@exemplo.com', 'carla.mendes@exemplo.com',
+                              'diego.rocha@exemplo.com', 'elaine.farias@exemplo.com')) AS qt_confirmacoes
   FROM dual;
 
 -- Depois de conferir, escolha um:
