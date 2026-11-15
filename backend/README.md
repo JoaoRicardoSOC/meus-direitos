@@ -256,7 +256,7 @@ Outras decisões:
 - Comentário oculto por reportes não tem revisão humana nem recurso: só volta se os reportes forem apagados no banco. Enquanto oculto, não pode ser editado nem reportado de novo (404); o autor ainda pode excluí-lo.
 - A cidade é comparada por texto, ignorando acentos, maiúsculas e espaços repetidos ("Sao Paulo" = "São Paulo"). O próximo passo seria uma tabela de municípios do IBGE.
 - Não há upload de imagem: a denúncia guarda o caminho de uma das fotos de demonstração do front (`img/demo/...`).
-- Uma requisição `GET` com corpo é recusada pelo servidor Grizzly com 400 sem JSON, antes de chegar à API. Navegadores não enviam corpo em `GET`.
+- Uma requisição `GET` com corpo, ou com cabeçalhos acima de 8 KB (ex.: um token adulterado de 20 KB), é recusada pelo próprio protocolo HTTP do Grizzly com 400 sem corpo, antes de chegar à API. Navegadores não enviam nada disso. Já os caminhos fora de `/api` e as páginas de erro do Grizzly respondem o mesmo JSON de erro da API (`config.RespostaForaDaApi`), sem expor o nome e a versão do servidor.
 
 ## 7. Uso de IA generativa (back-end)
 

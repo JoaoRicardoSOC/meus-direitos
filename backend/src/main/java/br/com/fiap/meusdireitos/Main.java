@@ -6,8 +6,10 @@ import org.glassfish.jersey.grizzly2.httpserver.GrizzlyHttpServerFactory;
 import org.glassfish.jersey.server.ResourceConfig;
 
 import br.com.fiap.meusdireitos.config.AppConfig;
+import br.com.fiap.meusdireitos.config.RespostaForaDaApi;
 
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
@@ -45,7 +47,16 @@ public class Main {
     public static HttpServer startServer() {
         final ResourceConfig config = new ResourceConfig().packages(PACOTE_BASE);
         URI uri = URI.create(AppConfig.serverUri());
-        HttpServer server = GrizzlyHttpServerFactory.createHttpServer(uri, config);
+        HttpServer server = GrizzlyHttpServerFactory.createHttpServer(uri, config, false);
+        // Fora de /api e erros do próprio Grizzly: o mesmo JSON de erro da API, sem a página HTML com a versão
+        RespostaForaDaApi foraDaApi = new RespostaForaDaApi();
+        server.getServerConfiguration().addHttpHandler(foraDaApi, "/");
+        server.getServerConfiguration().setDefaultErrorPageGenerator(foraDaApi);
+        try {
+            server.start();
+        } catch (IOException e) {
+            throw new UncheckedIOException("Não foi possível iniciar o servidor em " + uri, e);
+        }
         escutarTambemNoOutroLoopback(server, uri);
         return server;
     }
