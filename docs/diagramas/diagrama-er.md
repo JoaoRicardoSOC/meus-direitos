@@ -17,6 +17,7 @@ erDiagram
     TB_GS26S2_DENUNCIA ||--o{ TB_GS26S2_COMENTARIO : "recebe"
     TB_GS26S2_DENUNCIA ||--o{ TB_GS26S2_VOTO_DENUNCIA : "recebe"
     TB_GS26S2_DENUNCIA ||--o{ TB_GS26S2_CONFIRMACAO_RESOLUCAO : "recebe"
+    TB_GS26S2_DENUNCIA ||--o{ TB_GS26S2_HISTORICO_STATUS : "muda de situação"
     TB_GS26S2_USUARIO ||--o{ TB_GS26S2_REPORTE_COMENTARIO : "reporta"
     TB_GS26S2_COMENTARIO ||--o{ TB_GS26S2_REPORTE_COMENTARIO : "recebe"
     TB_GS26S2_DIREITO ||--|{ TB_GS26S2_DIREITO_PASSO : "tem"
@@ -81,6 +82,15 @@ erDiagram
         TIMESTAMP dt_confirmacao
     }
 
+    TB_GS26S2_HISTORICO_STATUS {
+        NUMBER cd_historico PK
+        NUMBER cd_denuncia FK
+        VARCHAR2 st_anterior
+        VARCHAR2 st_novo
+        VARCHAR2 tp_origem "AUTOR/COMUNIDADE"
+        TIMESTAMP dt_alteracao
+    }
+
     TB_GS26S2_REPORTE_COMENTARIO {
         NUMBER cd_usuario PK,FK
         NUMBER cd_comentario PK,FK
@@ -129,7 +139,7 @@ O modelo está na terceira forma normal (3FN):
 
 - **1FN (sem grupos repetidos nem atributos multivalorados).** Os públicos de um tema e os passos "Por onde começar" não ficam em colunas como `tag1, tag2` ou num texto separado por vírgulas: cada um é uma linha em `TB_GS26S2_DIREITO_TAG` e `TB_GS26S2_DIREITO_PASSO`. Todas as colunas guardam um valor só.
 - **2FN (nada depende de parte da chave).** As relações N:N viraram tabelas associativas com chave composta (`TB_GS26S2_VOTO_DENUNCIA`, `TB_GS26S2_CONFIRMACAO_RESOLUCAO`, `TB_GS26S2_REPORTE_COMENTARIO`), e os atributos delas (`tp_voto`, `dt_voto`, `dt_confirmacao`, `dt_reporte`) dependem do par inteiro: o voto é daquela pessoa naquela denúncia. O mesmo vale para o passo, que depende de `(cd_direito, nr_ordem)`.
-- **3FN (nada depende de outra coluna que não seja a chave).** Nenhum dado calculado é gravado: placar de votos, total de comentários, comentário oculto por reportes e idade (idoso/jovem) são calculados na consulta. O nome do autor não é copiado para a denúncia nem para o comentário; vem do `JOIN` com `TB_GS26S2_USUARIO`. O questionário fica em tabela própria (1:1) porque é opcional e tem dados sensíveis, não por dependência transitiva.
+- **3FN (nada depende de outra coluna que não seja a chave).** Nenhum dado calculado é gravado: placar de votos, total de comentários, comentário oculto por reportes e idade (idoso/jovem) são calculados na consulta. O nome do autor não é copiado para a denúncia nem para o comentário; vem do `JOIN` com `TB_GS26S2_USUARIO`. O questionário fica em tabela própria (1:1) porque é opcional e tem dados sensíveis, não por dependência transitiva. A linha do tempo também não é cópia: `st_denuncia` diz a situação atual, e `TB_GS26S2_HISTORICO_STATUS` guarda cada mudança (de qual situação para qual, quando e por quem), um fato que a denúncia sozinha não tem.
 
 Duas decisões conscientes ficam fora do "livro": a cidade é texto (`nm_cidade` + `sg_uf`), sem tabela de municípios, e a denúncia guarda a cidade em que foi publicada em vez de ler a do autor. A segunda não é redundância: se o autor mudar de cidade no cadastro, a denúncia continua na cidade onde o problema está.
 
@@ -146,6 +156,7 @@ Duas decisões conscientes ficam fora do "livro": a cidade é texto (`nm_cidade`
 | Uma semeadura por cidade | Chave primária `(nm_cidade_chave, sg_uf)` em `tb_gs26s2_semeadura_cidade` |
 | Valores de lista válidos | `CHECK` em categoria, status, voto, raça/cor, deficiência, percurso escolar, ícone e tag, com os mesmos valores dos enums Java (a UF é validada pela API) |
 | Passos numerados de 1 a 10 | `CHECK (nr_ordem BETWEEN 1 AND 10)` em `tb_gs26s2_direito_passo` |
+| Mudança de situação registrada por quem mudou | `CHECK` em `st_anterior`, `st_novo` (as três situações) e `tp_origem` (`AUTOR` ou `COMUNIDADE`) em `tb_gs26s2_historico_status` |
 | Booleanos | `CHAR(1)` com `CHECK IN ('S', 'N')` |
 
 ## Índices
@@ -157,6 +168,7 @@ As chaves primárias e únicas já criam os seus índices (`PK_*`, `UK_GS26S2_US
 | `IX_GS26S2_COMENTARIO_DENUNCIA` | `TB_GS26S2_COMENTARIO (CD_DENUNCIA)` | Listar e contar os comentários de uma denúncia |
 | `IX_GS26S2_COMENTARIO_USUARIO` | `TB_GS26S2_COMENTARIO (CD_USUARIO)` | Apagar os comentários de quem exclui a conta |
 | `IX_GS26S2_CONFIRMACAO_RESOLUCAO_DENUNCIA` | `TB_GS26S2_CONFIRMACAO_RESOLUCAO (CD_DENUNCIA)` | Contar as confirmações de resolução de uma denúncia |
+| `IX_GS26S2_HISTORICO_STATUS_DENUNCIA` | `TB_GS26S2_HISTORICO_STATUS (CD_DENUNCIA, DT_ALTERACAO)` | Linha do tempo de uma denúncia, já em ordem de data |
 | `IX_GS26S2_DENUNCIA_CIDADE` | `TB_GS26S2_DENUNCIA (NM_CIDADE, SG_UF)` | Consultas pela cidade exata |
 | `IX_GS26S2_DENUNCIA_USUARIO` | `TB_GS26S2_DENUNCIA (CD_USUARIO)` | "Minhas denúncias" e exclusão da conta |
 | `IX_GS26S2_DIREITO_TAG_TAG` | `TB_GS26S2_DIREITO_TAG (TP_TAG)` | Temas aplicáveis a um perfil (`/direitos/meus`) |
@@ -176,5 +188,5 @@ Os dois últimos usam exatamente a expressão gerada por `JdbcUtil.cidadeIgual` 
 - **Datas com hora em `TIMESTAMP`** com `DEFAULT SYSTIMESTAMP`; a data de nascimento é `DATE`.
 - **Textos em `VARCHAR2` com o limite padrão do schema (em bytes).** A API valida os tamanhos em caracteres. Um texto no limite máximo e cheio de acentos pode passar de bytes: nesse caso o Oracle recusa (ORA-12899) e a API responde 400 indicando o campo.
 - **Sem `ON DELETE CASCADE`.** A API apaga as tabelas filhas antes da tabela mãe, na mesma transação. Se algo escapar, o Oracle recusa a exclusão (ORA-02292) e a API responde 409 em vez de apagar dados em silêncio.
-- **Chaves geradas por sequence** (`seq_gs26s2_usuario`, `seq_gs26s2_denuncia`, `seq_gs26s2_comentario`, `seq_gs26s2_direito`), usadas pela API com `NEXTVAL`.
+- **Chaves geradas por sequence** (`seq_gs26s2_usuario`, `seq_gs26s2_denuncia`, `seq_gs26s2_comentario`, `seq_gs26s2_direito`, `seq_gs26s2_historico_status`), usadas pela API com `NEXTVAL`.
 - **Cidade guardada como texto.** A comparação ignora acentos e maiúsculas (`TRANSLATE(UPPER(TRIM(...)))` nas consultas), e a API junta os espaços repetidos antes de gravar. Os índices baseados em função `IX_GS26S2_DENUNCIA_CIDADE_CHAVE` e `IX_GS26S2_USUARIO_CIDADE_CHAVE` usam exatamente essa expressão (mais `sg_uf`), para o Oracle não precisar ler a tabela inteira. O próximo passo seria uma tabela de municípios do IBGE (ver as limitações no [README do back-end](../../backend/README.md#6-limitações-conhecidas)).
