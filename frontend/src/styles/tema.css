@@ -426,6 +426,52 @@ textarea.form-control {
   padding-right: 52px;
 }
 
+/* Campo desabilitado (ex.: a cidade antes de escolher o estado) */
+.md-entrada.form-control:disabled {
+  background-color: var(--md-fundo);
+  border-color: var(--md-linha);
+  cursor: not-allowed;
+  opacity: 1;
+}
+
+/* Sugestões de um campo com lista (cidades do estado, em CampoCidade) */
+.md-sugestoes {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  z-index: 20;
+  max-height: 264px; /* 6 cidades à vista; o resto rola */
+  margin: 0;
+  padding: 4px 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  list-style: none;
+  background: var(--md-branco);
+  border: 1px solid var(--md-borda-campo);
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgb(20 46 42 / 0.12);
+}
+
+.md-sugestao {
+  display: flex;
+  align-items: center;
+  min-height: var(--md-alvo-minimo);
+  padding: 10px 14px;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.md-sugestao.ativa {
+  background: var(--md-suave);
+  box-shadow: inset 3px 0 0 var(--md-verde);
+}
+
+.md-sugestoes-vazio {
+  padding: 12px 14px;
+  color: var(--md-apagado);
+}
+
 .md-icone-campo {
   position: absolute;
   top: 50%;
@@ -898,6 +944,10 @@ button.md-acao {
 /* ------------------------------------------------------------------ hover só em quem tem mouse (no celular ele fica preso) */
 
 @media (hover: hover) and (pointer: fine) {
+  .md-sugestao:hover {
+    background: var(--md-suave);
+  }
+
   .md-botao-primario:hover {
     background: var(--md-verde-escuro);
   }

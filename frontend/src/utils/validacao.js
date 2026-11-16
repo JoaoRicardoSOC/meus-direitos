@@ -1,3 +1,5 @@
+import { nomeOficial } from './municipios.js';
+
 /**
  * Validação em JavaScript antes de chamar a API (rubrica Web da FIAP).
  * As regras são as mesmas do back-end (docs/api.md), então a API raramente precisa recusar.
@@ -35,7 +37,12 @@ export const validar = {
     if (!texto) return 'Campo obrigatório.';
     return texto.length <= 120 && EMAIL.test(texto) ? '' : 'E-mail em formato inválido.';
   },
-  cidade: (v) => tamanho(v, 2, 80),
+  // Mesma regra da API: a cidade precisa existir no estado escolhido (lista do IBGE)
+  cidade: (v, valores = {}) => {
+    const erroTamanho = tamanho(v, 2, 80);
+    if (erroTamanho || !UFS.some(([sigla]) => sigla === valores.uf)) return erroTamanho;
+    return nomeOficial(v, valores.uf) ? '' : 'Cidade não encontrada nesse estado. Escolha uma da lista.';
+  },
   uf: (v) => (UFS.some(([sigla]) => sigla === v) ? '' : 'Escolha o estado.'),
   senha: (v) => {
     const texto = String(v ?? '');
