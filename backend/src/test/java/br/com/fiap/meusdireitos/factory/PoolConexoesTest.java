@@ -228,4 +228,23 @@ class PoolConexoesTest {
         assertEquals(1, ConnectionFactory.tamanhoDoPool("0"));
         assertEquals(50, ConnectionFactory.tamanhoDoPool("999"));
     }
+
+    @Test
+    void conexaoTemTempoMaximoDeLeituraESemDiagnosticoDoDriver() {
+        var propriedades = ConnectionFactory.propriedadesDaConexao("usuario", "senha");
+
+        assertEquals("usuario", propriedades.getProperty("user"));
+        assertEquals("senha", propriedades.getProperty("password"));
+        // o driver espera milissegundos: uma conexão derrubada pelo banco libera a vaga em 20 s
+        assertEquals("20000", propriedades.getProperty("oracle.jdbc.ReadTimeout"));
+        assertEquals("false", propriedades.getProperty("oracle.jdbc.diagnostic.enableDiagnoseFirstFailure"));
+    }
+
+    @Test
+    void semCredenciaisNaoPoeUsuarioNemSenhaNulos() {
+        var propriedades = ConnectionFactory.propriedadesDaConexao(null, null);
+
+        assertFalse(propriedades.containsKey("user"));
+        assertFalse(propriedades.containsKey("password"));
+    }
 }
