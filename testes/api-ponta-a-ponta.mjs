@@ -42,10 +42,10 @@ function verificar(nome, ok, detalhe = '') {
   console.log(`${ok ? 'OK    ' : 'FALHOU'} ${nome}${detalhe ? ` — ${detalhe}` : ''}`);
 }
 
-async function criarConta(rotulo) {
+async function criarConta(rotulo, cidade = CIDADE) {
   const email = `teste.api.${rotulo}.${sufixo}@exemplo.com`;
   const r = await chamar('POST', '/usuarios', {
-    corpo: { nome: `Teste API ${rotulo}`, email, senha: SENHA, ...CIDADE },
+    corpo: { nome: `Teste API ${rotulo}`, email, senha: SENHA, ...cidade },
   });
   if (r.status !== 201 || !r.dados?.token) {
     throw new Error(`cadastro ${rotulo} → ${r.status} ${JSON.stringify(r.dados)}`);
@@ -71,6 +71,18 @@ try {
   const a = await criarConta('a');
   const b = await criarConta('b');
   verificar('Cadastro devolve token', Boolean(a.token && b.token));
+
+  // Cidade: precisa existir no estado (lista do IBGE) e é gravada com a grafia oficial
+  const cidadeInventada = await chamar('POST', '/usuarios', {
+    corpo: { nome: 'Teste API cidade', email: `teste.api.cidade.${sufixo}@exemplo.com`, senha: SENHA,
+      cidade: 'Cidade Inventada', uf: 'SP' },
+  });
+  verificar('Cidade fora do estado → 400 no campo cidade',
+    cidadeInventada.status === 400 && cidadeInventada.dados?.campos?.[0]?.campo === 'cidade',
+    cidadeInventada.dados?.campos?.[0]?.mensagem);
+  const grafia = await criarConta('grafia', { cidade: 'sao   paulo', uf: 'SP' });
+  const contaGrafia = await chamar('GET', '/usuarios/me', { token: grafia.token });
+  verificar('Cidade gravada com a grafia oficial', contaGrafia.dados?.cidade === 'São Paulo', contaGrafia.dados?.cidade);
   const semToken = await chamar('GET', '/usuarios/me');
   const tokenFalso = await chamar('GET', '/usuarios/me', { token: `${a.token.slice(0, -2)}xx` });
   verificar('Sem token ou com token adulterado → 401', semToken.status === 401 && tokenFalso.status === 401,
