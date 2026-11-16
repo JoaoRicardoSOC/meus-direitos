@@ -20,4 +20,11 @@ public class HealthResource {
     public HealthResponse verificar() {
         return service.verificar();
     }
+
+    /** Só a API, sem o banco: usada pelo health check do Render ({@code render.yaml}). */
+    @GET
+    @Path("vivo")
+    public HealthResponse vivo() {
+        return service.vivo();
+    }
 }

@@ -9,7 +9,8 @@ services:
     dockerfilePath: ./backend/Dockerfile
     dockerContext: ./backend
     plan: free
-    healthCheckPath: /api/health
+    # Só a API, sem o banco: um Oracle lento não deve fazer o Render reiniciar a API (/api/health mostra o banco)
+    healthCheckPath: /api/health/vivo
     autoDeploy: true
     envVars:
       - key: MD_DB_USUARIO

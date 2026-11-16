@@ -28,6 +28,15 @@ public class HealthService {
         return new HealthResponse(UP, estadoDoBanco(), LocalDateTime.now());
     }
 
+    /**
+     * Só a API, sem consultar o banco (o campo {@code banco} fica de fora). É o health check do Render:
+     * se ele dependesse do banco, um Oracle lento ou derrubando conexões faria o Render reiniciar a API,
+     * o que não resolve nada e deixa o app fora do ar enquanto ela sobe de novo.
+     */
+    public HealthResponse vivo() {
+        return new HealthResponse(UP, null, LocalDateTime.now());
+    }
+
     private String estadoDoBanco() {
         Connection conexao = null;
         try {
