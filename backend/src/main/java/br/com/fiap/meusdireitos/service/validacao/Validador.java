@@ -2,6 +2,7 @@ package br.com.fiap.meusdireitos.service.validacao;
 
 import br.com.fiap.meusdireitos.exception.ErroCampo;
 import br.com.fiap.meusdireitos.exception.ValidacaoException;
+import br.com.fiap.meusdireitos.util.Municipios;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -128,6 +129,18 @@ public class Validador {
             return this;
         }
         return regra(UFS.contains(valor.trim().toUpperCase()), campo, "UF inválida. Use a sigla do estado, ex.: SP.");
+    }
+
+    /**
+     * Cidade que existe no estado, pela lista oficial do IBGE ({@link Municipios}), ignorando acentos e
+     * maiúsculas. Ignora cidade ou UF nulas e UF inválida (essas já têm a própria mensagem).
+     */
+    public Validador cidadeDoEstado(String campo, String cidade, String uf) {
+        if (cidade == null || cidade.isBlank() || uf == null || !UFS.contains(uf.trim().toUpperCase())) {
+            return this;
+        }
+        return regra(Municipios.nomeOficial(cidade, uf).isPresent(), campo,
+                "Cidade não encontrada nesse estado. Escolha uma da lista.");
     }
 
     /** Endereço web começando com http:// ou https://, com até 300 caracteres. Ignora nulos e vazios. */

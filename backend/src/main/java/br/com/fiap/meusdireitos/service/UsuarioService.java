@@ -24,6 +24,7 @@ import br.com.fiap.meusdireitos.service.simulacao.SimulacaoService;
 import br.com.fiap.meusdireitos.service.validacao.Validador;
 import br.com.fiap.meusdireitos.util.SenhaUtil;
 import br.com.fiap.meusdireitos.util.TextoUtil;
+import br.com.fiap.meusdireitos.util.Municipios;
 import br.com.fiap.meusdireitos.util.TokenUtil;
 
 import java.sql.Connection;
@@ -55,7 +56,7 @@ public class UsuarioService {
         Usuario usuario = new Usuario();
         usuario.setNome(req.nome());
         usuario.setEmail(req.email());
-        usuario.setCidade(TextoUtil.normalizarEspacos(req.cidade()));
+        usuario.setCidade(cidadeOficial(req.cidade(), req.uf()));
         usuario.setUf(req.uf());
         usuario.setSenhaHash(SenhaUtil.gerarHash(req.senha()));
 
@@ -106,7 +107,7 @@ public class UsuarioService {
             String cidadeAntes = TextoUtil.chaveCidade(usuario.getCidade()) + "|" + usuario.getUf();
             usuario.setNome(req.nome());
             usuario.setEmail(req.email());
-            usuario.setCidade(TextoUtil.normalizarEspacos(req.cidade()));
+            usuario.setCidade(cidadeOficial(req.cidade(), req.uf()));
             usuario.setUf(req.uf());
             mudouDeCidade[0] = !cidadeAntes.equals(TextoUtil.chaveCidade(usuario.getCidade()) + "|" + usuario.getUf());
             dao.atualizar(usuario);
@@ -210,7 +211,13 @@ public class UsuarioService {
         v.obrigatorio("nome", nome).tamanho("nome", nome, 3, 100)
                 .obrigatorio("email", email).email("email", email)
                 .obrigatorio("cidade", cidade).tamanho("cidade", cidade, 2, 80)
-                .obrigatorio("uf", uf).uf("uf", uf);
+                .obrigatorio("uf", uf).uf("uf", uf)
+                .cidadeDoEstado("cidade", cidade, uf);
+    }
+
+    /** A grafia oficial do IBGE (já validada): "jundiai" e "JUNDIAÍ" são gravadas como "Jundiaí". */
+    private static String cidadeOficial(String cidade, String uf) {
+        return Municipios.nomeOficial(cidade, uf).orElse(TextoUtil.normalizarEspacos(cidade));
     }
 
     private static boolean temLetraENumero(String senha) {

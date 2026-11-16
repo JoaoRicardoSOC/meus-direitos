@@ -131,4 +131,19 @@ class ValidadorTest {
             assertEquals("Escolha uma das fotos de demonstração.", e.getCampos().get(0).mensagem());
         }
     }
+
+    @Test
+    void cidadePrecisaExistirNoEstado() {
+        assertFalse(new Validador().cidadeDoEstado("cidade", "jundiai", "SP").temErros());
+        assertFalse(new Validador().cidadeDoEstado("cidade", "Brasília", "df").temErros());
+
+        Validador errada = new Validador().cidadeDoEstado("cidade", "Campinas", "RJ");
+        assertTrue(errada.temErros());
+        assertEquals("cidade", errada.getErros().get(0).campo());
+
+        // UF inválida ou cidade vazia ficam para as próprias regras (sem mensagem dupla)
+        assertFalse(new Validador().cidadeDoEstado("cidade", "Campinas", "ZZ").temErros());
+        assertFalse(new Validador().cidadeDoEstado("cidade", " ", "SP").temErros());
+        assertFalse(new Validador().cidadeDoEstado("cidade", null, "SP").temErros());
+    }
 }
