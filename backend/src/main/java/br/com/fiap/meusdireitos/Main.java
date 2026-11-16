@@ -2,6 +2,7 @@ package br.com.fiap.meusdireitos;
 
 import org.glassfish.grizzly.http.server.HttpServer;
 import org.glassfish.grizzly.http.server.NetworkListener;
+import org.glassfish.grizzly.threadpool.ThreadPoolConfig;
 import org.glassfish.jersey.grizzly2.httpserver.GrizzlyHttpServerFactory;
 import org.glassfish.jersey.server.ResourceConfig;
 
@@ -36,6 +37,9 @@ public class Main {
     private static final Set<String> HOSTS_LOOPBACK = Set.of("localhost", "127.0.0.1", "::1", "0:0:0:0:0:0:0:1");
     private static final int PORTA_PADRAO = 80;
 
+    /** Threads que atendem as requisições, independente de quantos processadores a máquina tem. */
+    static final int THREADS_DE_TRABALHO = 16;
+
     /**
      * Cria e inicia o servidor Grizzly com a configuração do Jersey.
      * O endereço vem de {@link AppConfig#serverUri()} (padrão: http://localhost:8080/api/).
@@ -52,6 +56,7 @@ public class Main {
         RespostaForaDaApi foraDaApi = new RespostaForaDaApi();
         server.getServerConfiguration().addHttpHandler(foraDaApi, "/");
         server.getServerConfiguration().setDefaultErrorPageGenerator(foraDaApi);
+        server.getListeners().forEach(Main::usarThreadsDeTrabalhoFixas);
         try {
             server.start();
         } catch (IOException e) {
@@ -104,12 +109,31 @@ public class Main {
         }
         NetworkListener listener = new NetworkListener("loopback-" + endereco.getHostAddress(),
                 endereco.getHostAddress(), porta);
+        usarThreadsDeTrabalhoFixas(listener);
         server.addListener(listener); // com o servidor já rodando, o Grizzly configura e inicia o listener
         if (!listener.isStarted()) {
             server.removeListener(listener.getName());
             throw new IOException("o listener não iniciou");
         }
         LOG.info(() -> "API também escutando em " + endereco.getHostAddress() + ", porta " + porta + ".");
+    }
+
+    /**
+     * Por padrão, o Grizzly usa "processadores × 2" threads para atender as requisições. No plano gratuito do
+     * Render a JVM enxerga 1 processador, ou seja, 2 threads para a API inteira: com várias consultas lentas ao
+     * mesmo tempo, até o health check ficava na fila, o Render achava que a API tinha travado e a reiniciava.
+     * Com um número fixo, o acesso ao banco continua limitado pelo pool de conexões, e o que não usa o banco
+     * (health check, listas fixas, preflight do CORS) é atendido na hora.
+     */
+    static ThreadPoolConfig configuracaoDasThreads() {
+        return ThreadPoolConfig.defaultConfig()
+                .setPoolName("meus-direitos-http")
+                .setCorePoolSize(THREADS_DE_TRABALHO)
+                .setMaxPoolSize(THREADS_DE_TRABALHO);
+    }
+
+    private static void usarThreadsDeTrabalhoFixas(NetworkListener listener) {
+        listener.getTransport().setWorkerThreadPoolConfig(configuracaoDasThreads());
     }
 
     private static String semColchetes(String host) {

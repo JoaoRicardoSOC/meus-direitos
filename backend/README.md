@@ -235,6 +235,10 @@ Outras decisões:
     do driver desligado. No deploy, o Oracle da FIAP às vezes derruba conexões sem avisar (ORA-17002); sem o
     tempo máximo, a consulta prendia a vaga do pool por 20 s ou mais. O health check do Render usa
     `/api/health/vivo`, que não consulta o banco, para um banco lento não reiniciar a API.
+- **Threads fixas no servidor.** O Grizzly usa, por padrão, "processadores × 2" threads para atender as
+  requisições. No Render gratuito a JVM enxerga 1 processador, ou seja, 2 threads para a API inteira: sob várias
+  consultas lentas, até o health check entrava na fila e o Render reiniciava a API. O `Main` fixa 16 threads
+  (`Main.THREADS_DE_TRABALHO`). Com 1 processador simulado, 600 consultas caíram de 27 s para 11 s.
 - **Índice para a busca por cidade.** A cidade é comparada sem acentos nem maiúsculas
   (`JdbcUtil.cidadeIgual`: `TRANSLATE(UPPER(TRIM(...)))`), e a API junta os espaços repetidos antes de gravar.
   Assim a expressão só usa funções puras: com `REGEXP_REPLACE` o Oracle recusa o índice (ORA-01743).
