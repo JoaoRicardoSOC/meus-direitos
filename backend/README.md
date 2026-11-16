@@ -5,7 +5,7 @@ Ela grava e lê os dados de um banco **Oracle** via **JDBC**.
 
 - **URL base:** `http://localhost:8080/api`
 - **Contrato completo da API** (rotas, corpos, respostas, erros): [`docs/api.md`](../docs/api.md)
-- **Coleção do Insomnia** (71 requisições, incluindo uma pasta só de erros): [`docs/insomnia/meus-direitos.insomnia.json`](../docs/insomnia/meus-direitos.insomnia.json)
+- **Coleção do Insomnia** (72 requisições, incluindo uma pasta só de erros): [`docs/insomnia/meus-direitos.insomnia.json`](../docs/insomnia/meus-direitos.insomnia.json)
 
 ---
 
@@ -231,6 +231,10 @@ Outras decisões:
     conexão na fila. A `Transacao` (e o health check) devolve sempre num bloco `finally`; os DAOs não mudam;
   - `ConnectionFactory.getConnection()` continua abrindo uma conexão nova, como no Cap17 (usada no teste de
     integração).
+  - cada conexão tem **tempo máximo de leitura de 20 s** (`oracle.jdbc.ReadTimeout`) e o diagnóstico automático
+    do driver desligado. No deploy, o Oracle da FIAP às vezes derruba conexões sem avisar (ORA-17002); sem o
+    tempo máximo, a consulta prendia a vaga do pool por 20 s ou mais. O health check do Render usa
+    `/api/health/vivo`, que não consulta o banco, para um banco lento não reiniciar a API.
 - **Índice para a busca por cidade.** A cidade é comparada sem acentos nem maiúsculas
   (`JdbcUtil.cidadeIgual`: `TRANSLATE(UPPER(TRIM(...)))`), e a API junta os espaços repetidos antes de gravar.
   Assim a expressão só usa funções puras: com `REGEXP_REPLACE` o Oracle recusa o índice (ORA-01743).

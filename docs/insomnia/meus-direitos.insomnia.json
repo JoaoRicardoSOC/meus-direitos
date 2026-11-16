@@ -62,6 +62,20 @@
       "metaSortKey": 2
     },
     {
+      "_id": "req_md_082",
+      "_type": "request",
+      "parentId": "fld_md_001",
+      "name": "API viva (sem banco)",
+      "description": "Só a API, sem consultar o banco. É o health check do Render (render.yaml).",
+      "method": "GET",
+      "url": "{{ _.base_url }}/health/vivo",
+      "body": {},
+      "headers": [],
+      "parameters": [],
+      "authentication": {},
+      "metaSortKey": 2.5
+    },
+    {
       "_id": "req_md_003",
       "_type": "request",
       "parentId": "fld_md_001",

@@ -10,7 +10,7 @@ A ordem importa: o Render gera o endereço da API, que a Vercel precisa no build
 
 ## 1. API no Render
 
-1. Em [render.com](https://render.com), entre com o GitHub e escolha **New → Blueprint**. Selecione este repositório: o Render lê o [`render.yaml`](../render.yaml) da raiz e cria o serviço `meus-direitos-api` (Docker, plano gratuito, health check em `/api/health`).
+1. Em [render.com](https://render.com), entre com o GitHub e escolha **New → Blueprint**. Selecione este repositório: o Render lê o [`render.yaml`](../render.yaml) da raiz e cria o serviço `meus-direitos-api` (Docker, plano gratuito, health check em `/api/health/vivo`, que não depende do banco: se o Oracle ficar lento, o Render não reinicia a API à toa).
 2. Ele pede os valores marcados como secretos. Preencha:
 
    | Variável | Valor |
@@ -23,7 +23,7 @@ A ordem importa: o Render gera o endereço da API, que a Vercel precisa no build
 3. O primeiro build leva alguns minutos (o Maven baixa as dependências). No fim, abra `https://<seu-servico>.onrender.com/api/health`. Deve aparecer `"banco":"UP"`.
    - `"banco":"INDISPONIVEL"`: usuário ou senha errados, ou o Oracle da FIAP recusou a conexão vinda do Render. Confira as variáveis e veja os **Logs** do serviço.
 
-Sem Blueprint também funciona: **New → Web Service**, este repositório, **Language: Docker**, **Dockerfile Path** `./backend/Dockerfile`, **Docker Build Context** `./backend`, **Health Check Path** `/api/health` e as mesmas variáveis.
+Sem Blueprint também funciona: **New → Web Service**, este repositório, **Language: Docker**, **Dockerfile Path** `./backend/Dockerfile`, **Docker Build Context** `./backend`, **Health Check Path** `/api/health/vivo` e as mesmas variáveis.
 
 ## 2. App na Vercel
 

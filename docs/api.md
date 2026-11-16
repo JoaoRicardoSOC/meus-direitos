@@ -247,6 +247,7 @@ Todo erro vem neste formato:
 | Método | Rota | Resposta |
 |---|---|---|
 | GET | `/health` | `{"status":"UP","banco":"UP","dataHora":"..."}` |
+| GET | `/health/vivo` | `{"status":"UP","dataHora":"..."}`: só a API, sem consultar o banco (health check do Render) |
 | GET | `/categorias` | `[{"codigo":"ASFALTO","descricao":"Asfalto"}, ...]` |
 | GET | `/status-denuncia` | `ABERTA` (Em aberto), `EM_ANDAMENTO`, `RESOLVIDA` |
 | GET | `/racas-cor` | `BRANCA, PRETA, PARDA, AMARELA, INDIGENA, NAO_INFORMADO` |
@@ -715,3 +716,4 @@ Ajustes em relação ao Figma, combinados com o grupo. **Todos foram atendidos n
 | 14/11/2026 | Banco no padrão de nomes `GS26S2` (`TB_GS26S2_USUARIO`, `SEQ_GS26S2_USUARIO`, `PK_GS26S2_USUARIO`…). A etapa 0 do `database/script.sql` renomeia um schema antigo sem perder dados. A API escuta na porta `PORT` quando ela existe (deploy). **Sem mudança de contrato.** |
 | 15/11/2026 | Confirmações de resolução simultâneas agora contam certo (a denúncia é travada com `SELECT ... FOR UPDATE`): três moradores confirmando ao mesmo tempo resolvem a denúncia. Caminhos fora de `/api` respondem **404 no JSON de erro padrão** (antes, uma página HTML do servidor). **Sem mudança nas rotas.** |
 | 15/11/2026 | **Rota nova:** `GET /denuncias/{id}/historico` (linha do tempo da denúncia, pública), com o objeto `EventoHistoricoResponse` na seção 9. Cada mudança de situação passa a ser gravada na tabela `TB_GS26S2_HISTORICO_STATUS`, com a origem (`AUTOR` ou `COMUNIDADE`). No app, a linha do tempo aparece no detalhe da denúncia, e o Painel da cidade ganhou "Baixar os números (CSV)", montado no próprio navegador (sem rota nova). Nenhuma rota existente mudou. |
+| 16/11/2026 | **Rota nova:** `GET /health/vivo`, que responde só com a API (sem o campo `banco`) e é o health check do Render: um Oracle lento ou derrubando conexões não faz mais o Render reiniciar a API. Conexões com o banco passam a ter tempo máximo de leitura de 20 s (uma conexão derrubada em silêncio responde 503 em vez de prender a requisição). Nenhuma rota existente mudou. |
