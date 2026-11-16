@@ -164,7 +164,7 @@ Ficam em `src/components/`. Nenhum deles conhece as regras de uma tela específi
 | `PainelApresentacao` | Painel "Sobre o projeto" ao lado do app a partir de 1100 px | Só no `App.jsx` |
 | `Campo` | Rótulo, entrada (`input`, `textarea` ou `select`), ajuda e erro ligados por `aria-describedby` e `aria-invalid` | Qualquer campo de formulário. Os outros props vão para a entrada |
 | `CampoSenha` | Campo de senha com o olho para mostrar ou esconder | Senhas (cadastro, entrar, trocar senha, excluir conta) |
-| `CampoCidade` | Cidade com o pin e a lista de estados ao lado (a API pede cidade e UF separados) | Cadastro e editar perfil |
+| `CampoCidade` | Cidade com o pin e a lista de estados ao lado (a API pede cidade e UF separados). A cidade só libera depois do estado e sugere os municípios dele (`utils/municipios.js`, lista do IBGE em `src/data/municipios.json`): vazia, todas em ordem alfabética; a cada letra, a lista se refaz sem diferenciar acentos. Padrão WAI-ARIA de combobox (setas, Enter, Esc, total anunciado) | Cadastro e editar perfil |
 | `Progresso` | Barra de etapas com `role="progressbar"` e "Etapa X de Y" | Cadastro (4 etapas) e questionário (3) |
 | `Mensagem` | Alerta no topo de formulários e listas; `tipo="erro"` usa `role="alert"`, os outros `role="status"` | Erro geral da API ou resumo "Confira os campos destacados" |
 | `Carregando` (em `Mensagem.jsx`) | Spinner com texto, que só aparece depois de 300 ms | Enquanto uma resposta não chega |

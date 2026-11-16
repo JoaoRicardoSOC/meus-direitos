@@ -5,7 +5,7 @@ Ela grava e lê os dados de um banco **Oracle** via **JDBC**.
 
 - **URL base:** `http://localhost:8080/api`
 - **Contrato completo da API** (rotas, corpos, respostas, erros): [`docs/api.md`](../docs/api.md)
-- **Coleção do Insomnia** (72 requisições, incluindo uma pasta só de erros): [`docs/insomnia/meus-direitos.insomnia.json`](../docs/insomnia/meus-direitos.insomnia.json)
+- **Coleção do Insomnia** (73 requisições, incluindo uma pasta só de erros): [`docs/insomnia/meus-direitos.insomnia.json`](../docs/insomnia/meus-direitos.insomnia.json)
 
 ---
 
@@ -181,7 +181,7 @@ Exemplos:
 - login bloqueado por muitas tentativas → 429
 - banco fora do ar → 503
 
-Esses casos foram testados manualmente, inclusive com o banco desligado: o servidor não cai. Para repetir os testes, use a pasta **"10 · Erros (robustez)"** da coleção do Insomnia (17 requisições que provocam os erros acima, exceto o 429, que exige errar a senha 5 vezes, e o 503, que exige desligar o banco).
+Esses casos foram testados manualmente, inclusive com o banco desligado: o servidor não cai. Para repetir os testes, use a pasta **"10 · Erros (robustez)"** da coleção do Insomnia (18 requisições que provocam os erros acima, exceto o 429, que exige errar a senha 5 vezes, e o 503, que exige desligar o banco).
 
 **Regra de negócio central: o feed "Para você".**
 - Relevância = saldo de votos, **+10** se a categoria afeta o perfil da pessoa (ex.: calçada para quem tem deficiência física), **−15** se a denúncia já foi resolvida.
@@ -265,7 +265,7 @@ Outras decisões:
 - O pool de conexões é simples: tamanho fixo, sem métricas nem tempo máximo de vida da conexão. Uma conexão
   esquecida aberta (sem `close()`) ocupa a vaga para sempre; por isso todo acesso passa por `Transacao`.
 - Comentário oculto por reportes não tem revisão humana nem recurso: só volta se os reportes forem apagados no banco. Enquanto oculto, não pode ser editado nem reportado de novo (404); o autor ainda pode excluí-lo.
-- A cidade é comparada por texto, ignorando acentos, maiúsculas e espaços repetidos ("Sao Paulo" = "São Paulo"). O próximo passo seria uma tabela de municípios do IBGE.
+- A cidade do cadastro precisa existir no estado, pela lista de municípios do IBGE em `src/main/resources/municipios.json` (`util/Municipios`), e é gravada com a grafia oficial. A lista é um arquivo, não uma tabela: atualizá-la (município novo) exige trocar o arquivo aqui e em `frontend/src/data/municipios.json` (o teste `MunicipiosTest` confere que são iguais). Contas criadas antes dessa regra mantêm a cidade como estava.
 - Não há upload de imagem: a denúncia guarda o caminho de uma das fotos de demonstração do front (`img/demo/...`).
 - Uma requisição `GET` com corpo, ou com cabeçalhos acima de 8 KB (ex.: um token adulterado de 20 KB), é recusada pelo próprio protocolo HTTP do Grizzly com 400 sem corpo, antes de chegar à API. Navegadores não enviam nada disso. Já os caminhos fora de `/api` e as páginas de erro do Grizzly respondem o mesmo JSON de erro da API (`config.RespostaForaDaApi`), sem expor o nome e a versão do servidor.
 

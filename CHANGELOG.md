@@ -2,6 +2,12 @@
 
 As principais entregas do projeto, da mais recente para a mais antiga. O detalhe de cada mudança está no histórico do git (`git log`), e as mudanças de contrato da API estão na [§13 do `docs/api.md`](docs/api.md#13-histórico-de-mudanças).
 
+## 16/11/2026 · Deploy estável e cidades do IBGE
+
+- **Cidade pela lista do IBGE**: no cadastro e no editar perfil, a cidade só libera depois do estado e sugere os municípios dele (ordem alfabética, refeita a cada letra, sem diferenciar acentos). A API recusa cidade que não existe no estado (400) e grava a grafia oficial.
+- **API estável no Render**: número fixo de threads no servidor (antes eram 2 com 1 processador), health check do Render sem depender do banco (`/api/health/vivo`) e tempo máximo de leitura de 20 s nas conexões com o Oracle.
+- App publicado na Vercel e API no Render, com o link no README.
+
 ## 15/11/2026 · Linha do tempo, CSV do painel e diagrama de sequência
 
 - **Linha do tempo da denúncia**: cada mudança de situação é gravada (tabela `TB_GS26S2_HISTORICO_STATUS`) com a origem, o autor ou a comunidade; rota pública `GET /denuncias/{id}/historico` e seção no detalhe da denúncia. As denúncias de exemplo da "cidade viva" já chegam com a sua linha do tempo.

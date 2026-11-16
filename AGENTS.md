@@ -92,6 +92,7 @@ main.jsx (HashRouter, SessaoProvider) → App.jsx (rotas) → pages/<seção>/*.
 | Quero… | Arquivos |
 |---|---|
 | Criar uma rota da API | `resource/*Resource.java` → `service/*Service.java` → `dao/*Dao.java` + `dao/jdbc/*DaoJdbc.java`; DTOs em `dto/request` e `dto/response`; documente em `docs/api.md` e no Insomnia |
+| Atualizar a lista de municípios (IBGE) | `backend/src/main/resources/municipios.json` e `frontend/src/data/municipios.json`, **iguais** (o teste `MunicipiosTest` confere) |
 | Mudar uma regra de validação | `service/validacao/Validador.java` (back) e `frontend/src/utils/validacao.js` (front, mesmas regras) |
 | Adicionar uma tabela | `database/script.sql` (bloco "só cria se não existir" e `COMMENT ON` na etapa 5), `docs/diagramas/diagrama-er.md`, exclusões em cascata nos services |
 | Criar uma tela | `frontend/src/pages/<seção>/`, rota em `App.jsx`, estilos com as classes `md-*` de `styles/tema.css` (ver o [README do front](frontend/README.md)) |

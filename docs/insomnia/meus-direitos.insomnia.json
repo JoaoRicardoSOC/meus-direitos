@@ -1313,6 +1313,28 @@
       "metaSortKey": 63
     },
     {
+      "_id": "req_md_083",
+      "_type": "request",
+      "parentId": "fld_md_062",
+      "name": "400 · cidade que não existe no estado",
+      "description": "A cidade precisa existir no estado (lista do IBGE). Resposta: 400 no campo cidade.",
+      "method": "POST",
+      "url": "{{ _.base_url }}/usuarios",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"nome\": \"Cidade Errada\",\n  \"email\": \"cidade.errada@exemplo.com\",\n  \"senha\": \"senha1234\",\n  \"cidade\": \"Campinas\",\n  \"uf\": \"RJ\"\n}"
+      },
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "parameters": [],
+      "authentication": {},
+      "metaSortKey": 63.75
+    },
+    {
       "_id": "req_md_064",
       "_type": "request",
       "parentId": "fld_md_062",

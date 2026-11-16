@@ -272,11 +272,11 @@ Resposta **201** (`UsuarioResponse`):
   "token": "NzoxNzk...Q.k3Jx...9w" }
 ```
 
-Regras: nome 3–100; e-mail válido (até 120, guardado em minúsculas); **senha 8–64 com pelo menos uma letra e um número**; cidade 2–80; `uf` = sigla de estado válida. E-mail já usado → **409**.
+Regras: nome 3–100; e-mail válido (até 120, guardado em minúsculas); **senha 8–64 com pelo menos uma letra e um número**; cidade 2–80 e **existente no estado** (lista de municípios do IBGE, sem diferenciar acentos e maiúsculas), gravada com a grafia oficial (`"sao paulo"` → `"São Paulo"`); `uf` = sigla de estado válida. Cidade fora do estado → **400** no campo `cidade` ("Cidade não encontrada nesse estado. Escolha uma da lista."). E-mail já usado → **409**.
 
 > ⏳ **Cidade nova demora um pouco mais (cerca de 1 a 2 s no Oracle da FIAP).** Se a pessoa é a primeira da cidade, a API prepara o conteúdo de exemplo da cidade ("cidade viva", seção 8.10) antes de responder. Mostre **"Preparando sua cidade…"** depois de enviar o cadastro. A resposta traz `"cidadePreparada": true`; se vier `false`, o cadastro funcionou, mas o feed terá só conteúdo real (sugestão: "Sua cidade ainda está começando").
 
-> A tela 03 tem um campo único "Cidade e estado". A API precisa de **`cidade` e `uf` separados**. Recomendado: um `<select>` de cidades (ver seção 11).
+> A tela 03 tem um campo único "Cidade e estado". A API precisa de **`cidade` e `uf` separados**. No app, a cidade só libera depois do estado e sugere os municípios dele (`CampoCidade`, com a mesma lista do IBGE em `frontend/src/data/municipios.json`).
 
 #### `POST /auth/login`
 
@@ -289,7 +289,7 @@ Regras: nome 3–100; e-mail válido (até 120, guardado em minúsculas); **senh
 | Método | Rota | Descrição |
 |---|---|---|
 | GET 🔒 | `/usuarios/me` | Conta do usuário logado (`UsuarioResponse`) |
-| PUT 🔒 | `/usuarios/me` | `{ "nome", "email", "cidade", "uf" }` → `UsuarioResponse`. E-mail de outra conta → 409. Se a cidade mudou, a API prepara a "cidade viva" da cidade nova (1 a 2 s a mais) e a resposta traz `cidadePreparada` |
+| PUT 🔒 | `/usuarios/me` | `{ "nome", "email", "cidade", "uf" }` → `UsuarioResponse`. Mesmas regras de cidade do cadastro (400 se não existir no estado). E-mail de outra conta → 409. Se a cidade mudou, a API prepara a "cidade viva" da cidade nova (1 a 2 s a mais) e a resposta traz `cidadePreparada` |
 | GET | `/usuarios` | Lista pública `[{ "id", "nome", "cidade", "uf" }]` |
 | GET | `/usuarios/{id}` | `{ "id", "nome", "cidade", "uf", "totalDenuncias" }`. Morador de exemplo → 404 |
 
@@ -717,3 +717,4 @@ Ajustes em relação ao Figma, combinados com o grupo. **Todos foram atendidos n
 | 15/11/2026 | Confirmações de resolução simultâneas agora contam certo (a denúncia é travada com `SELECT ... FOR UPDATE`): três moradores confirmando ao mesmo tempo resolvem a denúncia. Caminhos fora de `/api` respondem **404 no JSON de erro padrão** (antes, uma página HTML do servidor). **Sem mudança nas rotas.** |
 | 15/11/2026 | **Rota nova:** `GET /denuncias/{id}/historico` (linha do tempo da denúncia, pública), com o objeto `EventoHistoricoResponse` na seção 9. Cada mudança de situação passa a ser gravada na tabela `TB_GS26S2_HISTORICO_STATUS`, com a origem (`AUTOR` ou `COMUNIDADE`). No app, a linha do tempo aparece no detalhe da denúncia, e o Painel da cidade ganhou "Baixar os números (CSV)", montado no próprio navegador (sem rota nova). Nenhuma rota existente mudou. |
 | 16/11/2026 | **Rota nova:** `GET /health/vivo`, que responde só com a API (sem o campo `banco`) e é o health check do Render: um Oracle lento ou derrubando conexões não faz mais o Render reiniciar a API. Conexões com o banco passam a ter tempo máximo de leitura de 20 s (uma conexão derrubada em silêncio responde 503 em vez de prender a requisição). Nenhuma rota existente mudou. |
+| 16/11/2026 | **Mudança de contrato:** no cadastro (`POST /usuarios`) e na edição da conta (`PUT /usuarios/me`), a `cidade` precisa existir no estado escolhido, pela lista de municípios do IBGE (5.571 municípios, sem diferenciar acentos e maiúsculas). Fora da lista → **400** no campo `cidade`. A cidade é gravada com a grafia oficial ("jundiai" → "Jundiaí"). Contas já existentes não mudam. No app, a cidade só libera depois do estado e sugere os municípios dele. |

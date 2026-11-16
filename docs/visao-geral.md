@@ -83,7 +83,7 @@ Cada seta fica gravada na linha do tempo. O caminho completo da confirmação pe
 
 | Funcionalidade | O que faz | Por que foi feita assim |
 |---|---|---|
-| **Cadastro e login** | Senha de 8 a 64 caracteres com letra e número; sessão de 7 dias. | Regras iguais no app e na API: o erro aparece antes de enviar. |
+| **Cadastro e login** | Primeiro o estado; depois a cidade, com a lista dos municípios daquele estado (em ordem alfabética, refeita a cada letra). Senha de 8 a 64 caracteres com letra e número; sessão de 7 dias. | A cidade sempre existe e é gravada com a grafia oficial, então "jundiai" e "Jundiaí" não viram duas cidades. Regras iguais no app e na API: o erro aparece antes de enviar. |
 | **Minhas denúncias com novidades** | Mostra o que mudou desde a última visita ("+2 apoios, +1 comentário, status mudou"). | A pessoa volta ao app para acompanhar a própria denúncia. Fica só no navegador, sem tabela nova. |
 | **Editar dados, trocar senha, excluir conta** | A exclusão apaga a conta e tudo o que a pessoa criou. | Direito de eliminação da LGPD. |
 
@@ -149,7 +149,7 @@ As decisões completas, com o que se abriu mão em cada uma, estão na [Arquitet
 
 Escolhas conscientes de um protótipo, com o próximo passo de cada uma:
 
-- **Cidade como texto**, sem tabela de municípios: grafias muito diferentes ("S. Paulo") não se encontram. Próximo passo: a lista de municípios do IBGE.
+- **Lista de municípios em arquivo**, não em tabela: um município criado depois de 2025 exige atualizar o arquivo do IBGE no app e na API.
 - **Sem envio de fotos**: só as fotos de demonstração. Próximo passo: armazenamento de arquivos com moderação.
 - **Sessão sem revogação individual**: sair apaga o token do aparelho, mas uma cópia valeria até vencer (7 dias). Próximo passo: uma tabela de sessões.
 - **Moderação simples**: o filtro é por palavra inteira e não há revisão humana do comentário oculto.
