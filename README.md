@@ -45,6 +45,8 @@ O **Meus Direitos** é um app de celular que junta **zeladoria urbana colaborati
 
 **Por que importa.** Problemas do bairro se perdem em canais que ninguém acompanha, e quem mais precisa de um direito costuma ser quem menos sabe que ele existe. O app atende aos **ODS 10** (Redução das desigualdades) e **11** (Cidades e comunidades sustentáveis).
 
+🌐 **App online:** [meus-direitos-kohl.vercel.app](https://meus-direitos-kohl.vercel.app) · API: [`/api/health`](https://meus-direitos-api.onrender.com/api/health). A API usa o plano gratuito do Render, que "dorme" sem uso: a primeira abertura pode levar cerca de 1 minuto.
+
 🎥 **Vídeo pitch:** _link será adicionado na entrega_
 
 ## Telas
