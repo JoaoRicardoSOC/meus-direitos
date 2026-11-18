@@ -47,7 +47,7 @@ O **Meus Direitos** é um app de celular que junta **zeladoria urbana colaborati
 
 🌐 **App online:** [meus-direitos-kohl.vercel.app](https://meus-direitos-kohl.vercel.app) · API: [`/api/health`](https://meus-direitos-api.onrender.com/api/health). A API usa o plano gratuito do Render, que "dorme" sem uso: a primeira abertura pode levar cerca de 1 minuto.
 
-🎥 **Vídeo pitch:** _link será adicionado na entrega_
+🎥 **Vídeo pitch:** [youtu.be/ma8sf1Q1Sww](https://youtu.be/ma8sf1Q1Sww)
 
 ## Telas
 
@@ -190,11 +190,11 @@ O grupo usou o **Claude (Anthropic)**, via Claude Code, como apoio no back-end e
 
 | Nome | RM | Frente |
 |---|---|---|
-| João Ricardo | _RM_ | Back-end |
-| Caio | _RM_ | Back-end |
-| Marcela | _RM_ | Front-end |
-| Bielecky | _RM_ | Front-end |
-| Vicentini | _RM_ | Banco de dados |
+| Caio Ribeiro | RM563611 | Back-end |
+| Eduardo Bielecky | RM563931 | Front-end |
+| Eduardo Vicentini | RM554561 | Banco de dados |
+| João Ricardo | RM563609 | Back-end |
+| Marcela Torro | RM557658 | Front-end |
 
 <p align="center">
   <br>

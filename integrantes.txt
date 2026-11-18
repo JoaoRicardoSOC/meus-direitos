@@ -2,10 +2,12 @@ Grupo: <NOME DO GRUPO>
 Projeto: Meus Direitos - Global Solution 2026/2 (CitizenTech)
 
 Integrantes:
-RM <RM> - <Nome completo> (Back-end)
-RM <RM> - <Nome completo> (Back-end)
-RM <RM> - <Nome completo> (Front-end)
-RM <RM> - <Nome completo> (Front-end)
-RM <RM> - <Nome completo> (Banco de dados)
+RM563611 - Caio Ribeiro (Back-end)
+RM563931 - Eduardo Bielecky (Front-end)
+RM554561 - Eduardo Vicentini (Banco de dados)
+RM563609 - João Ricardo (Back-end)
+RM557658 - Marcela Torro (Front-end)
 
-Video pitch: <LINK PUBLICO>
+Video pitch: https://youtu.be/ma8sf1Q1Sww
+App publicado: https://meus-direitos-kohl.vercel.app
+Repositorio: https://github.com/JoaoRicardoSOC/meus-direitos
