@@ -1,4 +1,4 @@
-Grupo: <NOME DO GRUPO>
+Grupo: JENCE Developments
 Projeto: Meus Direitos - Global Solution 2026/2 (CitizenTech)
 
 Integrantes:
