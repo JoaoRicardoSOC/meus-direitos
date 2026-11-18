@@ -175,10 +175,6 @@ meus-direitos/
 | [README do back-end](backend/README.md) e [diagrama de classes](docs/diagramas/diagrama-classes.md) | Configuração, pacotes, decisões e limitações da API |
 | [README do front-end](frontend/README.md) e [diagrama do front](docs/diagramas/diagrama-frontend.md) | Rotas, componentes, tokens de design, acessibilidade e créditos |
 
-## Uso de IA generativa
-
-O grupo usou o **Claude (Anthropic)**, via Claude Code, como apoio no back-end e no front-end: análise do enunciado, planejamento, geração e revisão de código, testes, auditoria de acessibilidade e documentação. O design é da equipe, e todo o código foi revisado, compreendido e testado pelos integrantes. Os detalhes estão nas seções "Uso de IA generativa" do [README do back-end](backend/README.md) e do [README do front-end](frontend/README.md).
-
 ## Créditos
 
 - Protótipo no Figma pela equipe de front-end.
