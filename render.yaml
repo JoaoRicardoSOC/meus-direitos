@@ -1,7 +1,6 @@
 # Blueprint do Render: cria o serviço da API a partir deste repositório.
 # No painel do Render: New > Blueprint > escolha este repositório. Os valores marcados com
 # "sync: false" são pedidos na criação e ficam só no Render (nunca no git).
-# Passo a passo completo: docs/deploy.md
 services:
   - type: web
     name: meus-direitos-api

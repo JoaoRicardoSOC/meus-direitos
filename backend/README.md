@@ -55,7 +55,7 @@ mvn clean compile exec:java
 
 **Ordem para rodar o projeto inteiro:** `database/script.sql` → back-end (esta pasta) → front-end (`frontend/README.md`).
 
-**Docker só no deploy.** O `Dockerfile` e o `.dockerignore` desta pasta servem apenas para publicar a API no Render, que não roda Java sem container ([`docs/deploy.md`](../docs/deploy.md)). Eles não entram no código nem nas dependências: para rodar e avaliar, basta o Maven, como acima.
+**Docker só no deploy.** O `Dockerfile` e o `.dockerignore` desta pasta servem apenas para publicar a API no Render, que não roda Java sem container (configuração em `render.yaml`, na raiz). Eles não entram no código nem nas dependências: para rodar e avaliar, basta o Maven, como acima.
 
 ### Testes
 
@@ -110,8 +110,7 @@ MD_INTEGRACAO=true mvn test -Dtest=DaosIntegracaoTest   # só os de integração
 ```
 
 O GitHub Actions (`.github/workflows/ci.yml`) roda `mvn -B -q test` a cada push e pull request, sem os testes de
-integração. Há também um teste de ponta a ponta da API, `testes/api-ponta-a-ponta.mjs` (só precisa do Node 22 e
-da API no ar), descrito no README da raiz.
+integração.
 
 ## 4. Arquitetura
 

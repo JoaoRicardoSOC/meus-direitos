@@ -127,7 +127,6 @@ Para apontar para outra API, defina `VITE_API_URL` (detalhes no [README do front
 |---|---|---|
 | Unidade do back-end | `mvn test` (pasta `backend/`) | Não precisa |
 | Integração dos DAOs | `MD_INTEGRACAO=true mvn test -Dtest=DaosIntegracaoTest` | Oracle; tudo é desfeito com ROLLBACK |
-| Ponta a ponta da API | `node testes/api-ponta-a-ponta.mjs` (com a API no ar) | Oracle; as contas de teste são excluídas no fim |
 | Manual | Coleção do Insomnia em [`docs/insomnia/`](docs/insomnia/meus-direitos.insomnia.json) | Oracle |
 
 A [CI](.github/workflows/ci.yml) roda os testes do back-end e o build do front-end a cada push.
@@ -147,7 +146,7 @@ flowchart LR
 | Front-end | React 19, React Router 7 (HashRouter), Vite 8, Bootstrap 5 (reset e utilitários), JavaScript, HTML5, CSS3 |
 | Back-end | Java 17, Maven, JAX-RS (Jersey 4), Grizzly, JSON-B, JDBC, JUnit 5 |
 | Banco de dados | Oracle Database (ojdbc8) |
-| Qualidade | GitHub Actions, testes de unidade, integração e ponta a ponta |
+| Qualidade | GitHub Actions, testes de unidade e de integração |
 
 Sem frameworks além dos da disciplina: o token de sessão (HMAC-SHA256), o pool de conexões e as transações são feitos com o próprio JDK. O porquê de cada decisão está na [arquitetura](docs/arquitetura.md).
 
@@ -160,28 +159,21 @@ meus-direitos/
 ├── backend/            API REST (Java 17, JAX-RS, JDBC)
 ├── frontend/           App React; dist/ é o build que abre direto no navegador
 ├── database/           script.sql (tabelas, índices, catálogo e dicionário), consultas.sql e carga-exemplo.sql
-├── docs/               arquitetura, API, banco, segurança, diagramas, Insomnia e roteiro
-├── testes/             teste de ponta a ponta da API (Node, sem dependências)
-├── AGENTS.md           guia para agentes de IA
-├── CONTRIBUTING.md     como contribuir (commits, testes, checklist)
-└── CHANGELOG.md        histórico das entregas
+├── docs/               arquitetura, API, banco, segurança, diagramas e Insomnia
+└── integrantes.txt     grupo, integrantes e links do vídeo e do app
 ```
 
 ## Documentação
 
 | Documento | Para quê |
 |---|---|
-| [Visão geral do projeto](docs/visao-geral.md) | O conceito, cada funcionalidade e o porquê de cada escolha (base para o vídeo e para a avaliação) |
-| [Índice da documentação](docs/README.md) | Qual documento ler para cada objetivo |
+| [Visão geral do projeto](docs/visao-geral.md) | O conceito, cada funcionalidade e o porquê de cada escolha (para quem avalia) |
 | [Arquitetura](docs/arquitetura.md) | Como as peças se encaixam, regras do produto e decisões |
 | [Guia da API](docs/api.md) | Todas as rotas, corpos, respostas e erros |
 | [Banco de dados](docs/banco-de-dados.md) e [diagrama ER](docs/diagramas/diagrama-er.md) | Script, tabelas, convenções e como evoluir o banco |
 | [Segurança e privacidade](docs/seguranca-e-privacidade.md) | Dados pessoais, LGPD e proteções da API |
 | [README do back-end](backend/README.md) e [diagrama de classes](docs/diagramas/diagrama-classes.md) | Configuração, pacotes, decisões e limitações da API |
 | [README do front-end](frontend/README.md) e [diagrama do front](docs/diagramas/diagrama-frontend.md) | Rotas, componentes, tokens de design, acessibilidade e créditos |
-| [Roteiro de demonstração](docs/roteiro-demonstracao.md) | Como gravar o vídeo pitch ou apresentar |
-| [Deploy](docs/deploy.md) | Como publicar a API no Render e o app na Vercel |
-| [Como contribuir](CONTRIBUTING.md) · [Guia para agentes de IA](AGENTS.md) · [Histórico](CHANGELOG.md) | Trabalhar no projeto |
 
 ## Uso de IA generativa
 

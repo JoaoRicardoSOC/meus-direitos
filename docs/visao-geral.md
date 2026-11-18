@@ -138,10 +138,9 @@ As decisões completas, com o que se abriu mão em cada uma, estão na [Arquitet
 
 | Verificação | O que cobre |
 |---|---|
-| Testes de unidade (139) | Regras de negócio, validação, token, configuração, linha do tempo, conteúdo de exemplo. Rodam sem banco. |
+| Testes de unidade (148) | Regras de negócio, validação, token, configuração, linha do tempo, conteúdo de exemplo. Rodam sem banco. |
 | Testes de integração (7) | Os DAOs contra o Oracle de verdade, com tudo desfeito no fim (ROLLBACK). |
-| Teste de ponta a ponta (31 verificações) | O fluxo inteiro pela API: cadastro, login, denúncia, votos, comentários, 3 confirmações simultâneas, linha do tempo, relatórios, bloqueio do login, exclusão. Cria e apaga as próprias contas. |
-| Teste de estresse (145 casos) | Entradas absurdas, tokens falsos, acessos indevidos e concorrência. Nenhum caso derruba a API ou devolve erro interno. |
+| Testes da API publicada | Durante o desenvolvimento: o fluxo inteiro (cadastro, denúncia, votos, comentários, 3 confirmações simultâneas, linha do tempo, relatórios, exclusão) e um teste de estresse com entradas absurdas, tokens falsos e concorrência, contra a API no Render e o Oracle. Nenhum caso derrubou a API nem devolveu erro interno. |
 | Telas | Testadas a 390 px de largura (celular), com teclado e leitor de tela. |
 | CI no GitHub | A cada push, roda os testes e confere se o app versionado está atualizado. |
 
@@ -170,7 +169,7 @@ Não, porque estão sempre marcados como "Exemplo", e o painel diz quantos são.
 A API confere a cidade de quem confirma e recusa (403). O autor também não confirma a própria denúncia, e cada pessoa conta uma vez só.
 
 **E se três pessoas confirmarem ao mesmo tempo?**
-A denúncia é travada no banco enquanto cada confirmação é contada, então as três contam certo. O teste de ponta a ponta dispara as três juntas para conferir isso.
+A denúncia é travada no banco enquanto cada confirmação é contada, então as três contam certo. Isso foi testado disparando as três ao mesmo tempo.
 
 **Por que Docker, se não é conteúdo da disciplina?**
 Ele só existe para publicar a API no Render. Para rodar e avaliar, basta o Maven, e o código não depende dele.
@@ -183,10 +182,8 @@ Não. Só são salvos com consentimento, nunca aparecem para outras pessoas nem 
 | Documento | Conteúdo |
 |---|---|
 | [README](../README.md) | Como executar, telas e tecnologias |
-| [Roteiro de demonstração](roteiro-demonstracao.md) | Passo a passo do vídeo, com tempos e falas |
 | [Arquitetura](arquitetura.md) | Camadas, regras do produto e decisões |
 | [Guia da API](api.md) | Todas as rotas, respostas e erros |
 | [Banco de dados](banco-de-dados.md) e [diagrama ER](diagramas/diagrama-er.md) | Tabelas, regras e como evoluir o banco |
 | [Diagramas](diagramas/) | Classes, sequência da confirmação, ER e telas do front |
 | [Segurança e privacidade](seguranca-e-privacidade.md) | LGPD e proteções da API |
-| [Deploy](deploy.md) | Publicação no Render e na Vercel |
