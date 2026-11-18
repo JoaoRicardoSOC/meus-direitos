@@ -1,7 +1,7 @@
 # Diagrama de classes · back-end
 
 Gerado a partir do código em `backend/src/main/java/br/com/fiap/meusdireitos`.
-O GitHub desenha os diagramas abaixo direto nesta página. As versões em imagem estão em `diagrama-classes-*.svg`, nesta mesma pasta.
+O GitHub desenha os diagramas abaixo direto nesta página. As versões em imagem estão nesta mesma pasta: uma por parte em PNG e SVG (`diagrama-classes-1-dominio`, `-2-camadas` e `-3-erros`) e as três juntas em [`diagrama-classes.pdf`](diagrama-classes.pdf).
 
 O diagrama está dividido em três partes:
 1. **Domínio:** as entidades e as regras que ficam nelas.
